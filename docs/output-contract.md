@@ -77,12 +77,13 @@ JSON-native one-shot commands accept a no-op `--json` flag, including `devices`,
 commands. `app launch` aliases `app start`; `ui type` aliases `ui text`.
 
 Read `commands --json --depth 0` once per CLI/schema version for shared global
-arguments and effect definitions. Scoped `commands <path> --json --compact`
+arguments and effect definitions. `commands` JSON is compact by default (`--full`
+restores every field; `--compact` is accepted as a no-op). Scoped `commands <path> --json`
 uses lean projection v1 of full schema v3: it retains local syntax, constraints,
 effects, output/success contracts, and examples, omitting false/null/empty
 argument fields and the default Unknown value hint. The `projection` object
 identifies defaults and the shared metadata command. Full JSON stays available
-for validation. Use `commands --search '<operation>' --json --compact` before
+for validation. Use `commands --search '<operation>' --json` before
 guessing syntax. The supported leaf size budget is 12 KiB with at least a 35%
 reduction for representative commands; full output retains all metadata.
 

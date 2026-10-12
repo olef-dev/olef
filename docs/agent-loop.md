@@ -29,7 +29,9 @@ each step costs as few round-trips as possible.
 5. **Act by selector, not coordinates.** Prefer `--rid`, then `--desc`/exact
    `--text`. Add `--observe` to wait for an accessibility quiet period and get
    the post-action screen in the same response. Prefer one `--expect-*`
-   destination condition when the outcome is known; it implies observation.
+   destination condition when the outcome is known; it implies observation and,
+   once satisfied, returns a screen summary (hashes, foreground app, top texts)
+   instead of every element (`--full` returns the whole screen).
    Add `--if-interaction <hash>` to stable selectors on dynamic screens, or use
    a returned `--handle` when no stable selector exists. Use `--if-screen
    <hash>` when even display-only content must remain identical. A mismatch
@@ -38,13 +40,14 @@ each step costs as few round-trips as possible.
    echoes the matched element; a timeout returns `top_texts` so you see what the
    screen became instead of guessing.
 7. **Watch when timing matters.** `shadowdroid watch` streams screen diffs,
-   crashes, ANRs, toasts, watcher actions, Android Studio logpoint hits, and
+   crashes, ANRs, toasts, watcher actions, debugger logpoint hits, and
    (with `net` running) HTTP events on one JSONL timeline.
 8. **Triage failures with one read.** After any surprise, `shadowdroid why`
    returns a verdict + evidence; `shadowdroid log --last 5m` gives the structured
    logcat behind it. You rarely need both plus a screenshot — start with `why`.
-9. **Go deeper only when needed.** `shadowdroid debug ...` (Android Studio
-   debugger as JSON) and `shadowdroid layout ...` (Compose semantics/source/
+9. **Go deeper only when needed.** `shadowdroid debug ...` (the standalone
+   Java/Kotlin and C/C++ debugger as JSON; `debug attach --mode
+   java|native|mixed`) and `shadowdroid layout ...` (Compose semantics/source/
    recompositions) when UI polling can't answer *why*. See
    [debugging.md](debugging.md).
 10. **Free the slot for instrumentation.** `shadowdroid test -- <cmd>` (or
@@ -71,8 +74,8 @@ make lifecycle freshness explicit. Do not derive an action from a
 Every `ui dump` also reports `accessibility_completeness`. UIAutomator cannot
 prove that custom-drawn or unexported Compose controls are represented, so the
 normal tree is explicitly marked `unverified` instead of looking deceptively
-complete. With Android Studio Layout Inspector attached, ask for the deeper
-comparison:
+complete. For a debuggable app, ask for the deeper comparison (it attaches
+the ShadowDroid runtime and reads the app's own Compose inspector):
 
 ```bash
 shadowdroid ui dump --deep
@@ -98,7 +101,7 @@ quotes/apostrophes/ellipsis are folded to ASCII, and zero-width characters are
 stripped — so `--text "sign in"` matches a `SIGN IN` button and `--text "Don't
 allow"` matches text rendered with a typographic apostrophe. Add `--exact` (on
 `ui find`/`tap`/`text`/`wait`/`focus`) to require a full match (so `--text
-Allow` won't hit a label reading "Allow Disney+…"), and `--clickable` to skip
+Allow` won't hit a label reading "Allow notifications…"), and `--clickable` to skip
 non-clickable matches instead of resolving their clickable ancestor. `--rid` is
 the most reliable target when a stable resource id exists. Matching is
 **literal** — `*`, `.`, `?` and other symbols match themselves, with no
@@ -204,13 +207,15 @@ it (and `ui key dpad_*`) over coordinate taps there.
 ## The live timeline
 
 `watch` is the streaming workhorse — it emits debounced, hash-diffed `screen`
-events plus `crash`, `toast`, `watcher_fired`, structured Android Studio
-`logpoint` hits, and `http` events when a `net` proxy is running (plus a
-`tls_error` when an app rejects the proxy CA, so a failed interception is
-visible instead of just missing), and `fault` events when a fault is injected,
-cleared, expired or rolled back. A missing Studio bridge or proxy produces a
-structured warning while the other producers continue; use `--no-logpoints` or
-`--no-net` when that source is intentionally absent. `watch` holds the device
+events plus `crash`, `toast`, `watcher_fired`, structured `logpoint` hits
+from attached debug sessions (Java or native), and `http` events when a
+`net` proxy is running (plus a `tls_error` when an app rejects the proxy CA,
+so a failed interception is visible instead of just missing), and `fault`
+events when a fault is injected, cleared, expired or rolled back. Logpoint
+hits follow debug sessions as they attach and detach; an interrupted logpoint
+stream or a missing proxy produces a structured warning while the other
+producers continue; use `--no-logpoints` or `--no-net` when that source is
+intentionally absent. `watch` holds the device
 while it runs, so inject faults through its stdin
 (`{"cmd":"fault","args":["inject","airplane-mode","--duration-ms","5000"]}`);
 it also clears faults whose `--duration-ms` elapses while it watches.
@@ -228,21 +233,21 @@ left. `commands --guide faults` has the details.
 
 | Group | Commands |
 | --- | --- |
-| **Discovery/setup** | `commands --json --depth 1`, `commands --json --describe '<path>'`, `commands --guide '<topic>'`, `config paths` / `schema` / `explain` / `init` / `validate`, `skill`, `studio status` / `install`, `init`, `update`, `usage` |
+| **Discovery/setup** | `commands --json --depth 1`, `commands --json --describe '<path>'`, `commands --guide '<topic>'`, `config paths` / `schema` / `explain` / `init` / `validate`, `skill`, `init`, `update`, `usage` |
 | **Session/diagnostics** | `devices`, `connect`, `disconnect`, `test`, `doctor`, `collect`, `why`, `log` |
 | **UI automation** | `ui dump`, `ui audit`, `ui gen`, `ui screenshot`, `ui find`, `ui tap`, `ui set-progress`, `ui double-tap`, `ui long-tap`, `ui swipe`, `ui drag`, `ui swipe-ext`, `ui pinch`, `ui scroll-to`, `ui focus`, `ui text`, `ui pin`, `ui key`, `ui hide-keyboard`, `ui back`, `ui home`, `ui wait`, `ui toast` (action verbs take `--observe`, `--if-screen`, and `--if-interaction`; tap/progress/text also accept `--handle`) |
 | **Triage** | `why` (one-read verdict + evidence), `log` (structured app-scoped logcat + parsed crashes) |
-| **Live timeline** | `watch` (screen changes, crashes, ANRs, toasts, watcher actions, Android Studio logpoint hits, and HTTP events when network capture is active) |
+| **Live timeline** | `watch` (screen changes, crashes, ANRs, toasts, watcher actions, debugger logpoint hits, and HTTP events when network capture is active) |
 | **Screen video** | `video record -o DIR [--duration 30s]`; detached `video start -o DIR`, `video status`, `video mark LABEL`, `video stop` |
 | **Layout / Compose** | `layout snapshot`, `layout diff`, `layout source`, `layout recompositions` |
-| **Debugger** | `debug auto`, `snapshot`, `record`, `replay`, `status`, `sessions`, `clients`, `attach`, `break`, `breakpoints`, `logpoint add` / `list` / `events` / `follow` / `remove` / `clear`, `pause`, `resume`, `step-in`, `step-over`, `step-out`, `stop`, `stack`, `threads`, `variables`, `eval`, `inspect`, `coroutines`, `continue-until`, `watch`, `step-until-screen-change`, `step-until-log`, `run-until-crash`, `native`, `tombstones` |
+| **Debugger** | `debug auto`, `snapshot`, `record`, `replay`, `status`, `sessions`, `clients`, `attach`, `break`, `breakpoints`, `logpoint add` / `list` / `events` / `follow` / `remove` / `clear`, `pause`, `resume`, `step-in`, `step-over`, `step-out`, `stop`, `detach`, `stack`, `threads`, `variables`, `eval`, `inspect`, `coroutines`, `continue-until`, `watch`, `step-until-screen-change`, `step-until-log`, `run-until-crash`, `native`, `tombstones` (`attach --mode java\|native\|mixed`; `--engine java\|native` picks the engine when a process has both) |
 | **App lifecycle/state** | `app start`, `stop`, `install`, `reinstall`, `clear`, `info`, `wait`, `current`; `app state snapshot`, `restore`, `recover`, `cleanup` |
 | **Permissions/app-ops** | `perm grant`, `revoke`, `list`, `reset`; `appops get`, `set` |
 | **Device/system** | `device info`, `shell`, `wake`, `sleep`, `unlock`, `orientation`, `clipboard`, `notifications`, `quick-settings`, `open-url` |
 | **Display profile** | `profile snapshot`, `apply`, `reset` (animations, font, density, size, rotation) |
 | **Files** | `files ls`, `push`, `pull` (add `--run-as --app <pkg>` for private debuggable-app paths) |
 | **Network MITM** | `net check`, `trust`, `ca import/info/reset`, `start`, `stop`, `status`, `log`, `checkpoint`, `show`, `export`, `intercept`, `resume`, `drop`, `respond`, `rule`, `rules`, `replay` |
-| **In-app AAR agent** | `aar install` (`--okhttp`, `--coroutine-probes`, `--build`), `status`, `remove`, `capture`, `intercept`, `resume`, `drop`, `agent`, `coroutines` |
+| **Runtime** | `runtime attach` (`--startup`, `--restart`, `--coroutine-probes`), `status`, `detach`, `coroutines` |
 | **Authoring/testing helpers** | `ui audit` (selector gaps), `ui gen` (Screen Object scaffold), `net export fixtures` (replayable response set + `manifest.json`, GraphQL keyed by operationName), `test` (instrumentation command with the slot freed), `debug replay --repeat --diff` (flake hunting) |
 
 Run `shadowdroid commands --json --depth 1` for the live catalog,
@@ -257,8 +262,8 @@ view.
   controls and their verified postconditions.
 - [network.md](network.md) — HTTP(S) and WebSocket capture, interception,
   rules, and replay.
-- [debugging.md](debugging.md) — `why`/`log`/`collect`, the Android Studio
-  debugger surface, logpoints, and layout inspection.
+- [debugging.md](debugging.md) — `why`/`log`/`collect`, the Java/Kotlin,
+  native and mixed debugger, logpoints, and layout inspection.
 
 ### Concurrent command batches
 

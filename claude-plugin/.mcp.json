@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "shadowdroid": {
+      "command": "bash",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bin/shadowdroid-mcp"
+      ],
+      "env": {
+        "SHADOWDROID_VIEWER": "${user_config.viewer}"
+      }
+    }
+  }
+}

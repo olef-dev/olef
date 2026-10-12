@@ -61,12 +61,44 @@ shadowdroid init             # teach your agent the loop
 If anything is off, `shadowdroid doctor` diagnoses the setup and
 `doctor --fix` repairs it.
 
+## Updating
+
+```bash
+shadowdroid update
+```
+
+prints the command that updates your install and changes nothing itself. The
+device service, runtime agent and agent skills follow the CLI's version. See
+[updating](docs/updating.md).
+
+## Claude Code and Codex
+
+The Claude Code plugin adds a live device viewer next to the conversation,
+with annotations and tap-to-test recording, plus Apply Changes builds:
+
+```
+/plugin marketplace add shadowdroid-dev/shadowdroid
+/plugin install shadowdroid@shadowdroid
+```
+
+The Codex plugin teaches Codex the CLI:
+
+```bash
+codex plugin marketplace add shadowdroid-dev/shadowdroid
+codex plugin add shadowdroid@shadowdroid
+```
+
+Details: [Claude Code plugin](claude-plugin/README.md),
+[Codex plugin](codex-plugin/README.md). Other agents: `shadowdroid init`
+installs skills for Claude Code, Cursor, Codex, Gemini and Antigravity.
+
 ## Documentation
 
 - [The agent loop](docs/agent-loop.md): how agents read, act and verify
 - [Output contract](docs/output-contract.md): the JSON every command returns
 - [Debugging](docs/debugging.md): logs, `why`, crashes and the debugger
 - [Network](docs/network.md): the built-in proxy, interception and rules
+- [Updating](docs/updating.md): `shadowdroid update` and what follows the CLI
 - [Device state](docs/device-state.md), [sessions](docs/sessions.md),
   [configuration](docs/configuration.md),
   [security and redaction](docs/security-and-redaction.md),
@@ -97,3 +129,4 @@ is available at the [`v1.3.0` tag](https://github.com/shadowdroid-dev/shadowdroi
 ## Contact
 
 [contact@shadowdroid.dev](mailto:contact@shadowdroid.dev)
+

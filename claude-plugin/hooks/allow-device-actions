@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# PreToolUse hook for ShadowDroid's `control`, `boot`, `recording` and
+# `annotations` tools.
+#
+# Claude Desktop's iOS Simulator asks once per device, then lets Claude tap,
+# type, launch and take screenshots without further prompts. ShadowDroid does
+# the same: the MCP server refuses every device action until the user clicks
+# "Let Claude use it" in the viewer, so this hook pre-approves those calls.
+#
+# It stays out of the way (normal permission flow) for:
+#   - plan mode,
+#   - `control` with action `open_url` (a URL can carry data off the device),
+#   - `control` with an `app_path` (installs an arbitrary APK),
+#   - SHADOWDROID_DISABLE_AGENT_CONTROL / SHADOWDROID_PLUGIN_ASK_EVERY_ACTION.
+# `build`, `open_url` and the `shadowdroid` CLI tool are never matched.
+
+input="$(cat)"
+
+truthy() {
+  case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
+    1 | true | yes | on) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+if truthy "${SHADOWDROID_DISABLE_AGENT_CONTROL:-}" || truthy "${SHADOWDROID_PLUGIN_ASK_EVERY_ACTION:-}"; then
+  exit 0
+fi
+
+if printf '%s' "$input" | grep -Eq '"permission_mode"[[:space:]]*:[[:space:]]*"plan"'; then
+  exit 0
+fi
+if printf '%s' "$input" | grep -Eq '"action"[[:space:]]*:[[:space:]]*"open_url"'; then
+  exit 0
+fi
+# Installing an APK from a path runs arbitrary code on the device: keep that
+# under the normal permission flow. Launching an installed app stays approved.
+if printf '%s' "$input" | grep -Eq '"app_path"[[:space:]]*:'; then
+  exit 0
+fi
+
+cat <<'EOF'
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"ShadowDroid device action: covered by the per-device consent given in the device viewer"}}
+EOF

@@ -3,6 +3,280 @@
 Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
+
+## v2.0.3
+
+ShadowDroid 2 puts the whole Android development loop in your agent's hands,
+with no IDE in the middle. It applies each code change to the running app,
+debugs Kotlin, Java, C and C++ on its own debuggers, inspects layouts and
+coroutines from inside the app, and opens a live device viewer in Claude Code
+so you can watch, point and record. This is the first 2.x release; it includes
+everything since v1.3.0.
+
+Highlights:
+
+- **Apply Changes from the CLI:** `app apply` puts each edit on the device the
+  cheapest correct way, usually in place in about two seconds with app state
+  kept.
+- **Its own debuggers:** Java/Kotlin over JDWP and native C/C++ over the NDK's
+  LLDB, with no Android Studio.
+- **The ShadowDroid runtime:** layout trees, Compose recomposition counts and
+  coroutine dumps from any debuggable app, with no build changes.
+- **Plugins for Claude Code and Codex,** including a live device viewer with
+  annotations and tap-to-test recording.
+- **Windows** support for the CLI, debuggers, runtime and viewer.
+- **Breaking:** the Android Studio integration and the in-app AAR are removed,
+  ShadowDroid moved to the `shadowdroid-dev` organization, and it is now
+  distributed as binaries only.
+
+### Apply Changes
+
+`shadowdroid app apply` builds incrementally, compares the new code with what
+the device runs, and picks how the change reaches the app:
+
+- **hot:** redefines the changed classes in the running app and recomposes
+  only the composables you edited, keeping state above them. On API 30+ new
+  methods, fields and classes apply in place too.
+- **restart_activity:** when code that already ran changed (lifecycle,
+  ViewModel init, a started flow).
+- **reinstall:** when nothing safer is possible, with the reason.
+
+The result reports `action`, `reasons`, `takes_effect`, what changed on
+screen, crashes, Compose composition errors, errors the app logged and failed
+requests. It covers library modules, lists, dialogs, Views and fragments.
+
+### Debuggers
+
+This release gives ShadowDroid its own debuggers and removes the Android
+Studio integration. An agent can now attach to a debuggable app, stop it, read
+its state and step through it, in Kotlin, Java, C and C++, using only the adb
+connection ShadowDroid already owns and, for native code, the NDK's LLDB. No
+IDE is involved.
+
+- **Java/Kotlin debugger:** the `debug` verbs talk JDWP to the app through
+  adb, held by a small per-process daemon. Attach to a running app, or launch
+  it under the debugger with `debug attach --wait-for-launch --break
+  File.kt:LINE` so breakpoints are in place before the first line runs.
+  Line, exception and method breakpoints support conditions, pass counts,
+  temporary and disabled states, and lambda selection with `--variant`.
+  Logpoints have a bounded, cursored event stream and are rate-limited.
+  Stepping, stacks, threads, variables, `eval` and `inspect` with object
+  handles work, as do watches, coroutine listing and crash capture with
+  `run-until-crash`. See [debugging](docs/debugging.md).
+- **Native and mixed debugging:** `debug attach --mode native` debugs C and
+  C++ code on the NDK's LLDB, and `--mode mixed` attaches both engines to one
+  process. Attach to a running app or at launch (`--wait-for-launch`).
+  Symbols come from the project's unstripped Gradle outputs, matched by
+  build-id, or from `--symbols`. Line, function, address and data
+  (watchpoint) breakpoints, native logpoints in the same event stream as Java
+  ones, stack, threads, variables with C++ STL types rendered, `eval`, and
+  `debug native registers|memory|disassemble|modules|symbols|step-instruction`.
+  Real crashes stop at the faulting frame with `suspend_reason: "crash"` and
+  the signal; ART's own SIGSEGV/SIGBUS use passes through untouched
+  (`--signal-policy smart`, the default). Detaching lets Android write the
+  tombstone (`debug tombstones list|pull`). In mixed mode verbs route by file
+  extension, breakpoint id, session id or `--engine java|native`, and Java
+  verbs fail fast with `native_engine_stopped` while LLDB holds the process.
+  `snapshot`, `run-until-crash`, `auto`, `record` and `watch` include the
+  native engine. Needs an NDK on the host (`SHADOWDROID_NDK`,
+  `ANDROID_NDK_HOME`, ... or `<sdk>/ndk/<version>`); works on Linux, macOS
+  and Windows. See the "Native and mixed debugging" section of
+  [debugging](docs/debugging.md).
+- **Method calls are opt-in:** `--invoke` lets `eval`, conditions, logpoints,
+  watches and coroutine snapshots call methods such as `toString()`, getters
+  and Kotlin properties. A thrown exception comes back as a result. Without
+  the flag, nothing runs app code.
+- **Property watches without slowing the app:** Kotlin properties are watched
+  through their setter or getter. A field with no setter is watched at the
+  instructions that write it, found in the app's dex files, so the app keeps
+  full speed. A real field watch, which slows the whole app, needs
+  `--accept-slowdown` and expires after `--duration-ms`.
+- **ANRs:** a stop in an app that was already running can trigger Android's
+  "not responding" dialog. The session reports it and suggests
+  `debug attach --relaunch`, which restarts the app under the debugger with the
+  same breakpoints. Apps launched under the debugger never raise ANRs.
+- **`debug clients`, `debug record` and `watch`:** these now run on the
+  standalone debugger. `debug clients` lists the device's debuggable
+  processes and the sessions attached to them; `debug record` and `watch`
+  take debugger state and logpoint hits from the debugger daemons.
+- **Debugger reads during other commands:** read-only debugger verbs
+  (`debug status`, `stack`, ...) keep working while another command runs,
+  such as a `ui tap` blocked on an app stopped at a breakpoint. Debugger verbs
+  that need the device lock wait up to 10 s for it.
+- **`ui tap` on an unresponsive app:** a click the app never answers within
+  about 4–5 s (main thread busy or stopped at a breakpoint) now returns
+  `tap_unconfirmed` instead of `tap_failed`. The click is queued and may still
+  run, so do not repeat it blindly; `input_delivered` is unknown,
+  `app_unresponsive` is true, no coordinate fallback is injected, and the next
+  actions point at `debug status`.
+- **Doctor:** an advisory `debugger` check reports whether the standalone
+  debugger can run, whether the app is debuggable and who holds it. An
+  advisory `native` check reports the NDK, LLDB and an `lldb-server` for the
+  app's ABI.
+- **Testing:** CI jobs run the debuggers end to end on an emulator:
+  `scripts/e2e-jdwp-debugger.sh`, and `scripts/e2e-native-debugger.sh` for
+  native and mixed debugging against the sample app's new Native Lab.
+
+### Android Studio integration removed
+
+Breaking: the Android Studio plugin, the Studio debugger backend and the
+Studio Layout Inspector bridge are gone. Every `debug` verb runs on
+ShadowDroid's own debuggers, and layout data comes from the
+[ShadowDroid runtime](#shadowdroid-runtime). Android Studio still works as
+your IDE alongside ShadowDroid; it is just not a backend. JDWP allows one
+debugger per process, so ShadowDroid's and Studio's debuggers cannot attach to
+the same process at once.
+
+- `shadowdroid init` installs the agent skills only. `--no-studio-plugin`,
+  `--install-studio-plugin`, `--studio` and `--plugin` are hidden and ignored,
+  so old scripts keep working.
+- `shadowdroid studio`, `debug attach --dialog`, and the backend auto-routing
+  (`backend_reason`) are removed. The hidden `debug --backend` still accepts
+  `auto` and `jdwp`; `studio` is rejected.
+- Config keys `studio_url`, `android_studio`, `studio_plugin`, `debugger`,
+  `debug_backend` and `run_configuration` are deprecated and ignored. They
+  still parse so configs load, and `config validate` warns.
+  `debug_mode` still sets the default attach mode, now `java`, `native` or
+  `mixed`.
+- `doctor` no longer checks Studio or the plugin.
+
+### ShadowDroid runtime
+
+Layout inspection, Compose recomposition counts and coroutine dumps no longer
+need Android Studio or an app dependency: the CLI attaches its own in-process
+runtime to any debuggable app, the mechanism Android Studio's Layout Inspector
+uses.
+
+- **`runtime attach|status|detach`:** a JVMTI agent (`libshadowdroid_agent.so`,
+  published per ABI and verified by checksum) is copied in with `run-as` and
+  loaded with `attach-agent`, or at process start with `--startup`. A
+  per-process host daemon talks to it over an adb abstract socket that accepts
+  only adbd and requires a per-attach token. Detach restores every hooked
+  class.
+- **Layout on the runtime:** `layout snapshot --compose/--semantics/--source-map`,
+  `layout recompositions`, `layout source`, `ui dump --deep` and
+  `ui tap --fallback-id` read the app's own Compose inspector (version-matched
+  from the app's Compose UI dependency) and a built-in view inspector, and
+  attach on demand. Source files resolve under `--project-root`, with the
+  Compose package hash telling same-named files apart. Results carry
+  `backend: runtime` and `backend_reason`.
+- **`runtime coroutines`:** live coroutines (state, context, suspension and
+  creation stacks) from the app's kotlinx DebugProbes, with no build changes;
+  `runtime attach --startup --restart --coroutine-probes` tracks from process
+  start.
+- **Doctor:** `doctor --app <pkg>` adds an advisory `runtime` check (run-as,
+  API level for attach and startup attach).
+
+Removed, with no compatibility shims:
+
+- The in-app debug AAR, its OkHttp companion, and the `aar` verbs
+  (`install/status/remove/agent/capture/intercept/resume/drop/coroutines`),
+  including the Gradle dependency rewriting and the coroutine-probes ASM
+  block. Coroutine dumps moved to `runtime coroutines`; interception stays on
+  the `net` proxy, and in-process network capture is planned for the runtime.
+- The Android Studio plugin's Layout Inspector routes (`/v1/layout/*`).
+- `--studio-url` on `layout` and `ui dump/tap`, and the hidden
+  `--studio-wait-ms` alias (use `--timeout-ms` / `--deep-timeout-ms`).
+- The layout payload key `android_studio_layout` is now `layout_inspector`
+  (also `fallback.layout_inspector` in `ui dump --deep`), and
+  `sample.studio_required` is `sample.enrichment_required`.
+
+### Device viewer and plugins
+
+- **`shadowdroid mcp` and `shadowdroid pane`:** an MCP server and a live
+  device viewer (H.264 from the device, in Claude Desktop's browser pane or
+  Chrome). Tap, drag, type, pinch (Option-drag on emulators), rotate, zoom,
+  hear the emulator, take screenshots and recordings.
+- **Annotations** (Cmd+E): point at an element or area and write what should
+  change; Claude gets the element, a selector, a crop and, in debuggable
+  Compose apps, the composable and source line that drew it.
+- **Record steps** (Cmd+T): your taps and typing become selector-based steps
+  Claude can turn into a UI test.
+- **Claude Code plugin:** `/plugin marketplace add shadowdroid-dev/shadowdroid`
+  and `/plugin install shadowdroid@shadowdroid`. Claude works through the CLI
+  and opens the viewer when you ask to see the device. Device control needs
+  your consent in the viewer, kept for 12 hours; APK installs always ask.
+  Each session reserves the devices it uses, so parallel sessions never share
+  one.
+- **Codex plugin:** `codex plugin marketplace add shadowdroid-dev/shadowdroid`
+  and `codex plugin add shadowdroid@shadowdroid`.
+- **The same from the CLI:** `emulator list|boot|kill`, `ui path` (one or two
+  fingers along timed points), `pane annotations` and `pane steps`.
+
+### Agent experience
+
+- **Leaner by default:** a satisfied `--expect-*` returns a screen summary
+  instead of the whole screen (`--full` for everything), `commands --json` is
+  compact, and the skill leads with the core loop. In a 21-task benchmark,
+  agents finished 48% faster with 34% fewer tokens than with adb and the
+  `android` CLI.
+- **Occlusion-aware taps:** a target covered by the keyboard, a dialog, a
+  system bar or another view is refused with `element_occluded`, naming the
+  cover; `--allow-occluded` overrides.
+- **`ui wait --stable`:** waits until the screen stops changing
+  (`--stable-ms`, `--pixels`); `screen_unstable` names what kept moving.
+- **`ui audit --a11y`:** missing labels, 48dp touch targets, WCAG text
+  contrast, duplicate names, stacked clickables.
+- **Popup windows** (tooltips, dropdowns, menus) are part of the UI tree, so
+  selectors and `ui wait` find them.
+- **`SHADOWDROID_HOME`** moves all host state, for sandboxed agents.
+- Parallel read commands wait for the device instead of failing, and an
+  interrupted read no longer leaves the device locked inside a session.
+
+### Windows
+
+The CLI and its test suite, the Java and native debuggers, the runtime agent
+and Compose layout inspector, and the device viewer all run on Windows. SDK
+tools are found without extra setup, and the proxy CA is trusted without
+openssl.
+
+### Security and reliability
+
+- **The proxy verifies upstream TLS by default.** A self-signed, expired or
+  wrong-host certificate fails the request with a 502 that says why;
+  `net start --insecure-upstream` (or `proxy.verify_upstream: false`) opts out
+  for a backend you trust.
+- **Local control channels are authenticated:** the network proxy and video
+  daemons require a per-daemon token and cap request sizes.
+- Slow devices and CI emulators get more time: `connect` waits up to 30 s for
+  the device service to start, and re-attaching a debugger right after a
+  detach waits up to 40 s for Android to release the previous one.
+- The device service restarts when it loses UI Automation after adbd restarts;
+  `net trust --auto` restarts adbd as root on debuggable builds; `watch`
+  streams logcat over the ADB protocol so it stops with `watch`; `doctor` warns
+  when the device's proxy is dead; `app start` waits up to 15 s for the
+  foreground; TV focus reaches targets across axes; toast capture, Android 17
+  permission resets, legacy CA key import and several fault-injection edge
+  cases are fixed.
+
+### Distribution and updating
+
+- **New home:** ShadowDroid moved to the
+  [`shadowdroid-dev`](https://github.com/shadowdroid-dev) organization and
+  [shadowdroid.dev](https://shadowdroid.dev). Install with
+  `brew install shadowdroid-dev/tap/shadowdroid` or
+  `scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket`.
+  The old `andriyo/...` URLs redirect, so existing installs keep updating.
+- **Binaries only:** releases are no longer built from source with
+  `cargo install`; v1.3.0 and earlier remain available at their tags. For a
+  cargo-installed CLI, `shadowdroid update` now prints `cargo uninstall
+  shadowdroid` followed by the installer.
+- **`shadowdroid update`** is documented in [updating](docs/updating.md): it is a
+  read-only check that prints the command for your install method.
+
+### Known issues
+
+- **Native debugging on macOS needs NDK 30 or newer.** NDK 29's LLDB does not
+  start on macOS (it cannot find its bundled Python library);
+  `debug native status` reports this. Install NDK 30 and point
+  `ANDROID_NDK_HOME` (or `SHADOWDROID_NDK`) at it.
+- **Native crash stops on arm64 emulators** can show ART's fault hook
+  (`art_sigsegv_fault`) instead of the faulting line: LLDB does not unwind
+  past it there. The signal and fault address are still reported, and x86_64
+  emulators and devices stop at the faulting line.
+
+Update with `shadowdroid update` and run the command it prints.
+
 ## v1.3.0
 
 This release adds fault injection, deeper Android Studio integration and
@@ -75,13 +349,13 @@ reliability end-to-end suites also passed.
 Install or upgrade on macOS/Linux:
 
 ```sh
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/download/v1.3.0/shadowdroid-installer.sh | sh -s -- --version v1.3.0
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/andriyo/ShadowDroid/releases/download/v1.3.0/shadowdroid-installer.sh | sh -s -- --version v1.3.0
 ```
 
 Windows PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/shadowdroid-dev/shadowdroid/releases/download/v1.3.0/shadowdroid-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/andriyo/ShadowDroid/releases/download/v1.3.0/shadowdroid-installer.ps1 | iex"
 ```
 
 Homebrew: `brew upgrade andriyo/tap/shadowdroid`. Scoop: `scoop update shadowdroid`
@@ -132,19 +406,19 @@ trial patches passed independent Android checks; both agents timed out without
 completion claims. Workflow outcomes and public artifact validation are recorded
 in the release's companion documentation after publication.
 
-Read the [verification guide](https://github.com/shadowdroid-dev/shadowdroid/blob/v1.2.0/docs/verification.md)
-and [session guide](https://github.com/shadowdroid-dev/shadowdroid/blob/v1.2.0/docs/sessions.md).
+Read the [verification guide](https://github.com/andriyo/ShadowDroid/blob/v1.2.0/docs/verification.md)
+and [session guide](https://github.com/andriyo/ShadowDroid/blob/v1.2.0/docs/sessions.md).
 
 Install or upgrade on macOS/Linux:
 
 ```sh
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/download/v1.2.0/shadowdroid-installer.sh | sh -s -- --version v1.2.0
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/andriyo/ShadowDroid/releases/download/v1.2.0/shadowdroid-installer.sh | sh -s -- --version v1.2.0
 ```
 
 Windows PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -c "irm https://github.com/shadowdroid-dev/shadowdroid/releases/download/v1.2.0/shadowdroid-installer.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/andriyo/ShadowDroid/releases/download/v1.2.0/shadowdroid-installer.ps1 | iex"
 ```
 
 Homebrew: `brew upgrade andriyo/tap/shadowdroid`. Scoop: `scoop update shadowdroid`

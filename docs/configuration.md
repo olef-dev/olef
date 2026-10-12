@@ -7,6 +7,12 @@ command. Config lives in a folder: the global `~/.shadowdroid/config.json` is
 loaded first, then a project `.shadowdroid/config.json` from each of the current
 directory's ancestors, with the nearest project file winning.
 
+All host state lives in `~/.shadowdroid` (user config, device locks and session
+authority, proxy CA, debugger registry, APK/runtime caches). Set
+`SHADOWDROID_HOME` to move it, for example into an agent's workspace when its
+sandbox may only write there; ShadowDroid then also leaves user-scope agent
+skills untouched.
+
 ```bash
 shadowdroid config schema --json
 shadowdroid config init --project --app Livd --package com.livd --app-target mobile \
@@ -34,8 +40,7 @@ shadowdroid config validate --json
   "apps": {
     "Livd": {
       "package": "com.livd",
-      "run_configuration": "app",
-      "debugger": "Android Debugger",
+      "debug_mode": "mixed",
       "target": "mobile"
     }
   },
@@ -81,6 +86,26 @@ keep only the project's `default_target` / app `target` roles in project config.
 The `project` path matters for debugging: `why` and `log` use it to map crash
 stack frames back to files in your source tree (`project_frames`), so the agent
 gets `app/src/main/java/.../CartRepo.kt:42` instead of a bare class name.
+The debugger resolves breakpoint files under it, and the native debugger finds
+unstripped `.so` symbols in its Gradle outputs.
+
+## Debugger settings
+
+`debug_mode` sets the engines `debug attach` uses when `--mode` is not given:
+`java` (JDWP), `native` (LLDB), or `mixed` (both); `auto` means `java`. Set it
+at the top level or per app alias (`apps.<alias>.debug_mode`, which wins);
+`config init --debug-mode <mode>` writes it.
+
+Native debugging needs an Android NDK on the host. ShadowDroid looks in
+`SHADOWDROID_NDK`, `ANDROID_NDK_HOME`, `ANDROID_NDK_ROOT`, `ANDROID_NDK`, then
+the newest `<sdk>/ndk/<version>`. See
+[debugging](debugging.md#native-and-mixed-debugging).
+
+The Android Studio integration was removed. These keys are deprecated and
+ignored: `studio_url`, `android_studio`, `studio_plugin`, `debugger`,
+`debug_backend`, and `run_configuration` (top level), and `run_configuration`
+and `debugger` in an app alias. They still parse so existing configs load,
+and `config validate` warns about them. Remove them when convenient.
 
 ## Editing and recovery
 

@@ -30,9 +30,7 @@ are merged, with the nearest `enabled` value winning.
 
 `net start --redact` applies the same policy to completed capture copies
 before they reach the session log, including URL path/query values, hosts,
-connection errors, WebSocket metadata, and TLS failures. In-app OkHttp flows
-drained by `aar capture` cross the same policy boundary before stdout, JSONL,
-fixtures, or the shared store. A live daemon reports its capture-policy
+connection errors, WebSocket metadata, and TLS failures. A live daemon reports its capture-policy
 fingerprint; requesting `--redact` refuses to reuse an unredacted or differently
 configured daemon and asks for an explicit stop/start. Request/response bytes
 forwarded to the app or upstream are never changed. The session log is written
@@ -90,9 +88,14 @@ fail with a typed `invalid_*` error. See
   (`net trust`); apps that opt out of user CAs, pin certificates, or bypass the
   system store reject it, reported as `tls_error`. Forwarded bytes are never
   modified unless you explicitly intercept, rule, or replay.
-- The in-app AAR is **debug-only**, added explicitly to builds you control, and
-  its OkHttp capture requires the app to register the interceptor itself. See
-  [network.md](network.md).
+- The runtime attaches only to apps the OS marks **debuggable** (it goes
+  through `run-as`), never through an app dependency. Its channel is an
+  abstract unix socket that accepts only adbd's uid and requires a per-attach
+  token; `runtime detach` restores every hooked class.
+- On the host, the runtime and debug daemons take CLI requests over a `0600`
+  unix socket, or on Windows over a loopback port that answers only
+  connections presenting the daemon's secret, kept in an owner-only file under
+  `~/.shadowdroid`.
 
 ## The optional local usage log
 

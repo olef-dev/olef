@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# Start `shadowdroid mcp` for Claude Code (run as `bash shadowdroid-mcp`, so it
+# also works on Windows, where Claude Code requires Git Bash).
+#
+# Desktop apps don't inherit the login shell's PATH, so besides PATH this also
+# looks in the usual install locations. SHADOWDROID_BIN overrides the search.
+# A binary built in a ShadowDroid checkout (…/cli/target/{debug,release}/)
+# gets that checkout's server APK and runtime agent, so local builds need no
+# other setup.
+set -u
+
+MIN_VERSION="2.0.1"
+
+candidates=(
+  "${SHADOWDROID_BIN:-}"
+  "$(command -v shadowdroid 2>/dev/null || true)"
+  /opt/homebrew/bin/shadowdroid
+  /usr/local/bin/shadowdroid
+  "$HOME/.cargo/bin/shadowdroid"
+  "$HOME/.local/bin/shadowdroid"
+)
+if [ -n "${LOCALAPPDATA:-}" ]; then
+  candidates+=("$LOCALAPPDATA/Programs/shadowdroid/shadowdroid.exe" "$HOME/scoop/shims/shadowdroid.exe")
+fi
+
+# 0 when $1 >= $2 (dotted numeric versions).
+version_at_least() {
+  local IFS=.
+  local -a have want
+  read -r -a have <<<"${1%%[-+]*}"
+  read -r -a want <<<"$2"
+  for i in 0 1 2; do
+    local h=${have[$i]:-0} w=${want[$i]:-0}
+    ((10#$h > 10#$w)) && return 0
+    ((10#$h < 10#$w)) && return 1
+  done
+  return 0
+}
+
+too_old=""
+for candidate in "${candidates[@]}"; do
+  [ -n "$candidate" ] && [ -x "$candidate" ] || continue
+  version="$("$candidate" --version 2>/dev/null | awk '{print $2}')"
+  if [ -z "$version" ] || ! version_at_least "$version" "$MIN_VERSION" \
+    || ! "$candidate" mcp --help >/dev/null 2>&1; then
+    too_old="$candidate ${version:-?}"
+    continue
+  fi
+  # Make adb and the emulator findable for the same reason as PATH above.
+  for sdk in "${ANDROID_HOME:-}" "${ANDROID_SDK_ROOT:-}" "$HOME/Library/Android/sdk" "$HOME/Android/Sdk" \
+    "${LOCALAPPDATA:-/nonexistent}/Android/Sdk"; do
+    if [ -n "$sdk" ] && [ -d "$sdk/platform-tools" ]; then
+      export PATH="$sdk/platform-tools:$PATH"
+      break
+    fi
+  done
+  # A checkout build: use its own server APK and runtime agent.
+  case "$candidate" in
+    */cli/target/debug/shadowdroid* | */cli/target/release/shadowdroid*)
+      repo="${candidate%/cli/target/*}"
+      apk="$repo/server/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+      if [ -z "${SHADOWDROID_APK:-}" ] && [ -f "$apk" ]; then
+        export SHADOWDROID_APK="$apk"
+      fi
+      if [ -z "${SHADOWDROID_RUNTIME_DIR:-}" ] && [ -d "$repo/agent/native/build/out" ]; then
+        export SHADOWDROID_RUNTIME_DIR="$repo/agent/native/build/out"
+      fi
+      ;;
+  esac
+  exec "$candidate" mcp "$@"
+done
+
+{
+  if [ -n "$too_old" ]; then
+    echo "Found shadowdroid at ${too_old}, but this plugin needs ${MIN_VERSION} or newer (with \`shadowdroid mcp\`)."
+  else
+    echo "shadowdroid was not found."
+  fi
+  cat <<'EOF'
+Install or update it:
+  brew install shadowdroid-dev/tap/shadowdroid   # macOS / Linux  (brew update && brew upgrade shadowdroid)
+  scoop install shadowdroid                      # Windows        (scoop update shadowdroid)
+or point SHADOWDROID_BIN at the binary.
+EOF
+} >&2
+exit 1

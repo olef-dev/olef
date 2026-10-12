@@ -141,9 +141,10 @@ both response and request (a big upload streams chunked; marked
 `streamed`/`req_streamed` in the flow) — decodes `gzip`/`deflate`/`br`/`zstd`
 for capture, rules and the app (`upstream_content_encoding` and
 `upstream_resp_len` in the flow keep what the server actually sent),
-and **captures WebSocket (WS/WSS) frames**. `net start --verify-upstream`
-validates the real server certificate for both HTTPS and WSS (off by default
-for self-signed dev backends).
+and **captures WebSocket (WS/WSS) frames**. The proxy validates the real server
+certificate for both HTTPS and WSS, so a tampered network cannot hide behind the
+ShadowDroid CA; `net start --insecure-upstream` (or `proxy.verify_upstream: false`
+in config) accepts a self-signed dev backend you trust.
 
 ## WebSocket capture and drive
 
@@ -188,10 +189,17 @@ signs and installs *your* CA. `net ca info` shows the active CA and
 `net ca reset` returns to a generated one. Per-project CAs and the
 `ca_trusted` assertion are covered in [configuration.md](configuration.md).
 
-`net trust` installs the CA into the device's **user** trust store. Apps that
-opt out of user CAs via network security config, pin their certificates, or use
-stacks that bypass the system trust store will reject the proxy — that failure
-is surfaced as a `tls_error` event rather than silently missing traffic.
+`net trust` (`--auto`, the default) installs the CA into the device's
+**system** trust store, falling back to the user store. On a debuggable build,
+such as an emulator's google_apis image, it first restarts adbd as root
+(`adb root`), which briefly drops adb forwards that ShadowDroid re-creates on
+the next command; `--no-adb-root` skips that. Physical devices and production
+images (including the android-tv emulator image) cannot become root: use
+`net trust --push` and finish the install in Settings, which needs a screen-lock
+credential. Apps that opt out of user CAs via network security config, pin their
+certificates, or use stacks that bypass the system trust store will reject the
+proxy — that failure is surfaced as a `tls_error` event rather than silently
+missing traffic.
 
 ## Redaction at the network boundary
 
@@ -207,48 +215,15 @@ refuses to reuse an unredacted or differently configured daemon and asks for an
 explicit stop/start. See
 [security-and-redaction.md](security-and-redaction.md).
 
-## Above-TLS OkHttp capture (the in-app AAR)
+## Traffic the proxy cannot see
 
-For in-process diagnostics in an app you can build, install the debug-only core
-AAR with `shadowdroid aar install --build`. Add `--coroutine-probes` for
-`aar coroutines`. HTTP capture is opt-in and OkHttp-specific:
-
-```bash
-shadowdroid aar install --okhttp --build
-```
-
-Then add `ShadowDroidCaptureInterceptor()` as an application interceptor to
-each target debug `OkHttpClient`. `aar agent` reports whether that provider is
-actually registered before `aar capture`/`aar intercept` are used. The core AAR
-alone does not capture HTTP, and the companion does not instrument Cronet,
-QUIC, or other stacks. Because it sits above TLS, it sees certificate-pinned
-OkHttp traffic that the MITM proxy cannot.
-
-If an OkHttp call fails before returning a response (for example DNS, TLS,
-connection, timeout or cancellation failure), the companion records request
-metadata, elapsed time and the error with no response status or body. The
-original `IOException` still reaches the app. Failures while the app later
-consumes a returned response body are outside this interceptor's capture window.
-
-`aar intercept` holds at most 32 matching calls and gives each one an absolute
-monotonic deadline. Unresolved, interrupted, or over-capacity calls fail open.
-At or after the deadline, `aar resume`/`aar drop` returns a non-zero typed
-`aar_intercept_deadline_expired` error instead of claiming that a late action
-was delivered while that record remains in the bounded terminal history;
-concurrent resolvers likewise have exactly one winner. `aar agent` exposes live
-holds plus that history so an automation can distinguish expiration,
-interruption, an earlier release, and an unknown or evicted id.
-
-In-app OkHttp flows drained by `aar capture` cross the same redaction policy
-boundary before stdout, JSONL, fixtures, or the shared store.
-
-## Choosing between `net` and `aar`
-
-Use `net` first for proxy-aware HTTP(S): it is built into the host CLI, requires
-no app code changes, and supports capture, intercept, mutation, rules, fixtures,
-HAR/curl export, and replay. Use `aar` for apps you can build when you need the
-debug-only in-app agent for process/coroutine diagnostics, or above-TLS capture
-of pinned OkHttp traffic.
+`net` only sees traffic that goes through the device proxy and trusts its CA.
+A `tls_error` usually means the app pins certificates or does not trust user
+CAs; clients with custom socket factories, Cronet, or QUIC bypass the proxy
+entirely. For a debug build, trust the ShadowDroid CA in the network security
+config (`net ca info`) or disable pinning in debug. In-process capture for such
+traffic is planned for the ShadowDroid runtime; the former OkHttp AAR companion
+has been removed.
 
 ### Guarded JSON response edits
 

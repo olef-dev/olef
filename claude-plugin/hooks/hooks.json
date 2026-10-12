@@ -1,0 +1,20 @@
+{
+  "description": "Status line, toasts and /device for the attached Android device; pending viewer annotations ride along with the next prompt and the viewer's Send to Claude submits them (register.ts). The PreToolUse hook lets device actions run without a prompt per tap: per-device consent in the viewer already covers them, as with Claude Desktop's iOS Simulator; build, open_url and the shadowdroid CLI tool keep following the permission mode, and so does plan mode.",
+  "modules": [
+    "./register.ts"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^mcp__plugin_shadowdroid_shadowdroid__(control|boot|recording|annotations)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/allow-device-actions\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
