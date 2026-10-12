@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest something ShadowDroid should do.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The task you or your agent were working on, and where ShadowDroid got in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help?
+      description: The command, flag or output you'd like. A sketch of the JSON is welcome.
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: How you do it today, if at all (adb, a script, by hand).
+  - type: input
+    id: agent
+    attributes:
+      label: Agent or tool
+      description: For example Claude Code, Codex, Cursor, or by hand.

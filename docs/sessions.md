@@ -26,7 +26,7 @@ The default ownership directory is `~/.shadowdroid/authority`. All cooperating c
 
 A device-side marker binds a live reservation to the authority and selected serial. It rejects a competing private registry and another transport alias to the same device. A local owner index protects control of an owned proxy/recorder when Android is offline. Markers are removed on clean release; persistent OS lock files are never unlinked. Reservations include the observed boot ID and a monotonically increasing generation. Reusing a serial after reboot does not silently reuse a running session.
 
-This is a cooperative authority for current CLI clients. Direct ADB, older clients, Android Studio and human input can act outside it. Do not run those writers during an experiment. Remote authorities, access control, scoped specialist grants and device pools remain later [concurrency work](concurrency-roadmap.md). C1 endpoint-level enforcement against arbitrary HTTP/ADB clients is not claimed by this local gate.
+This is a cooperative authority for current CLI clients. Direct ADB, older clients, Android Studio and human input can act outside it. Do not run those writers during an experiment. Remote authorities, access control, scoped specialist grants and device pools remain later work. C1 endpoint-level enforcement against arbitrary HTTP/ADB clients is not claimed by this local gate.
 
 ## Handoff and recovery
 
@@ -45,4 +45,4 @@ While an operation is quarantined, the current owner may still run `net stop`, `
 
 Recovery is deliberately conservative: inspect the unknown outcome, stop all related external test/build/ADB workers, reboot the selected device, then use the current owner's token with `session recover --external-workers-stopped`. The command verifies a changed boot identity and records the external-worker attestation; it cannot prove that arbitrary external processes were stopped. Observe again before continuing. The interrupted request remains `unknown`, even after recovery succeeds. Do not delete authority state or lock files to bypass this check.
 
-The real-device [session suite](../scripts/e2e-agent-sessions.py) exercises competing drivers, passive observers, private-authority rejection, separate devices, independent crash cursors, handoff, instrumentation handoff and interrupted-process recovery. It intentionally crashes the sample app and reboots its explicitly selected dedicated emulator.
+A real-device session suite exercises competing drivers, passive observers, private-authority rejection, separate devices, independent crash cursors, handoff, instrumentation handoff and interrupted-process recovery. It intentionally crashes the sample app and reboots its explicitly selected dedicated emulator.

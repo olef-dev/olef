@@ -1,6 +1,6 @@
 # Requirement verification
 
-The `verify` namespace connects task requirements with evidence. It provides offline plan validation, JUnit normalization, baseline comparison, and bounded execution with a restart-readable evidence ledger. Device runs use the shared [session authority](sessions.md). The [roadmap](agent-verification-roadmap.md) tracks additional adapters and evaluation work.
+The `verify` namespace connects task requirements with evidence. It provides offline plan validation, JUnit normalization, baseline comparison, and bounded execution with a restart-readable evidence ledger. Device runs use the shared [session authority](sessions.md).
 
 ## Plan contract
 

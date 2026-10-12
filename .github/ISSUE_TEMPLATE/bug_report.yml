@@ -1,0 +1,78 @@
+name: Bug report
+description: Something in ShadowDroid doesn't work as documented.
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. The `doctor` output below answers most of our first questions.
+        Please remove anything private (hostnames, tokens, app data) before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: ShadowDroid version
+      description: Output of `shadowdroid --version`.
+      placeholder: shadowdroid 1.3.0
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: The command you ran, what you expected, and what you got instead.
+      placeholder: |
+        I ran `shadowdroid ui tap --text "Sign in"` and expected ..., but got ...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. shadowdroid connect
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Command output
+      description: The full JSON or error the command printed.
+      render: json
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Doctor output
+      description: Output of `shadowdroid doctor --json` (add `--app <package>` if the problem is app-specific).
+      render: json
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device or emulator
+      description: Model or AVD, Android version and API level.
+      placeholder: Pixel 9 emulator, Android 16, API 36
+    validations:
+      required: true
+  - type: dropdown
+    id: host-os
+    attributes:
+      label: Host OS
+      options:
+        - macOS (Apple silicon)
+        - macOS (Intel)
+        - Linux
+        - Windows
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent or tool driving ShadowDroid
+      description: For example Claude Code, Codex, Cursor, a script, or by hand.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, logs from `shadowdroid log --last 5m`, or a `shadowdroid collect` bundle.

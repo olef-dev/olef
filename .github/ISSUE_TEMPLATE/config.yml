@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/shadowdroid-dev/shadowdroid/discussions
+    about: Ask how to do something, or share an idea, in Discussions.
+  - name: Security vulnerability
+    url: https://github.com/shadowdroid-dev/shadowdroid/security/advisories/new
+    about: Report security problems privately, not as a public issue.
+  - name: Email
+    url: mailto:contact@shadowdroid.dev
+    about: Anything else, including licensing and commercial questions.
