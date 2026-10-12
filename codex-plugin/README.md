@@ -29,3 +29,10 @@ it here; change `cli/src/cmd/skill_body.md` and run
 `SHADOWDROID_BLESS=1 cargo test codex_plugin_ships_the_generated_skill` in
 `cli/`. With the plugin installed, `shadowdroid init` no longer installs the
 Codex user skill, so Codex doesn't list two copies.
+
+## License
+
+This plugin is licensed under the Apache License, Version 2.0 (see
+[LICENSE](LICENSE)). The `shadowdroid` CLI it runs is licensed separately under
+the [ShadowDroid License](https://github.com/shadowdroid-dev/shadowdroid/blob/main/LICENSE.md):
+free for individuals and teams up to 10 users.

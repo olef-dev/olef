@@ -207,3 +207,10 @@ in the viewer; Bash commands follow your permission mode.
 
 Report problems at
 [shadowdroid-dev/shadowdroid issues](https://github.com/shadowdroid-dev/shadowdroid/issues/new/choose).
+
+## License
+
+This plugin is licensed under the Apache License, Version 2.0 (see
+[LICENSE](LICENSE)). The `shadowdroid` CLI it runs is licensed separately under
+the [ShadowDroid License](https://github.com/shadowdroid-dev/shadowdroid/blob/main/LICENSE.md):
+free for individuals and teams up to 10 users.

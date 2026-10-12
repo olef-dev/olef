@@ -17,6 +17,8 @@ devices. Every answer is compact JSON with the next step built in.
 This repository is ShadowDroid's public home: releases, documentation, the
 changelog, and the issue tracker. Development happens in a private repository.
 
+Free for individuals and teams up to 10 users; see [License](#license).
+
 ## Install
 
 Homebrew (macOS, Linux):
@@ -122,9 +124,17 @@ Please report security problems privately; see [SECURITY.md](SECURITY.md).
 
 ## License
 
-ShadowDroid up to and including v1.3.0 is licensed under Apache-2.0; its source
-is available at the [`v1.3.0` tag](https://github.com/shadowdroid-dev/shadowdroid/tree/v1.3.0).
-<!-- TODO(license): state the license for releases after v1.3.0 before publishing. -->
+**Free for individuals and teams up to 10 users.** ShadowDroid is free for
+personal use, education, open-source projects, and any organization with up
+to 10 people using it. Organizations with more than 10 users need a commercial
+license for the users beyond the first 10; write to
+[contact@shadowdroid.dev](mailto:contact@shadowdroid.dev). The full terms are
+in the [ShadowDroid License](LICENSE.md).
+
+The Claude Code and Codex plugins in this repository are licensed under
+Apache-2.0 (see their `LICENSE` files). ShadowDroid 1.3.0 and earlier were
+released under Apache-2.0, and their source remains available at the
+[`v1.3.0` tag](https://github.com/shadowdroid-dev/shadowdroid/tree/v1.3.0).
 
 ## Contact
 
