@@ -110,12 +110,31 @@ If the MCP server's instructions say to open the viewer before building, the
 user set the plugin's `viewer` option to `always`: attach and open the viewer
 whenever you run the app.
 
-## With the standalone `shadowdroid` skill
+## Viewer or emulator window
 
-If the `shadowdroid` skill is also loaded, it is the full CLI reference and
-this skill adds the device viewer. Use that skill's recipes through Bash as
-written; after `attach` they target the attached device under this session's
-reservation. You don't need to run `shadowdroid connect` yourself.
+The user picks how they see the device; it's ShadowDroid's `show_device`
+setting:
+
+- `viewer` (the default): the live viewer in the Claude Desktop browser pane.
+- `window`: the emulator's own window. The MCP server's instructions then
+  say so, and the `boot` tool opens the window by default. Open the viewer
+  only if they ask for it.
+
+When they ask to change it for good ("use the emulator window from now on",
+"show me the viewer by default"), run
+`shadowdroid config init --user --show-device window` (or `viewer`) and tell
+them it fully applies in a new session. For a one-off ("open the emulator
+window this time"), just do it: `boot` with `window: true`, or
+`shadowdroid emulator boot <avd>`. An emulator already running without a
+window can't show one; offer to restart it (`shadowdroid emulator kill`,
+then boot), and say the app's in-memory state is lost.
+
+## With the `shadowdroid` skill
+
+This plugin's `shadowdroid` skill is the full CLI reference; this skill adds
+the device viewer. Use that skill's recipes through Bash as written; after
+`attach` they target the attached device under this session's reservation.
+You don't need to run `shadowdroid connect` yourself.
 
 ## Rules
 

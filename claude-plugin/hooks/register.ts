@@ -236,6 +236,8 @@ export const register: Register = on => {
     if (!items.length) return next(e)
     return next({ ...e, context: [...(e.context ?? []), notesContext(items)] })
   })
+    // Display only: if this hook fails, the prompt goes as typed.
+    .catch(($, e, next) => next(e))
 
   on('tool.call', async ($, e, next) => {
     // Working through the CLI: `shadowdroid app apply` still updates the status line.
@@ -295,4 +297,6 @@ export const register: Register = on => {
     }
     return ran
   })
+    // Display only: if this hook fails, the call runs (or its settled result replays) as is.
+    .catch(($, e, next) => next(e))
 }

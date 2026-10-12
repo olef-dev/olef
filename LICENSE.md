@@ -95,6 +95,8 @@ You may not:
 
 The Software includes open-source components that remain under their own
 licenses. Nothing in this license limits your rights under those licenses.
+Their notices are in THIRD-PARTY-NOTICES.txt, which ships in every release
+archive and on each release page, and `shadowdroid licenses` prints them.
 
 ## 7. Earlier versions
 

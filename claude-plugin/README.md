@@ -17,7 +17,14 @@ as always.
 To have the viewer open whenever Claude runs your app, set the plugin's
 **Device viewer** option to `always`. Claude Code asks for it when you install
 the plugin; later, change it in the config menu or under `pluginConfigs` in
-settings, then start a new session.
+settings, then start a new session. (With `show_device` set to `window`,
+below, `always` is ignored.)
+
+To use the emulator's own window instead of the viewer, run
+`shadowdroid config init --user --show-device window` (back with `viewer`),
+or just tell Claude "use the emulator window from now on". Claude then boots
+emulators with their window and opens the viewer only when you ask. This
+setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
 
 ## What you get
 
@@ -92,8 +99,11 @@ settings, then start a new session.
 
 ## Install
 
-1. Install the `shadowdroid` CLI, version 2.0.3 or newer (the plugin refuses
-   older ones and says how to upgrade):
+1. Install the `shadowdroid` CLI, version 2.0.4 or newer. You can also skip
+   this step: when a session starts without it (or with an older one), the
+   plugin tells Claude, which offers the right install command for your OS and
+   runs it once you approve. After that, run `/mcp` and reconnect `shadowdroid`
+   (or start a new session) to enable the plugin's tools.
 
    ```bash
    brew install shadowdroid-dev/tap/shadowdroid
@@ -155,22 +165,25 @@ These need a Claude Code build with plugin function hooks (Claude Desktop
 2.1.29x or newer). An older build ignores the module and keeps everything
 else: the tools, the viewer and the skill.
 
-## With the standalone `shadowdroid` skill
+## Skills
 
-Keep the skill that `shadowdroid skill --sync` installs. The two divide the
-work:
+The plugin ships two skills:
 
-- **Different names.** The plugin's skill is `android-device`
-  (`shadowdroid:android-device`) and covers the device, the viewer, build and
-  screenshots. The standalone `shadowdroid` skill stays the CLI reference.
-- **Shared reservation.** After `attach`, the Bash `shadowdroid` commands of
-  that same Claude session use the session's device reservation
-  automatically, so the standalone skill's recipes work unchanged. Other
-  sessions and tools still get `device_reserved`. Set
-  `SHADOWDROID_NO_INHERIT_SESSION=1` to turn this off.
-- **No skill rewrites.** The plugin's MCP server never rewrites the
-  standalone skill files, even when the plugin's binary is a different version
-  from the one that installed them.
+- **`shadowdroid`** (`shadowdroid:shadowdroid`): the CLI reference, the same
+  skill `shadowdroid skill claude-code` writes, generated from the CLI.
+- **`android-device`** (`shadowdroid:android-device`): the device, the viewer,
+  build and screenshots.
+
+With the plugin installed for your user, `shadowdroid init`, `skill --sync`
+and `connect` stop installing and refreshing the personal skill in
+`~/.claude/skills/shadowdroid`, and set an unedited copy aside as
+`SKILL.md.retired` so Claude doesn't list the skill twice. A copy you edited is
+left for you to review.
+
+After `attach`, the Bash `shadowdroid` commands of that same Claude session use
+the session's device reservation automatically, so the skill's recipes work
+unchanged. Other sessions and tools still get `device_reserved`. Set
+`SHADOWDROID_NO_INHERIT_SESSION=1` to turn this off.
 
 ## The CLI does it too
 

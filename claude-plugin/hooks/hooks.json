@@ -1,5 +1,5 @@
 {
-  "description": "Status line, toasts and /device for the attached Android device; pending viewer annotations ride along with the next prompt and the viewer's Send to Claude submits them (register.ts). The PreToolUse hook lets device actions run without a prompt per tap: per-device consent in the viewer already covers them, as with Claude Desktop's iOS Simulator; build, open_url and the shadowdroid CLI tool keep following the permission mode, and so does plan mode.",
+  "description": "Status line, toasts and /device for the attached Android device; pending viewer annotations ride along with the next prompt and the viewer's Send to Claude submits them (register.ts). The PreToolUse hook lets device actions run without a prompt per tap: per-device consent in the viewer already covers them, as with Claude Desktop's iOS Simulator; build, open_url and the shadowdroid CLI tool keep following the permission mode, and so does plan mode. The SessionStart hook (check-cli) tells Claude how to install the shadowdroid CLI or adb on this OS when they are missing or too old; it never installs anything itself.",
   "modules": [
     "./register.ts"
   ],
@@ -12,6 +12,18 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/allow-device-actions\"",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-cli\"",
+            "timeout": 20
           }
         ]
       }

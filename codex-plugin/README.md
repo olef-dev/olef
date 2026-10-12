@@ -23,12 +23,25 @@ codex plugin add shadowdroid@shadowdroid
 
 ## What's inside
 
-One skill, `skills/shadowdroid/SKILL.md`: the same skill
-`shadowdroid skill codex --install` writes, generated from the CLI. Don't edit
-it here; change `cli/src/cmd/skill_body.md` and run
-`SHADOWDROID_BLESS=1 cargo test codex_plugin_ships_the_generated_skill` in
-`cli/`. With the plugin installed, `shadowdroid init` no longer installs the
-Codex user skill, so Codex doesn't list two copies.
+- **Skills:** `shadowdroid` (the CLI reference, the same skill
+  `shadowdroid skill codex --install` writes, generated from the CLI) and
+  `android-device` (shows the device live in Codex's in-app browser). Don't
+  edit `skills/shadowdroid/SKILL.md` here; change `cli/src/cmd/skill_body.md`
+  and run `SHADOWDROID_BLESS=1 cargo test plugins_ship_the_generated_skill`
+  in `cli/`.
+- **MCP server** (`bin/shadowdroid-mcp`): the device viewer and its tools.
+- **Viewer or emulator window:** Codex shows the device in the live viewer.
+  To use the emulator's own window instead, run
+  `shadowdroid config init --user --show-device window` (back with `viewer`),
+  or tell Codex "use the emulator window from now on".
+- **SessionStart hook** (`hooks/check-cli`, shared with the Claude plugin):
+  tells Codex how to install the CLI or adb when they're missing. Codex asks
+  you to trust it once (Settings → Hooks).
+
+With the plugin installed, `shadowdroid init`, `skill --sync` and `connect`
+stop installing and refreshing the Codex user skill in
+`~/.agents/skills/shadowdroid`, and set an unedited copy aside as
+`SKILL.md.retired` so Codex doesn't list the skill twice.
 
 ## License
 

@@ -101,6 +101,11 @@ stamped with the CLI version. After an update, `connect` and
 `shadowdroid skill --sync` refresh every installed skill you haven't edited.
 Skills you customized are left alone.
 
+In Claude Code and Codex the ShadowDroid plugin ships the skills and updates
+with the plugin. While it's installed, those commands skip that agent's user
+skill and set an unedited copy aside as `SKILL.md.retired`, so the agent
+doesn't list the skill twice.
+
 ### The Claude Code plugin
 
 The plugin starts the `shadowdroid` binary on your PATH and refuses one older

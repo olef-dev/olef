@@ -76,7 +76,9 @@ device service, runtime agent and agent skills follow the CLI's version. See
 ## Claude Code and Codex
 
 The Claude Code plugin adds a live device viewer next to the conversation,
-with annotations and tap-to-test recording, plus Apply Changes builds:
+with annotations and tap-to-test recording, plus Apply Changes builds. If the
+CLI isn't installed yet, the plugin notices when a session starts and Claude
+offers the install command for your OS:
 
 ```
 /plugin marketplace add shadowdroid-dev/shadowdroid
@@ -135,6 +137,11 @@ The Claude Code and Codex plugins in this repository are licensed under
 Apache-2.0 (see their `LICENSE` files). ShadowDroid 1.3.0 and earlier were
 released under Apache-2.0, and their source remains available at the
 [`v1.3.0` tag](https://github.com/shadowdroid-dev/shadowdroid/tree/v1.3.0).
+
+ShadowDroid includes open-source components under their own licenses. Their
+notices ship as `THIRD-PARTY-NOTICES.txt` in every release archive and on each
+[release](https://github.com/shadowdroid-dev/shadowdroid/releases/latest), and
+`shadowdroid licenses` prints them.
 
 ## Contact
 

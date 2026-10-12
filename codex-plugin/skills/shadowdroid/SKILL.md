@@ -119,5 +119,5 @@ Core groups below. For an unfamiliar command run `shadowdroid <group> <sub> --he
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`shadowdroid <command> --help` for details): session, verify, evidence, test, update, init, commands, usage, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`shadowdroid <command> --help` for details): session, verify, evidence, test, licenses, update, init, commands, usage, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 

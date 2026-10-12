@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "shadowdroid": {
+      "command": "./bin/shadowdroid-mcp",
+      "cwd": ".",
+      "env_vars": [
+        "PATH",
+        "HOME",
+        "ANDROID_HOME",
+        "ANDROID_SDK_ROOT",
+        "JAVA_HOME",
+        "SHADOWDROID_BIN",
+        "SHADOWDROID_APK",
+        "SHADOWDROID_RUNTIME_DIR",
+        "SHADOWDROID_VIEWER"
+      ],
+      "startup_timeout_sec": 30,
+      "tool_timeout_sec": 900,
+      "env": {
+        "SHADOWDROID_AGENT": "codex"
+      }
+    }
+  }
+}

@@ -4,6 +4,65 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.0.4
+
+This release adds ShadowDroid's license and its open-source notices, brings the
+device viewer to Codex, and makes the Claude Code and Codex plugins set
+themselves up on a machine that doesn't have the CLI yet.
+
+- **License:** released binaries are licensed under the
+  [ShadowDroid License](https://github.com/shadowdroid-dev/shadowdroid/blob/main/LICENSE.md):
+  free for personal use, education, open-source projects, and organizations
+  with up to 10 users; organizations with more than 10 users need a commercial
+  license for the users beyond the first 10. The Claude Code and Codex plugins
+  are Apache-2.0. Every release archive includes `LICENSE.md`; the Homebrew
+  formula and Scoop manifest declare it.
+- **Open-source notices:** `THIRD-PARTY-NOTICES.txt` lists the licenses and
+  notices of every open-source component ShadowDroid includes (the Rust crates
+  in the CLI, the libraries in the on-device service, the code in the runtime
+  agent). It ships in every release archive and as a release asset, and the
+  new `shadowdroid licenses` command prints it with the license.
+- **Claude Code plugin, first run:** when a session starts and the
+  `shadowdroid` CLI or `adb` is missing or too old, the plugin tells Claude the
+  install command for the machine (Homebrew or the installer on macOS and
+  Linux, Scoop or the PowerShell installer on Windows) and shows you a
+  one-line note. Claude runs it only with your approval. It stays silent when
+  everything is installed.
+- **Codex: the device viewer:** the Codex plugin now ships the MCP server,
+  an `android-device` skill and the same first-run install check, so Codex
+  can show the live device viewer in its in-app browser. `shadowdroid mcp`
+  recognizes the agent app it serves (Claude, Codex or another client) and
+  words instructions, consent and hints for it; the viewer sends notes and
+  recorded steps to Codex through a thread deep link. Device reservations
+  follow the Codex thread, so parallel Codex threads don't share a device.
+- **`show_device` setting:** choose how the agent shows you the device, the
+  live viewer (default) or the emulator's own window:
+  `shadowdroid config init --user --show-device <viewer|window>`, or per
+  project. It works the same in Claude Code and Codex.
+- **The CLI skill comes with the plugins:** both plugins ship the generated
+  `shadowdroid` skill next to `android-device`. With a plugin installed,
+  `init`, `skill --sync` and `connect` stop installing that agent's separate
+  user skill and set an unedited copy aside, so the skill isn't listed twice.
+  `shadowdroid skill` still installs it for Cursor, Gemini CLI and
+  Antigravity.
+- **Plugin listing details:** the Claude Code plugin declares its icon,
+  documentation, support, privacy policy and terms links for plugin
+  directories, and both plugins carry an icon.
+
+#### Fixes
+
+- **Config files with unknown keys** no longer make every command fail. Keys
+  a newer ShadowDroid wrote are ignored, kept by `config init`, and reported
+  by `config validate` as warnings. Versions before 2.0.4 still reject them,
+  so the plugins now require 2.0.4 or newer.
+- **`app apply` errors:** a stack trace the app logs is reported once, by the
+  line that starts it, with its first frame and last cause, instead of a
+  run of `at …` frames.
+
+Update with `shadowdroid update` and run the command it prints. In Claude Code,
+run `/plugin marketplace update shadowdroid`; in Codex,
+`codex plugin marketplace upgrade shadowdroid`.
+
 ## v2.0.3
 
 ShadowDroid 2 puts the whole Android development loop in your agent's hands,

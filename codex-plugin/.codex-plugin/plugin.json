@@ -1,6 +1,6 @@
 {
   "name": "shadowdroid",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Run, test and debug Android apps from Codex through the ShadowDroid CLI: deploy and apply changes, drive the UI, read crashes and logs, inspect and intercept network traffic, and debug on emulators and devices.",
   "author": {
     "name": "Andrii",
@@ -19,10 +19,11 @@
     "ui-automation"
   ],
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "ShadowDroid",
     "shortDescription": "Run, test and debug Android apps on emulators and devices",
-    "longDescription": "Teaches Codex the shadowdroid CLI: build and apply each edit to the device in place, drive and wait on the UI by selector, explain failures from crashes, logs and network traffic, intercept and modify HTTP(S), inject faults, and debug without Android Studio. Needs the shadowdroid CLI on PATH (brew install shadowdroid-dev/tap/shadowdroid, or scoop install shadowdroid on Windows) and adb.",
+    "longDescription": "Teaches Codex the shadowdroid CLI and opens a live, interactive emulator/device viewer in the Codex in-app browser when you want to see or use the device: build and apply each edit to the device in place, drive and wait on the UI by selector, explain failures from crashes, logs and network traffic, intercept and modify HTTP(S), inject faults, and debug without Android Studio. Needs the shadowdroid CLI on PATH (brew install shadowdroid-dev/tap/shadowdroid, or scoop install shadowdroid on Windows) and adb.",
     "developerName": "Andrii",
     "category": "Developer Tools",
     "capabilities": [
@@ -35,6 +36,8 @@
       "Why did the app just crash? Check the device",
       "Apply my change and check the screen still works"
     ],
-    "brandColor": "#3DDC84"
+    "brandColor": "#3DDC84",
+    "logo": "./assets/icon.png",
+    "composerIcon": "./assets/icon.png"
   }
 }
