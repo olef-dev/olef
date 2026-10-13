@@ -4,6 +4,62 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.0.5
+
+This release makes `app apply` fast on large multi-module apps. On a
+428-module app (AGP 9.4), a one-line edit in a library module went from
+~20 s to 4.6–6 s as a hot apply, and from ~5 minutes with 2.0.4.
+
+- **Library edits skip the merged dex:** AGP 9 dexes library modules into
+  merged buckets, so one changed class rewrote a ~13 MB bucket and finding
+  the change meant splitting it again. `app apply` now brings the library
+  modules' class jars up to date (through an init script it adds to the
+  build), diffs them class by class, and dexes only the changed classes with
+  AGP's own D8 and classpath. Before anything is sent, the old classes are
+  checked against what the device runs; anything it can't vouch for builds
+  the merged dex as before, and `libraries.fallback` says why. The app
+  module's own dex is rebuilt only when its sources changed or the library
+  change can reach into it (a new signature, constant or annotation, or an
+  inline function it uses). Turn it off with `SHADOWDROID_APPLY_LIBS=0`.
+- **One Gradle connection per project:** builds go through a small JVM that
+  keeps a Gradle Tooling API connection open and runs D8 in-process, instead
+  of starting the Gradle wrapper and a D8 JVM every time. It's compiled on
+  first use against the project's own Gradle distribution and exits after
+  30 idle minutes. Builds it can't run use `./gradlew` as before. Turn it
+  off with `SHADOWDROID_GRADLE_WORKER=0`.
+- **Splits and callers once per content:** per-class splits of dex files and
+  the index of which composables call a method are kept by content hash, so
+  the old side of a diff, and a library bucket that didn't change, are read
+  once.
+- **Timings say more:** `timings` in `app apply` and `build` results adds
+  `libs_ms`, `archives_ms` and `callers_ms`, and `libraries` reports which
+  path library code took.
+
+#### Fixes
+
+- **`app apply` took ~5 minutes on a large app** to analyze a one-line
+  library edit: it ran `dexdump` on every class of the changed merged dex.
+  It now reads only the classes that differ.
+- **Apps with product flavors** couldn't reinstall: `app apply` and `build`
+  looked for the APK in `outputs/apk/<variant>/`, but AGP writes a flavored
+  variant's APK to `outputs/apk/<flavors>/<buildType>/`.
+- **A long `build` lost the device reservation:** the MCP server released a
+  reservation unused for 3 minutes, counting a build still running as unused,
+  and every later call failed with `device_reserved` until the lease was
+  closed by hand.
+- **Compose 1.11:** the runtime read the composition's old slot-table field,
+  so every hot apply on Compose 1.11 said the change wasn't on screen. It now
+  reads the new one, and says "unknown" rather than "not on screen" when it
+  can't tell.
+- **Shared helper classes:** D8 generates helpers like
+  `…$$ExternalSyntheticBackport0` per class, and the APK keeps one copy under
+  another class's name. A hot apply could send a class that calls a helper
+  the app doesn't have; now that helper is loaded with it.
+
+Update with `shadowdroid update` and run the command it prints. In Claude Code,
+run `/plugin marketplace update shadowdroid`; in Codex,
+`codex plugin marketplace upgrade shadowdroid`.
+
 ## v2.0.4
 
 This release adds ShadowDroid's license and its open-source notices, brings the
