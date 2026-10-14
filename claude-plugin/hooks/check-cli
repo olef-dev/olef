@@ -22,7 +22,6 @@ esac
 # Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT. This hook runs
 # programs only by their names, never from a path it computed.
 # shellcheck source=../lib/plugin-env.sh
-. "${CLAUDE_PLUGIN_ROOT}/lib/plugin-env.sh"
 
 os="$(sd_os)"
 have_brew=""
