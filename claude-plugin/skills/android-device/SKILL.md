@@ -40,8 +40,10 @@ when the user wants to see or use the device.
      `appeared` or are `gone`. An edit that should be visible but changed
      nothing didn't reach the screen: check `takes_effect` and `on_screen`.
    If the result looks stale because a value is cached, run it with
-   `--at-least restart-activity`. It returns once the app has drawn its first
-   frame after a reinstall or restart.
+   `--at-least restart-activity`, also without new edits; add
+   `--fresh-viewmodels` when a ViewModel computed the value (a plain restart
+   keeps ViewModels). It returns once the app has drawn its first frame
+   after a reinstall or restart.
 3. **Check with the UI structure first; look at pixels when it matters.**
    `shadowdroid ui wait --text Welcome`, `ui find --text "Sign in"`, `ui tap
    --text "Sign in"` and `ui dump` (every element, with tap points) cost a

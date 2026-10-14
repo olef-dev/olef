@@ -4,6 +4,84 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.0.6
+
+This release keeps `app apply` fast on large multi-module apps when an edit
+touches a library's API, and makes annotations in the device viewer point at
+the right code.
+
+- **Additions don't rebuild every module:** any change to a library class's
+  API used to rebuild every library module and the app module; adding a
+  public constant took 47 s on a 429-module app. Code compiled before an
+  addition can't refer to it, so new fields, constants, static or final
+  methods and constructors no longer rebuild anything. Removals, re-typing,
+  changed constant values, supertypes, new abstract or overridable methods,
+  new enum constants and annotations still do. A change is judged against
+  what the other modules were last compiled with, not the previous apply.
+  The same edit now takes 4–6 s.
+- **Library modules without edits are skipped:** a class-level apply had
+  Gradle check every library module's classes jar (~2.4 s on a 428-module
+  app). Modules whose sources and build file haven't changed since the last
+  build are skipped, unless the change can reach them. `libraries` reports
+  `modules_skipped` and `unskipped`; opt out with `SHADOWDROID_APPLY_SKIP=0`.
+- **A default module and variant:** `.shadowdroid/config.json` takes `module`
+  and `variant`, at the top level and per app alias, and
+  `config init --module/--variant` writes them. `app apply` and the MCP
+  `build` tool use them when not told, so a project whose app isn't `:app`
+  in `debug` no longer needs `--module` and `--variant` on every apply.
+- **Restarts on request:** `--at-least restart-activity` restarts the
+  activity even when nothing changed, and the new `--fresh-viewmodels` (the
+  MCP `build` tool's `fresh_viewmodels`) restarts it with new ViewModels.
+- **Timeouts with units:** `ui wait` and `app wait` take `--timeout 30s`
+  (also `500ms`, `2m`) besides `--timeout-ms`.
+- **`--server-apk`:** the global `--apk` is ShadowDroid's own device server,
+  not the app's APK, so it's `--server-apk` (and `$SHADOWDROID_SERVER_APK`)
+  now. `--apk` and `$SHADOWDROID_APK` still work.
+- **Annotations on View screens** name the layout file and the code that
+  uses the view (its binding, its id), not just view classes like
+  `ConstraintLayout`.
+
+#### Fixes
+
+- **Annotations resolved to what was underneath:** an area over a bottom
+  bar's tab could resolve to a card scrolled under the bar. The device
+  server now reports each element's drawing order, and clicks, areas and
+  recorded taps resolve to what's drawn on top. The source is looked up by
+  the element itself, not by its first text.
+- **The viewer shut down someone else's emulator:** the MCP server killed
+  emulators it booted by serial, and serials are reused, so after a plugin
+  reconnect it could stop an emulator another session had started on the
+  same port. It now checks it's the same emulator run before shutting it
+  down, and never shuts down one it can't tell.
+- **A fix after a composition error didn't show:** a change that threw while
+  composing paused the composition, and the fix never resumed it. The
+  runtime now resets the error and retries the failed composition.
+- **Every apply waited 600 ms for crashes:** after a restart or reinstall it
+  waits 150 ms; after a hot change, until the app draws a frame with it. A
+  hot apply that redraws takes ~0.45 s less.
+- **Library resources went unnoticed:** edits to a library module's
+  resources, assets, JNI/AIDL sources, manifest or build file now reinstall.
+- **Composables without a group** (ones that return a value) reported a hot
+  apply that redrew nothing; their callers are recomposed now.
+- **Body-only edits to suspend functions** rebuilt every module: moving the
+  lines Kotlin lists in a coroutine's `@DebugMetadata` read as an API change.
+  It's ignored now.
+- **Suspend functions fell back to the slow merged-dex path** on apps with
+  over 65,536 strings in a merged dex (26–53 s instead of ~5). Methods with a
+  `switch` or `try/catch` are compared up to their encoding now, and changes
+  to a `when` case's value or an array literal alone are noticed.
+- **Notes after a restart** no longer suggest `--at-least restart-activity`
+  when the activity was just restarted.
+- **`ui wait --stable` returned before the app drew anything:** an empty
+  screen isn't settled now (with `--pixels`, a still screen without elements
+  counts).
+- **"Send to Claude" in the viewer** arrived framed as a message from the
+  plugin; it's submitted as your own prompt now.
+
+Update with `shadowdroid update` and run the command it prints. In Claude Code,
+run `/plugin marketplace update shadowdroid`; in Codex,
+`codex plugin marketplace upgrade shadowdroid`.
+
 ## v2.0.5
 
 This release makes `app apply` fast on large multi-module apps. On a

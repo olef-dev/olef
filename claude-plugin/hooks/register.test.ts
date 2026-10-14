@@ -1,5 +1,5 @@
 import { expect, test } from 'claude-code/testing'
-import { runsApply, stepsPrompt } from './register.ts'
+import { notesContext, runsApply, stepsPrompt } from './register.ts'
 
 const CONTROL = 'mcp__plugin_shadowdroid_shadowdroid__control'
 const BUILD = 'mcp__plugin_shadowdroid_shadowdroid__build'
@@ -100,6 +100,23 @@ test('pending annotations ride along with the next prompt', async ($, on) => {
   expect(asked[0].url).toBe('http://127.0.0.1:4321/api/annotations')
   expect(asked[0].token).toBe('abc123')
   expect(seen?.[0]).toBe('Device annotations (crops and selectors: `annotations` tool):\n1. "Fav button" (Text, MainScreen.kt:57): make it bigger')
+})
+
+test('a note on a View-based screen names its layout and the code using it', async () => {
+  expect(
+    notesContext([
+      {
+        n: 1,
+        kind: 'area',
+        comment: 'make it purple',
+        texts_inside: ['Search by title'],
+        source: [{ name: 'SearchView', id: 'searchView', layout: 'include_search_bar', file: 'res/layout/include_search_bar.xml' }],
+        used_in: ['search/Presenter.kt:68,101'],
+      },
+    ]),
+  ).toBe(
+    'Device annotations (crops and selectors: `annotations` tool):\n1. "Search by title" (SearchView, res/layout/include_search_bar.xml), used in search/Presenter.kt:68,101: make it purple',
+  )
 })
 
 test('recorded steps read as a short list', async () => {

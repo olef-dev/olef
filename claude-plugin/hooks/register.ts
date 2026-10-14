@@ -149,13 +149,26 @@ async function viewerCall($: any, device: Device, path: string, op: string): Pro
 
 // biome-ignore lint: `$` is the engine's
 const notesCall = ($: any, device: Device, op: string) => viewerCall($, device, '/api/annotations', op)
+
+/**
+ * Send in the viewer is the person's own prompt. Submitted as theirs, Claude
+ * Code shows it as typed, without the frame it puts around a message a
+ * plugin sends; a host that won't take it as theirs gets it as the plugin's.
+ */
+async function sendAsUser($: any, text: string) {
+  try {
+    await $.prompt.submit({ text, asUser: true })
+  } catch {
+    await $.prompt.submit({ text })
+  }
+}
 // biome-ignore lint: `$` is the engine's
 const stepsCall = ($: any, device: Device, op: string) => viewerCall($, device, '/api/steps', op)
 
 /** What it points at: the selector's text, else "area" / "element". */
 function target(n: Json): string {
   const sel = (n.selector ?? {}) as Json
-  const text = sel.text ?? sel.text_inside ?? sel.desc ?? sel.rid
+  const text = sel.text ?? sel.text_inside ?? sel.desc ?? sel.rid ?? (n.texts_inside as Json[] | undefined)?.[0]
   return typeof text === 'string' ? `"${text}"` : String(n.kind ?? 'element')
 }
 
@@ -163,8 +176,10 @@ function target(n: Json): string {
 export function notesContext(items: Json[]): string {
   const lines = items.map(n => {
     const src = (n.source as Json[] | undefined)?.find(s => s.file)
-    const at = src ? ` (${src.name}, ${src.file}:${src.line})` : ''
-    return `${n.n}. ${target(n)}${at}: ${n.comment || '(no comment)'}`
+    const at = src ? ` (${src.name}, ${src.file}${src.line ? `:${src.line}` : ''})` : ''
+    // A View-based screen's file is its layout; this is the code using it.
+    const code = (n.used_in as Json[] | undefined)?.[0]
+    return `${n.n}. ${target(n)}${at}${code ? `, used in ${code}` : ''}: ${n.comment || '(no comment)'}`
   })
   return ['Device annotations (crops and selectors: `annotations` tool):', ...lines].join('\n')
 }
@@ -276,13 +291,13 @@ export const register: Register = on => {
             if (notes?.send_requested === true) {
               await notesCall($, device, 'ack_send')
               // The prompt.submit hook attaches the notes themselves.
-              await $.prompt.submit({ text: 'Address my device annotations.' })
+              await sendAsUser($, 'Address my device annotations.')
               return
             }
             const steps = await stepsCall($, device, 'list')
             if (steps?.send_requested === true && Array.isArray(steps.steps)) {
               await stepsCall($, device, 'ack_send')
-              await $.prompt.submit({ text: stepsPrompt(steps.steps as Json[]) })
+              await sendAsUser($, stepsPrompt(steps.steps as Json[]))
             }
           } catch {
             // the viewer is gone or busy; try again next period

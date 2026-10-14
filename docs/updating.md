@@ -136,8 +136,9 @@ version.
   manager's pinning (`brew pin shadowdroid`, `scoop hold shadowdroid`).
 - **Offline devices or CI caches:** copy `~/.shadowdroid/apks/<version>/` and
   `~/.shadowdroid/runtime-agent/<version>/` from a machine that has them, or
-  point `SHADOWDROID_APK` at a test APK and `SHADOWDROID_RUNTIME_DIR` at a
-  directory of per-ABI runtime libraries.
+  point `SHADOWDROID_SERVER_APK` (`SHADOWDROID_APK` before 2.0.6) at the
+  server's test APK and `SHADOWDROID_RUNTIME_DIR` at a directory of per-ABI
+  runtime libraries.
 - **A mirror:** `SHADOWDROID_UPDATE_LATEST_URL` changes where `update` looks for
   the latest release (a URL returning GitHub's release JSON).
 

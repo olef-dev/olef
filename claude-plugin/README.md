@@ -143,7 +143,8 @@ on their own. See [updating](../docs/updating.md).
 `SHADOWDROID_BIN` points the plugin at a specific binary. A binary inside a
 ShadowDroid development checkout (`cli/target/{release,debug}/shadowdroid`)
 uses that checkout's server APK and runtime agent; elsewhere, set
-`SHADOWDROID_APK` and `SHADOWDROID_RUNTIME_DIR` in Claude Code's `env`
+`SHADOWDROID_SERVER_APK` (`SHADOWDROID_APK` before 2.0.6) and
+`SHADOWDROID_RUNTIME_DIR` in Claude Code's `env`
 settings. To load the plugin from a folder without installing it, use
 `claude --plugin-dir /path/to/claude-plugin`.
 
