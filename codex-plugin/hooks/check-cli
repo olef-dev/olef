@@ -35,26 +35,6 @@ for brew in "${brews[@]}"; do
 done
 have_scoop="$(command -v scoop 2>/dev/null || command -v scoop.cmd 2>/dev/null || true)"
 
-base="https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download"
-install_cmd() {  # <upgrade:0|1>
-  case "$os" in
-    windows)
-      if [ -n "$have_scoop" ]; then
-        if [ "$1" = 1 ]; then echo "scoop update shadowdroid"
-        else echo "scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"; fi
-      else
-        echo "powershell -ExecutionPolicy Bypass -c \"irm $base/shadowdroid-installer.ps1 | iex\""
-      fi ;;
-    *)
-      if [ -n "$have_brew" ]; then
-        if [ "$1" = 1 ]; then echo "brew update && brew upgrade shadowdroid"
-        else echo "brew install shadowdroid-dev/tap/shadowdroid"; fi
-      else
-        echo "curl --proto '=https' --tlsv1.2 -LsSf $base/shadowdroid-installer.sh | sh"
-      fi ;;
-  esac
-}
-
 # Assignments here stand as statements (in `if`), never after && or ||:
 # plugin directories read `[ … ] && x="$y"` as running a command whose name
 # the shell computes, and refuse the plugin.
@@ -91,41 +71,65 @@ if [ "$cli" = missing ]; then
   done
 fi
 
-context=""
+# How to install or update the CLI on this machine. Each message spells its
+# command out: plugin directories refuse a hook that tells the agent to run a
+# command held in a variable.
+if [ "$os" = windows ]; then
+  if [ -n "$have_scoop" ]; then tool=scoop; else tool=powershell; fi
+elif [ -n "$have_brew" ]; then
+  tool=brew
+else
+  tool=installer
+fi
+offer="Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub):"
+if [ "$cli" = old ]; then
+  context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
+  headline="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run:"
+else
+  context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
+  headline="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run:"
+fi
 notice=""
-if [ "$cli" != ok ]; then
-  if [ "$cli" = old ]; then
-    install="$(install_cmd 1)"
-    context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
-    notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $install"
-  else
-    install="$(install_cmd 0)"
-    context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
-    notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run: $install"
-  fi
-  context="$context Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): $install ."
-  case "$os" in
-    windows)
-      if [ -z "$have_scoop" ]; then
-        context="$context Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
-      fi ;;
-    *)
-      if [ -z "$have_brew" ]; then
-        context="$context It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
-      fi ;;
-  esac
+case "$cli/$tool" in
+  ok/*) context="" ;;
+  old/brew)
+    notice="$headline brew update && brew upgrade shadowdroid"
+    context="$context $offer brew update && brew upgrade shadowdroid ." ;;
+  missing/brew)
+    notice="$headline brew install shadowdroid-dev/tap/shadowdroid"
+    context="$context $offer brew install shadowdroid-dev/tap/shadowdroid ." ;;
+  old/scoop)
+    notice="$headline scoop update shadowdroid"
+    context="$context $offer scoop update shadowdroid ." ;;
+  missing/scoop)
+    notice="$headline scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
+    context="$context $offer scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ." ;;
+  */powershell)
+    notice="$headline powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\""
+    context="$context $offer powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\" . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH." ;;
+  *)
+    notice="$headline curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
+    context="$context $offer curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards." ;;
+esac
+if [ -n "$context" ]; then
   context="$context Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI $reconnect. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
 fi
 
 if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
+  missing_adb="adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with:"
   case "$os" in
-    macos) adb_cmd="brew install --cask android-platform-tools" ;;
-    windows) adb_cmd="scoop install adb" ;;
-    *) adb_cmd="the distribution's package (for example: sudo apt install adb)" ;;
+    macos)
+      context="${context:+$context }$missing_adb brew install --cask android-platform-tools."
+      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools" ;;
+    windows)
+      context="${context:+$context }$missing_adb scoop install adb."
+      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools: scoop install adb" ;;
+    *)
+      context="${context:+$context }$missing_adb the distribution's package (for example: sudo apt install adb)."
+      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)" ;;
   esac
-  context="${context:+$context }adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with: $adb_cmd."
   if [ -z "$notice" ]; then
-    notice="ShadowDroid: adb was not found. Install Android platform-tools: $adb_cmd"
+    notice="$adb_notice"
   fi
 fi
 
