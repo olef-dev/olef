@@ -15,18 +15,6 @@
           }
         ]
       }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-cli\"",
-            "timeout": 20
-          }
-        ]
-      }
     ]
   }
 }
