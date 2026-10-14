@@ -90,27 +90,27 @@ else
   headline="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run:"
 fi
 notice=""
-case "$cli/$tool" in
-  ok/*) context="" ;;
-  old/brew)
-    notice="$headline brew update && brew upgrade shadowdroid"
-    context="$context $offer brew update && brew upgrade shadowdroid ." ;;
-  missing/brew)
-    notice="$headline brew install shadowdroid-dev/tap/shadowdroid"
-    context="$context $offer brew install shadowdroid-dev/tap/shadowdroid ." ;;
-  old/scoop)
-    notice="$headline scoop update shadowdroid"
-    context="$context $offer scoop update shadowdroid ." ;;
-  missing/scoop)
-    notice="$headline scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
-    context="$context $offer scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ." ;;
-  */powershell)
-    notice="$headline powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\""
-    context="$context $offer powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\" . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH." ;;
-  *)
-    notice="$headline curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
-    context="$context $offer curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards." ;;
-esac
+if [ "$cli" = ok ]; then
+  context=""
+elif [ "$tool" = brew ] && [ "$cli" = old ]; then
+  notice="$headline brew update && brew upgrade shadowdroid"
+  context="$context $offer brew update && brew upgrade shadowdroid ."
+elif [ "$tool" = brew ]; then
+  notice="$headline brew install shadowdroid-dev/tap/shadowdroid"
+  context="$context $offer brew install shadowdroid-dev/tap/shadowdroid ."
+elif [ "$tool" = scoop ] && [ "$cli" = old ]; then
+  notice="$headline scoop update shadowdroid"
+  context="$context $offer scoop update shadowdroid ."
+elif [ "$tool" = scoop ]; then
+  notice="$headline scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
+  context="$context $offer scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ."
+elif [ "$tool" = powershell ]; then
+  notice="$headline powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\""
+  context="$context $offer powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\" . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
+else
+  notice="$headline curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
+  context="$context $offer curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
+fi
 if [ -n "$context" ]; then
   context="$context Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI $reconnect. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
 fi
