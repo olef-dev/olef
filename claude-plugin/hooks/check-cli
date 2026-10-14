@@ -18,9 +18,10 @@ case "${1:-claude}" in
     ;;
 esac
 
-root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+# A literal path from the plugin root, so plugin directories can follow it.
+# Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT.
 # shellcheck source=../lib/find-shadowdroid.sh
-. "$root/lib/find-shadowdroid.sh"
+. "${CLAUDE_PLUGIN_ROOT}/lib/find-shadowdroid.sh"
 
 os="$(sd_os)"
 have_brew=""

@@ -7,9 +7,10 @@
 # other setup. hooks/check-cli tells Claude how to install a missing CLI.
 set -u
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# A literal path from the plugin root (Claude Code sets it for MCP servers),
+# so plugin directories can follow it.
 # shellcheck source=../lib/find-shadowdroid.sh
-. "$root/lib/find-shadowdroid.sh"
+. "${CLAUDE_PLUGIN_ROOT}/lib/find-shadowdroid.sh"
 
 if sd_find; then
   # Make adb and the emulator findable for the same reason as PATH above.
