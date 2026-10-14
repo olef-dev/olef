@@ -21,6 +21,9 @@ codex plugin marketplace add shadowdroid-dev/shadowdroid
 codex plugin add shadowdroid@shadowdroid
 ```
 
+Or run `shadowdroid init`: it does both after asking, and after a CLI update
+it brings the plugin to the CLI's version.
+
 ## What's inside
 
 - **Skills:** `shadowdroid` (the CLI reference, the same skill

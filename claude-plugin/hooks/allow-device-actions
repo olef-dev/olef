@@ -3,11 +3,14 @@
 # `annotations` tools.
 #
 # Claude Desktop's iOS Simulator asks once per device, then lets Claude tap,
-# type, launch and take screenshots without further prompts. ShadowDroid does
-# the same: the MCP server refuses every device action until the user clicks
-# "Let Claude use it" in the viewer, so this hook pre-approves those calls.
+# type, launch and take screenshots without further prompts. ShadowDroid can
+# do the same: the MCP server refuses every device action until the user
+# clicks "Let Claude use it" in the viewer, so this hook pre-approves those
+# calls, but only when the user turned on the plugin's "Skip prompts for
+# device actions" option (auto_approve_device_actions; off by default).
 #
-# It stays out of the way (normal permission flow) for:
+# It stays out of the way (normal permission flow) when the option is off,
+# and always for:
 #   - plan mode,
 #   - `control` with action `open_url` (a URL can carry data off the device),
 #   - `control` with an `app_path` (installs an arbitrary APK),
@@ -22,6 +25,9 @@ truthy() {
     *) return 1 ;;
   esac
 }
+if ! truthy "${CLAUDE_PLUGIN_OPTION_AUTO_APPROVE_DEVICE_ACTIONS:-}"; then
+  exit 0
+fi
 if truthy "${SHADOWDROID_DISABLE_AGENT_CONTROL:-}" || truthy "${SHADOWDROID_PLUGIN_ASK_EVERY_ACTION:-}"; then
   exit 0
 fi

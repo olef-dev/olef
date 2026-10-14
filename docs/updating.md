@@ -106,6 +106,14 @@ with the plugin. While it's installed, those commands skip that agent's user
 skill and set an unedited copy aside as `SKILL.md.retired`, so the agent
 doesn't list the skill twice.
 
+### The agent plugins
+
+After updating the CLI, run `shadowdroid init`. It updates the Claude Code and
+Codex plugins to the CLI's version, asking first (`--plugins` doesn't ask),
+and refreshes the skills. A plugin installed some other way, such as from
+Anthropic's plugin directory, is left to that source. Then start a new
+session. Or update each plugin yourself, as below.
+
 ### The Claude Code plugin
 
 The plugin starts the `shadowdroid` binary on your PATH and refuses one older

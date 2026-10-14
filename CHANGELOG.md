@@ -4,6 +4,28 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.0.7
+
+`shadowdroid init` now adds ShadowDroid to Claude Code and Codex for you.
+
+- **`init` installs the agent plugins:** it installs the plugin for Claude
+  Code and Codex when it finds them, or updates one older than the CLI, and
+  asks first. `--plugins` installs without asking, `--no-plugins` leaves
+  plugins alone. Run unattended (installers, CI, an agent), it only reports
+  what it would do. After `shadowdroid update`, run `shadowdroid init` to
+  bring the plugins up to date too.
+- **Device-action prompts are your choice:** the Claude Code plugin used to
+  let Claude tap and take screenshots on a device you'd allowed in the
+  viewer without asking. That's now the **Skip prompts for device actions**
+  option, off by default. Turn it on with `/config` or
+  `shadowdroid init --auto-approve-device-actions`.
+- **Clearer tools:** every MCP tool says whether it only reads, can undo
+  work on the device, or reaches outside it, so agents can ask before the
+  ones that matter.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.0.6
 
 This release keeps `app apply` fast on large multi-module apps when an edit

@@ -57,7 +57,7 @@ shadowdroid connect          # install the device service and verify it
 shadowdroid ui dump          # read the screen as JSON
 shadowdroid ui tap --text "Sign in" --expect-text "Welcome"
 shadowdroid why              # when something surprises you
-shadowdroid init             # teach your agent the loop
+shadowdroid init             # add the agent plugins and skills
 ```
 
 If anything is off, `shadowdroid doctor` diagnoses the setup and
@@ -92,9 +92,12 @@ codex plugin marketplace add shadowdroid-dev/shadowdroid
 codex plugin add shadowdroid@shadowdroid
 ```
 
+Or let the CLI do both: `shadowdroid init` installs or updates the plugin for
+each of the two agents it finds (it asks first; `--plugins` skips the
+question) and the skill for Cursor, Gemini and Antigravity.
+
 Details: [Claude Code plugin](claude-plugin/README.md),
-[Codex plugin](codex-plugin/README.md). Other agents: `shadowdroid init`
-installs skills for Claude Code, Cursor, Codex, Gemini and Antigravity.
+[Codex plugin](codex-plugin/README.md).
 
 ## Documentation
 

@@ -1,9 +1,12 @@
 {
   "name": "shadowdroid",
-  "version": "2.0.6",
+  "displayName": "ShadowDroid",
+  "version": "2.0.7",
   "description": "Run, test and debug Android apps from Claude Code: works through the ShadowDroid CLI, and opens a live, interactive emulator/device viewer in the Claude Desktop browser pane when you want to see the app, with Apply Changes builds, annotations you leave on the device, recorded steps for tests, and a status line with the device and what each build did.",
   "author": {
-    "name": "Andrii"
+    "name": "ShadowDroid",
+    "email": "contact@shadowdroid.dev",
+    "url": "https://shadowdroid.dev"
   },
   "homepage": "https://shadowdroid.dev",
   "repository": "https://github.com/shadowdroid-dev/shadowdroid",
@@ -32,6 +35,12 @@
         "on-request",
         "always"
       ]
+    },
+    "auto_approve_device_actions": {
+      "type": "boolean",
+      "title": "Skip prompts for device actions",
+      "description": "Off (default): Claude Code asks before each device action, as for any tool. On: once you click \"Let Claude use it\" for a device in the viewer, Claude can tap, type, take screenshots and boot emulators there without asking each time, as with Claude Desktop's iOS Simulator. Building, open_url, installing an APK, the shadowdroid CLI tool and plan mode always follow your permission mode.",
+      "default": false
     }
   }
 }

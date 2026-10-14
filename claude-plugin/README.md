@@ -6,6 +6,17 @@ selectors and reads logs and network traffic. When you want to see or use the
 app yourself, it opens a live, interactive device viewer next to the
 conversation, the way Claude Code Desktop does it for the iOS Simulator.
 
+## Examples
+
+- "Build the app, run it on the Pixel 9 emulator and check that the login
+  screen shows an error for a wrong password."
+- "The checkout screen crashes when I tap Pay. Find out why and fix it."
+- "Show me the device, I want to try the new onboarding flow myself."
+- "Capture the app's network traffic while you sign in, and tell me which
+  request fails."
+- "Turn the steps I just recorded in the viewer into a Compose UI test and
+  run it."
+
 ## When the viewer opens
 
 By default, only when you want it: ask Claude to show you the device ("show
@@ -79,15 +90,16 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
   it** in the viewer. Consent is kept per device for 12 hours in
   `~/.shadowdroid/pane-consent.json` (owner-only); after that the viewer asks
   again.
-- **No prompt per tap.** After you allow a device, the plugin's `PreToolUse`
-  hook (`hooks/allow-device-actions`) pre-approves `control`, `boot` and the
-  read-only `recording` and `annotations` calls,
-  as Claude Desktop does for the iOS Simulator. The MCP server still refuses
-  every device action until you've allowed that device. `build`, `open_url`,
-  `launch` with an `app_path` (it installs an APK) and the `shadowdroid` CLI
-  tool keep following your permission mode, and so does everything in plan
-  mode. Set `SHADOWDROID_PLUGIN_ASK_EVERY_ACTION=1` to
-  get a prompt for every call.
+- **Optional: no prompt per tap.** By default Claude Code asks before each
+  device action, as for any tool. Turn on the plugin's **Skip prompts for
+  device actions** option (`auto_approve_device_actions`; `/config`, or
+  `shadowdroid init` asks) and, once you've allowed a device in the viewer,
+  the plugin's `PreToolUse` hook (`hooks/allow-device-actions`) pre-approves
+  `control`, `boot`, `recording` and `annotations` calls, as Claude Desktop
+  does for the iOS Simulator. The MCP server still refuses every device
+  action until you've allowed that device. `build`, `open_url`, `launch` with
+  an `app_path` (it installs an APK) and the `shadowdroid` CLI tool keep
+  following your permission mode, and so does everything in plan mode.
 - **Ownership.** Each Claude session reserves the devices it attaches, so
   parallel sessions never share one. An idle session releases its reservation
   after 3 minutes and takes it back on its next action. A reservation left
@@ -121,6 +133,10 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
    /plugin install shadowdroid@shadowdroid
    ```
 
+   Or run `shadowdroid init` in a terminal: it installs the plugin (and the
+   Codex one, if you use Codex) after asking, and asks whether to skip
+   prompts for device actions.
+
 3. Ask Claude something like "build the app and run it on the Pixel 9
    emulator, then check the login screen". To watch, ask it to show you the
    device (or run `/device show`), then click **Let Claude use it** in the
@@ -129,14 +145,15 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
 ## Updating
 
 The plugin and the CLI are released together. Update the CLI with the command
-`shadowdroid update` prints, then refresh the plugin:
+`shadowdroid update` prints, then run `shadowdroid init`, which updates the
+plugin to the CLI's version, or refresh it yourself:
 
 ```
 /plugin marketplace update shadowdroid
 ```
 
 and start a new session. The device service and runtime agent follow the CLI
-on their own. See [updating](../docs/updating.md).
+on their own. See [updating](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/updating.md).
 
 ## Using a development build
 
@@ -221,6 +238,36 @@ in the viewer; Bash commands follow your permission mode.
 
 Report problems at
 [shadowdroid-dev/shadowdroid issues](https://github.com/shadowdroid-dev/shadowdroid/issues/new/choose).
+
+## What the plugin runs, sends and fetches
+
+- **Runs on your computer:** the `shadowdroid` CLI from your PATH (the MCP
+  server is `shadowdroid mcp`, started by `bin/shadowdroid-mcp`), `adb` and
+  the Android Emulator, and your project's Gradle build when Claude builds
+  the app. Builds run your project's build scripts, as they would in a
+  terminal.
+- **Hooks:** `hooks/check-cli` runs at session start, checks the CLI's
+  version and whether `adb`, Homebrew or Scoop are present, and tells Claude
+  which install command fits your OS. It never installs anything; Claude
+  runs that command only after you approve it, and it downloads the CLI from
+  Homebrew, Scoop or the
+  [ShadowDroid releases](https://github.com/shadowdroid-dev/shadowdroid/releases).
+  `hooks/allow-device-actions` approves device actions only when you turn
+  that option on (above). `hooks/register.ts` updates the status line and
+  toasts and talks only to the local viewer.
+- **The viewer** is served on `127.0.0.1`, so only your computer can reach
+  it, and opens only with a token in its URL. Your consent per device is
+  kept in `~/.shadowdroid/pane-consent.json`.
+- **Network:** the plugin sends nothing to ShadowDroid and has no
+  telemetry. The CLI downloads its on-device service and runtime agent from
+  the GitHub release matching its version the first time they're needed,
+  the Compose inspector from Google Maven when you inspect a layout, and
+  checks GitHub for a newer release only when you run `shadowdroid update`.
+- **What Claude sees:** screenshots, UI text, logs, crashes and captured
+  network traffic that Claude reads go to Anthropic as part of your
+  conversation, like anything else Claude reads.
+
+See the [privacy policy](https://shadowdroid.dev/privacy).
 
 ## License
 
