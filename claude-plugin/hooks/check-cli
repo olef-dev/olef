@@ -19,9 +19,10 @@ case "${1:-claude}" in
 esac
 
 # A literal path from the plugin root, so plugin directories can follow it.
-# Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT.
-# shellcheck source=../lib/find-shadowdroid.sh
-. "${CLAUDE_PLUGIN_ROOT}/lib/find-shadowdroid.sh"
+# Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT. This hook runs
+# programs only by their names, never from a path it computed.
+# shellcheck source=../lib/plugin-env.sh
+. "${CLAUDE_PLUGIN_ROOT}/lib/plugin-env.sh"
 
 os="$(sd_os)"
 have_brew=""
@@ -53,12 +54,41 @@ install_cmd() {  # <upgrade:0|1>
   esac
 }
 
+# The CLI on PATH is checked for its version. One installed where desktop
+# apps' PATH doesn't reach only needs to exist: the MCP launcher checks its
+# version when it starts it.
+cli=missing
+too_old=""
+if command -v shadowdroid >/dev/null 2>&1; then
+  version="$(shadowdroid --version 2>/dev/null | awk '{print $2}')"
+  if [ -n "$version" ] && sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
+    cli=ok
+  else
+    cli=old
+    too_old="shadowdroid ${version:-?}"
+  fi
+fi
+if [ "$cli" = missing ]; then
+  others=("${SHADOWDROID_BIN:-}")
+  [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" = 1 ] || others+=(
+    /opt/homebrew/bin/shadowdroid
+    /usr/local/bin/shadowdroid
+    /home/linuxbrew/.linuxbrew/bin/shadowdroid
+    "$HOME/.local/bin/shadowdroid"
+    "${LOCALAPPDATA:-/nonexistent}/Programs/shadowdroid/shadowdroid.exe"
+    "$HOME/scoop/shims/shadowdroid.exe"
+  )
+  for other in "${others[@]}"; do
+    [ -n "$other" ] && [ -x "$other" ] && { cli=ok; break; }
+  done
+fi
+
 context=""
 notice=""
-if ! sd_find; then
-  if [ -n "$SD_TOO_OLD" ]; then
+if [ "$cli" != ok ]; then
+  if [ "$cli" = old ]; then
     command="$(install_cmd 1)"
-    context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${SD_TOO_OLD}."
+    context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
     notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $command"
   else
     command="$(install_cmd 0)"

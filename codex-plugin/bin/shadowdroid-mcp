@@ -7,6 +7,8 @@
 set -u
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/plugin-env.sh
+. "$root/lib/plugin-env.sh"
 # shellcheck source=../lib/find-shadowdroid.sh
 . "$root/lib/find-shadowdroid.sh"
 

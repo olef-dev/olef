@@ -9,6 +9,8 @@ set -u
 
 # A literal path from the plugin root (Claude Code sets it for MCP servers),
 # so plugin directories can follow it.
+# shellcheck source=../lib/plugin-env.sh
+. "${CLAUDE_PLUGIN_ROOT}/lib/plugin-env.sh"
 # shellcheck source=../lib/find-shadowdroid.sh
 . "${CLAUDE_PLUGIN_ROOT}/lib/find-shadowdroid.sh"
 
