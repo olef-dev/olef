@@ -41,7 +41,7 @@ install_cmd() {  # <upgrade:0|1>
         if [ "$1" = 1 ]; then echo "scoop update shadowdroid"
         else echo "scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"; fi
       else
-        echo "powershell -ExecutionPolicy Bypass -c \"irm $base/shadowdroid-installer.ps1 | iex\""
+        echo "the PowerShell installer"
       fi ;;
     *)
       if [ -n "$have_brew" ]; then
