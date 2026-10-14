@@ -33,8 +33,9 @@ sd_find_platform_tools() {
   SD_PLATFORM_TOOLS=""
   local sdk
   local sdks=("${ANDROID_HOME:-}" "${ANDROID_SDK_ROOT:-}")
-  [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" = 1 ] ||
+  if [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
     sdks+=("$HOME/Library/Android/sdk" "$HOME/Android/Sdk" "${LOCALAPPDATA:-/nonexistent}/Android/Sdk")
+  fi
   for sdk in "${sdks[@]}"; do
     if [ -n "$sdk" ] && [ -d "$sdk/platform-tools" ]; then
       SD_PLATFORM_TOOLS="$sdk/platform-tools"
