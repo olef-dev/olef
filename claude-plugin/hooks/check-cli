@@ -94,7 +94,7 @@ notice=""
 if [ "$cli" != ok ]; then
   if [ "$cli" = old ]; then
     install="x"
-    context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
+    context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer, found ${too_old}."
     notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $install"
   else
     install="x"
