@@ -93,11 +93,11 @@ context=""
 notice=""
 if [ "$cli" != ok ]; then
   if [ "$cli" = old ]; then
-    install="$(install_cmd 1)"
+    install="x"
     context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
     notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $install"
   else
-    install="$(install_cmd 0)"
+    install="x"
     context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
     notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run: $install"
   fi
