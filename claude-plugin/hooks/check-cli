@@ -115,24 +115,4 @@ if [ "$cli" != ok ]; then
   :
 fi
 
-if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
-  case "$os" in
-    macos) adb_cmd="brew install --cask android-platform-tools" ;;
-    windows) adb_cmd="scoop install adb" ;;
-    *) adb_cmd="the distribution's package (for example: sudo apt install adb)" ;;
-  esac
-  context="${context:+$context }adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with: $adb_cmd."
-  if [ -z "$notice" ]; then
-    notice="ShadowDroid: adb was not found. Install Android platform-tools: $adb_cmd"
-  fi
-fi
-
-[ -n "$context" ] || exit 0
-
-json_escape() {
-  local s="$1"
-  s="${s//\\/\\\\}"; s="${s//\"/\\\"}"; s="${s//$'\n'/\\n}"; s="${s//$'\r'/}"; s="${s//$'\t'/\\t}"
-  printf '%s' "$s"
-}
-printf '{"systemMessage":"%s","hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' \
-  "$(json_escape "$notice")" "$(json_escape "$context")"
+exit 0
