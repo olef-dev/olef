@@ -1,2 +1,56 @@
 #!/usr/bin/env bash
+# SessionStart: when the shadowdroid CLI (or adb) is missing or too old, tell
+# the agent how to install it on this OS and show the user a one-line note.
+# Silent when everything is in place. Never installs anything itself: the
+# agent offers the command and runs it only with the user's approval.
+# Usage: check-cli [claude|codex] (the plugin it runs for; default claude).
+# Both plugins ship this same file.
+set -u
+
+case "${1:-claude}" in
+  codex)
+    agent="Codex"
+    reconnect="works immediately in the shell; the plugin's tools (control, build, boot, annotations, recording) start working in a new thread"
+    ;;
+  *)
+    agent="Claude"
+    reconnect="works immediately through Bash; the plugin's MCP tools (control, build, boot, annotations, recording) start working after the user runs /mcp and reconnects the shadowdroid server, or starts a new session"
+    ;;
+esac
+
+# A literal path from the plugin root, so plugin directories can follow it.
+# Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT. This hook runs
+# programs only by their names, never from a path it computed.
+# shellcheck source=../lib/plugin-env.sh
+
+os="$(sd_os)"
+have_brew=""
+brews=("$(command -v brew 2>/dev/null || true)")
+[ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" = 1 ] ||
+  brews+=(/opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew)
+for brew in "${brews[@]}"; do
+  [ -n "$brew" ] && [ -x "$brew" ] && { have_brew="$brew"; break; }
+done
+have_scoop="$(command -v scoop 2>/dev/null || command -v scoop.cmd 2>/dev/null || true)"
+
+base="https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download"
+install_cmd() {  # <upgrade:0|1>
+  case "$os" in
+    windows)
+      if [ -n "$have_scoop" ]; then
+        if [ "$1" = 1 ]; then echo "scoop update shadowdroid"
+        else echo "scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"; fi
+      else
+        echo "powershell -ExecutionPolicy Bypass -c \"irm $base/shadowdroid-installer.ps1 | iex\""
+      fi ;;
+    *)
+      if [ -n "$have_brew" ]; then
+        if [ "$1" = 1 ]; then echo "brew update && brew upgrade shadowdroid"
+        else echo "brew install shadowdroid-dev/tap/shadowdroid"; fi
+      else
+        echo "curl --proto '=https' --tlsv1.2 -LsSf $base/shadowdroid-installer.sh | sh"
+      fi ;;
+  esac
+}
+
 exit 0
