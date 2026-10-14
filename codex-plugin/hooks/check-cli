@@ -105,8 +105,8 @@ elif [ "$tool" = scoop ]; then
   notice+=" scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
   context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ."
 elif [ "$tool" = powershell ]; then
-  notice+=" powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\""
-  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\" . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
+  notice+=" irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
 else
   notice+=" curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
   context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
