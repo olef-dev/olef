@@ -101,18 +101,18 @@ if [ "$cli" != ok ]; then
     context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
     notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run: $install"
   fi
-  context="$context Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): $install ."
+  :
   case "$os" in
     windows)
       if [ -z "$have_scoop" ]; then
-        context="$context Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
+        :
       fi ;;
     *)
       if [ -z "$have_brew" ]; then
-        context="$context It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
+        :
       fi ;;
   esac
-  context="$context Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI $reconnect. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
+  :
 fi
 
 if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
