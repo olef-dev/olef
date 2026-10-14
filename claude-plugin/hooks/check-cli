@@ -22,6 +22,7 @@ esac
 # Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT. This hook runs
 # programs only by their names, never from a path it computed.
 # shellcheck source=../lib/plugin-env.sh
+. "${CLAUDE_PLUGIN_ROOT}/lib/plugin-env.sh"
 
 os="$(sd_os)"
 have_brew=""
@@ -59,7 +60,7 @@ install_cmd() {  # <upgrade:0|1>
 cli=missing
 too_old=""
 if command -v shadowdroid >/dev/null 2>&1; then
-  version=""
+  version="$(shadowdroid --version 2>/dev/null)"
   version="$(sd_version_of "$version")"
   if [ -n "$version" ] && sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
     cli=ok
@@ -83,4 +84,42 @@ if [ "$cli" = missing ]; then
   done
 fi
 
-exit 0
+context=""
+notice=""
+if [ "$cli" != ok ]; then
+  if [ "$cli" = old ]; then
+    install="$(install_cmd 1)"
+    context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
+    notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $install"
+  else
+    install="$(install_cmd 0)"
+    context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
+    notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run: $install"
+  fi
+  context="$context Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): $install ."
+  case "$os" in
+    windows) [ -z "$have_scoop" ] && context="$context Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH." ;;
+    *) [ -z "$have_brew" ] && context="$context It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards." ;;
+  esac
+  context="$context Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI $reconnect. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
+fi
+
+if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
+  case "$os" in
+    macos) adb_cmd="brew install --cask android-platform-tools" ;;
+    windows) adb_cmd="scoop install adb" ;;
+    *) adb_cmd="the distribution's package (for example: sudo apt install adb)" ;;
+  esac
+  context="${context:+$context }adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with: $adb_cmd."
+  [ -n "$notice" ] || notice="ShadowDroid: adb was not found. Install Android platform-tools: $adb_cmd"
+fi
+
+[ -n "$context" ] || exit 0
+
+json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"; s="${s//\"/\\\"}"; s="${s//$'\n'/\\n}"; s="${s//$'\r'/}"; s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+printf '{"systemMessage":"%s","hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' \
+  "$(json_escape "$notice")" "$(json_escape "$context")"

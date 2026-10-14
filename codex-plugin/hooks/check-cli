@@ -88,15 +88,15 @@ context=""
 notice=""
 if [ "$cli" != ok ]; then
   if [ "$cli" = old ]; then
-    command="$(install_cmd 1)"
+    install="$(install_cmd 1)"
     context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
-    notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $command"
+    notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $install"
   else
-    command="$(install_cmd 0)"
+    install="$(install_cmd 0)"
     context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
-    notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run: $command"
+    notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run: $install"
   fi
-  context="$context Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): $command ."
+  context="$context Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): $install ."
   case "$os" in
     windows) [ -z "$have_scoop" ] && context="$context Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH." ;;
     *) [ -z "$have_brew" ] && context="$context It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards." ;;
