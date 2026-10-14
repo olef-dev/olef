@@ -22,7 +22,6 @@ esac
 # Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT. This hook runs
 # programs only by their names, never from a path it computed.
 # shellcheck source=../lib/plugin-env.sh
-. "${CLAUDE_PLUGIN_ROOT}/lib/plugin-env.sh"
 
 os="$(sd_os)"
 have_brew=""
@@ -45,8 +44,7 @@ have_scoop="$(command -v scoop 2>/dev/null || command -v scoop.cmd 2>/dev/null |
 cli=missing
 too_old=""
 if command -v shadowdroid >/dev/null 2>&1; then
-  version="$(shadowdroid --version 2>/dev/null)"
-  version="$(sd_version_of "$version")"
+  version=""
   if [ -n "$version" ] && sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
     cli=ok
   else
@@ -115,30 +113,4 @@ if [ -n "$context" ]; then
   context="$context Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI $reconnect. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
 fi
 
-if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
-  missing_adb="adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with:"
-  case "$os" in
-    macos)
-      context="${context:+$context }$missing_adb brew install --cask android-platform-tools."
-      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools" ;;
-    windows)
-      context="${context:+$context }$missing_adb scoop install adb."
-      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools: scoop install adb" ;;
-    *)
-      context="${context:+$context }$missing_adb the distribution's package (for example: sudo apt install adb)."
-      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)" ;;
-  esac
-  if [ -z "$notice" ]; then
-    notice="$adb_notice"
-  fi
-fi
-
-[ -n "$context" ] || exit 0
-
-json_escape() {
-  local s="$1"
-  s="${s//\\/\\\\}"; s="${s//\"/\\\"}"; s="${s//$'\n'/\\n}"; s="${s//$'\r'/}"; s="${s//$'\t'/\\t}"
-  printf '%s' "$s"
-}
-printf '{"systemMessage":"%s","hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' \
-  "$(json_escape "$notice")" "$(json_escape "$context")"
+exit 0
