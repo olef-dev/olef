@@ -71,9 +71,9 @@ if [ "$cli" = missing ]; then
   done
 fi
 
-# How to install or update the CLI on this machine. Each message spells its
-# command out: plugin directories refuse a hook that tells the agent to run a
-# command held in a variable.
+# How to install or update the CLI on this machine. Every message is built
+# from literal text, each command spelled out: plugin directories refuse a
+# hook whose messages tell the agent to run something held in a variable.
 if [ "$os" = windows ]; then
   if [ -n "$have_scoop" ]; then tool=scoop; else tool=powershell; fi
 elif [ -n "$have_brew" ]; then
@@ -81,55 +81,60 @@ elif [ -n "$have_brew" ]; then
 else
   tool=installer
 fi
-offer="Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub):"
+context=""
+notice=""
 if [ "$cli" = old ]; then
   context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
-  headline="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run:"
-else
+  notice="ShadowDroid: the shadowdroid CLI is out of date. Ask ${agent} to update it, or run:"
+elif [ "$cli" = missing ]; then
   context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
-  headline="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run:"
+  notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask ${agent}, or run:"
 fi
-notice=""
 if [ "$cli" = ok ]; then
-  context=""
+  :
 elif [ "$tool" = brew ] && [ "$cli" = old ]; then
-  notice="$headline brew update && brew upgrade shadowdroid"
-  context="$context $offer brew update && brew upgrade shadowdroid ."
+  notice+=" brew update && brew upgrade shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): brew update && brew upgrade shadowdroid ."
 elif [ "$tool" = brew ]; then
-  notice="$headline brew install shadowdroid-dev/tap/shadowdroid"
-  context="$context $offer brew install shadowdroid-dev/tap/shadowdroid ."
+  notice+=" brew install shadowdroid-dev/tap/shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): brew install shadowdroid-dev/tap/shadowdroid ."
 elif [ "$tool" = scoop ] && [ "$cli" = old ]; then
-  notice="$headline scoop update shadowdroid"
-  context="$context $offer scoop update shadowdroid ."
+  notice+=" scoop update shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): scoop update shadowdroid ."
 elif [ "$tool" = scoop ]; then
-  notice="$headline scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
-  context="$context $offer scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ."
+  notice+=" scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ."
 elif [ "$tool" = powershell ]; then
-  notice="$headline powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\""
-  context="$context $offer powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\" . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
+  notice+=" powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\""
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): powershell -ExecutionPolicy Bypass -c \"irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex\" . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
 else
-  notice="$headline curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
-  context="$context $offer curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
+  notice+=" curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
 fi
-if [ -n "$context" ]; then
-  context="$context Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI $reconnect. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
+if [ "$cli" != ok ]; then
+  context+=" Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI ${reconnect}. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
 fi
 
 if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
-  missing_adb="adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with:"
-  case "$os" in
-    macos)
-      context="${context:+$context }$missing_adb brew install --cask android-platform-tools."
-      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools" ;;
-    windows)
-      context="${context:+$context }$missing_adb scoop install adb."
-      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools: scoop install adb" ;;
-    *)
-      context="${context:+$context }$missing_adb the distribution's package (for example: sudo apt install adb)."
-      adb_notice="ShadowDroid: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)" ;;
-  esac
-  if [ -z "$notice" ]; then
-    notice="$adb_notice"
+  if [ -n "$context" ]; then
+    context+=" "
+  fi
+  context+="adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with:"
+  if [ "$os" = macos ]; then
+    context+=" brew install --cask android-platform-tools."
+    if [ -z "$notice" ]; then
+      notice="ShadowDroid: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools"
+    fi
+  elif [ "$os" = windows ]; then
+    context+=" scoop install adb."
+    if [ -z "$notice" ]; then
+      notice="ShadowDroid: adb was not found. Install Android platform-tools: scoop install adb"
+    fi
+  else
+    context+=" the distribution's package (for example: sudo apt install adb)."
+    if [ -z "$notice" ]; then
+      notice="ShadowDroid: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)"
+    fi
   fi
 fi
 
