@@ -60,7 +60,8 @@ install_cmd() {  # <upgrade:0|1>
 cli=missing
 too_old=""
 if command -v shadowdroid >/dev/null 2>&1; then
-  version="$(shadowdroid --version 2>/dev/null | awk '{print $2}')"
+  version="$(shadowdroid --version 2>/dev/null)"
+  version="$(sd_version_of "$version")"
   if [ -n "$version" ] && sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
     cli=ok
   else

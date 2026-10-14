@@ -7,6 +7,13 @@
 # one with it is 2.0.3), so the version check alone covers it.
 SHADOWDROID_MIN_VERSION="2.0.4"
 
+# The version in `shadowdroid --version` output ("shadowdroid 2.0.7").
+sd_version_of() {
+  local words
+  read -r -a words <<<"$1"
+  printf '%s' "${words[1]:-}"
+}
+
 # 0 when $1 >= $2 (dotted numeric versions).
 sd_version_at_least() {
   local IFS=.

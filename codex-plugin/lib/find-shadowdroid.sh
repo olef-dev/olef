@@ -84,7 +84,7 @@ sd_find() {
       SD_BIN="$candidate"
       return 0
     fi
-    version="$("$candidate" --version 2>/dev/null | awk '{print $2}')"
+    version="$(sd_version_of "$("$candidate" --version 2>/dev/null)")"
     if [ -z "$version" ] || ! sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
       SD_TOO_OLD="$candidate ${version:-?}"
       continue
