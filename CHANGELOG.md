@@ -4,6 +4,60 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.0.8
+
+This release hardens UI automation, Apply Changes, and Java/native debugging
+after testing a large production Android app and the Field Lab on an Android
+17 emulator and an Android 16 physical device.
+
+- **More reliable debugger evidence:** snapshots and native crash capture work
+  while the app is paused or UI automation is unavailable. Mixed snapshots skip
+  Java reads that cannot complete while LLDB holds the process. Crash waits
+  respect the selected engine and retain evidence if logcat disconnects.
+- **Native debugger fixes:** early LLDB startup failures surface promptly;
+  resume reports the current process state; register-based memory reads use
+  the register's value; unsupported breakpoint updates fail explicitly.
+  Disabled traps remain distinguishable from unresolved symbols. Failed mixed
+  attaches preserve existing native sessions, and shutdown releases the owned
+  debugger. Symbol discovery skips unrelated Gradle outputs in large projects.
+- **Safer UI actions and clearer input results:** stable observations wait for
+  a fresh quiet interval, timeout evidence uses one screen sample, and uncertain
+  tap delivery cannot trigger an automatic duplicate tap. Compose inspection
+  uses transformed geometry where available, rejects invalid or offscreen
+  fallback coordinates, and hit-tests visible children outside virtual parent
+  bounds. Text actions report requested text separately from observed text and
+  expose filtering or unknown readback.
+- **Better Apply Changes feedback:** paused targets are rejected before a build.
+  Build attempts share a cooperative timeout budget; ambiguous worker replies
+  cannot launch duplicate fallback builds. Live phase progress, accumulated
+  build timings, bounded summaries, saved reports and compiler diagnostics make
+  slow or failed updates easier to investigate. Schema-change reporting stays
+  accurate even when reinstall is required.
+- **Bounded output and private session tokens:** compact UI dumps and explicit
+  Java string results respect text limits. Redaction recognizes sensitive values
+  beside UI labels while preserving C++ names. `session open` and `session
+  handoff` support `--token-out`; `--session-file` reads a private token file.
+  Fault timers and scenario children retain driver authority through cleanup.
+- **Expanded regression fixtures:** the Field Lab adds Unicode and filtered
+  input, delayed readiness, transformed layouts, native recursion and crash
+  scenarios, plus hot-reload recipes that distinguish retained form state from
+  intentional state resets. Sample installations can use an isolated app ID.
+
+The hardening pass passed 1,163 Rust tests, seven native-driver Python tests,
+and six new sample instrumentation cases on each device, alongside focused
+server and runtime regressions. Warm production-app method updates took about
+8–9 seconds in the measured runs; initial analysis/builds took longer. These
+are observations, not performance guarantees.
+
+Known limitations: intermittent initial UI connections and long-lived native
+attaches still need an isolated reproduction. Some inspector geometry and
+accessibility limitations remain app-dependent. Native expression deadlines
+and Apply Changes budgets are cooperative, so total wall time can exceed the
+requested timeout.
+
+Once this release is published, update with `shadowdroid update`, run the
+command it prints, then `shadowdroid init` to refresh the agent plugins.
+
 ## v2.0.7
 
 `shadowdroid init` now adds ShadowDroid to Claude Code and Codex for you.

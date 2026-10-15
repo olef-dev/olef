@@ -346,7 +346,9 @@ shadowdroid debug native step-instruction           # --over steps over calls
 ```
 
 `native memory` reads at most 4096 bytes (`--count`, default 64) from an
-`--expression` or an `--address`.
+`--expression` or an `--address`. Pointer and register expressions such as
+`'$pc'` use their value as the address; non-pointer variables read the object's
+storage. Cast an integer address to `void*` to read what it points to.
 
 ### Crashes
 

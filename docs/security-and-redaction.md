@@ -26,6 +26,12 @@ the policy version and replacement count. Config can enable the policy for all
 commands and add key names or Rust-regex patterns; user and project additions
 are merged, with the nearest `enabled` value winning.
 
+UI dumps also recognize values following English Birthdate/Date of Birth/DOB
+and Device ID/Android ID labels. Recognized date, Android ID and UUID values
+are removed from duplicate layout and summary text, and from explicitly
+requested pixel redaction. This does not cover arbitrary labels, every date
+locale, or text that Android does not expose; add project patterns for those.
+
 ## The network boundary
 
 `net start --redact` applies the same policy to completed capture copies

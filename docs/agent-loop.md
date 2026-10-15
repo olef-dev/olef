@@ -148,6 +148,28 @@ in the same guarded request that resolves the target and injects input. A
 server too old to support this contract fails the distinct guarded route before
 injecting anything. Both refuse changed state and return the fresh screen.
 
+Compose layout output uses transformed render bounds when the inspector supplies
+them, retaining the original `layout_bounds` and a `bounds_source`. Untransformed
+layout bounds can include prefetched pages or oversized semantic modifiers.
+Fallback confidence describes its source, not touch reachability; invalid tap
+coordinates are rejected before injection.
+
+Compact dumps cap each text/description preview at 1,024 characters and include
+`text_truncated`/`desc_truncated` plus the original character count when capped.
+Use `ui dump --full` for complete values. Selectors and screen hashes still use
+the original text; truncated descriptions are never suggested as exact selectors.
+
+`ui text` keeps `value` as the requested input (`value_source: requested`).
+`observed_value` and `text_matches_requested` report a bounded accessibility
+readback, so app filters and Unicode changes are visible. Missing/password
+readbacks and older servers report verification as unavailable instead of
+claiming success. A mismatch does not retry the input.
+
+The quiet interval starts with this observation, even if the device was already
+idle. Stability describes accessibility events and consistent screen identity;
+it does not prove that a network request or an indeterminate loader finished.
+Use a destination postcondition to verify application readiness.
+
 A single `--expect-text`, `--expect-desc`, `--expect-rid`, `--expect-package`,
 or `--expect-activity` postcondition implies observation; `--expect-exact`,
 `--observe-delay-ms`, and `--timeout-ms` refine matching and timing. An unmet

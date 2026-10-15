@@ -14,6 +14,17 @@ shadowdroid -d emulator-5554 session observe --subscription reviewer
 shadowdroid -d emulator-5554 --session TOKEN session close
 ```
 
+For redacted output, use a private token file. `--token-out` creates a new file with owner-only permissions and keeps the token out of stdout, even without `--redact`. Existing files (including symlinks) are never overwritten. The root `--session-file` flag, or `SHADOWDROID_SESSION_FILE`, reads that token without putting it in the command line. It cannot be combined with `--session` / `SHADOWDROID_SESSION`.
+
+```bash
+shadowdroid -d emulator-5554 --redact session open --agent implementer --token-out driver.token
+shadowdroid -d emulator-5554 --session-file driver.token --redact session observe --subscription implementer
+shadowdroid -d emulator-5554 --session-file driver.token --redact ui dump
+shadowdroid -d emulator-5554 --session-file driver.token session close
+```
+
+Redacted `session open` and `session handoff` require `--token-out` before changing ownership. Store the file privately and remove it after the reservation closes. If opening or handing off fails after the file was written, retain it while checking `session status`; ownership publication may already have succeeded.
+
 Tokens coordinate cooperating clients; they are not an authentication boundary against someone with ADB or filesystem access. The agent label is diagnostic, not ownership proof. A new driver must observe fresh state before its first ordinary command. Observation captures device identity, foreground, the existing server's screen if available, and crashes for that subscription. An unavailable screen remains unavailable; observation never installs, starts, repairs, or reconnects the server. Capture timestamps describe a window, not an atomic screen/device sample.
 
 Use a unique subscription for every adviser. Reading one subscription does not advance another one's cursor. Crash reads are bounded logcat observations, not a durable device event archive; initialize the subscription before the experiment, and retain evidence for long investigations. Logcat rotation can lose older events.
@@ -38,6 +49,8 @@ shadowdroid -d emulator-5554 session status
 ```
 
 Handoff returns a new token, invalidates the previous token, retains the context and its hash, and requires the recipient to observe again. The caller is responsible for declaring application/backend starting state correctly; the context itself is not proof of cleanup.
+
+With redaction, pass `--token-out recipient.token` to handoff and give the recipient that private file. The recipient uses `--session-file recipient.token`; the old token file no longer authorizes commands.
 
 Reservations never expire automatically. A killed CLI that had already dispatched a device mutation, or a mutation whose delivery is unknown (for example a request that timed out after it was sent), leaves its operation journal unresolved. A command interrupted before its first device mutation, such as a `ui wait` killed by a tool timeout, left the device unchanged: the next command, or `session close`, clears it even on a reserved device and reports `stale_operation_cleared` with outcome `no_device_change`. Failures with a known outcome, such as a stale `--if-screen` guard or an unmet `--expect-*` postcondition, complete normally. On a reserved device, neither elapsed time nor a missing PID authorizes reassignment, and `session status` retains the request, command, start time and prior boot identity. Without a reservation, the next command clears the unresolved entry once the process that wrote it has exited, and its response carries a `stale_operation_cleared` event with outcome `unknown`: observe the device before repeating the command. No action is replayed automatically.
 
