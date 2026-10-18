@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # SessionStart: when the shadowdroid CLI (or adb) is missing or too old, tell
-# the agent how to install it on this OS and show the user a one-line note.
-# Silent when everything is in place. Never installs anything itself: the
-# agent offers the command and runs it only with the user's approval.
+# the agent how to install it on this OS and show the user a one-line note;
+# when the CLI's update cache knows a newer release, say so the same way.
+# Silent when everything is in place and current. Never installs anything
+# itself: the agent offers the command and runs it only with the user's
+# approval.
 # Usage: check-cli [claude|codex] (the plugin it runs for; default claude).
 # Both plugins ship this same file.
 set -u
@@ -18,68 +20,169 @@ case "${1:-claude}" in
     ;;
 esac
 
-root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-# shellcheck source=../lib/find-shadowdroid.sh
-. "$root/lib/find-shadowdroid.sh"
+# A literal path from the plugin root, so plugin directories can follow it.
+# Codex's hook sets CLAUDE_PLUGIN_ROOT from its PLUGIN_ROOT. This hook runs
+# programs only by their names, never from a path it computed.
+# shellcheck source=../lib/plugin-env.sh
+. "${CLAUDE_PLUGIN_ROOT}/lib/plugin-env.sh"
 
 os="$(sd_os)"
 have_brew=""
 brews=("$(command -v brew 2>/dev/null || true)")
-[ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" = 1 ] ||
+if [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
   brews+=(/opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew)
+fi
 for brew in "${brews[@]}"; do
   [ -n "$brew" ] && [ -x "$brew" ] && { have_brew="$brew"; break; }
 done
 have_scoop="$(command -v scoop 2>/dev/null || command -v scoop.cmd 2>/dev/null || true)"
 
-base="https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download"
-install_cmd() {  # <upgrade:0|1>
-  case "$os" in
-    windows)
-      if [ -n "$have_scoop" ]; then
-        if [ "$1" = 1 ]; then echo "scoop update shadowdroid"
-        else echo "scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"; fi
-      else
-        echo "powershell -ExecutionPolicy Bypass -c \"irm $base/shadowdroid-installer.ps1 | iex\""
-      fi ;;
-    *)
-      if [ -n "$have_brew" ]; then
-        if [ "$1" = 1 ]; then echo "brew update && brew upgrade shadowdroid"
-        else echo "brew install shadowdroid-dev/tap/shadowdroid"; fi
-      else
-        echo "curl --proto '=https' --tlsv1.2 -LsSf $base/shadowdroid-installer.sh | sh"
-      fi ;;
-  esac
-}
+# Assignments here stand as statements (in `if`), never after && or ||:
+# plugin directories read `[ … ] && x="$y"` as running a command whose name
+# the shell computes, and refuse the plugin.
+#
+# The CLI on PATH is checked for its version. One installed where desktop
+# apps' PATH doesn't reach only needs to exist: the MCP launcher checks its
+# version when it starts it.
+cli=missing
+too_old=""
+if command -v shadowdroid >/dev/null 2>&1; then
+  version="$(shadowdroid --version 2>/dev/null)"
+  version="$(sd_version_of "$version")"
+  if [ -n "$version" ] && sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
+    cli=ok
+  else
+    cli=old
+    too_old="shadowdroid ${version:-?}"
+  fi
+fi
+if [ "$cli" = missing ]; then
+  others=("${SHADOWDROID_BIN:-}")
+  if [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
+    others+=(
+      /opt/homebrew/bin/shadowdroid
+      /usr/local/bin/shadowdroid
+      /home/linuxbrew/.linuxbrew/bin/shadowdroid
+      "$HOME/.local/bin/shadowdroid"
+      "${LOCALAPPDATA:-/nonexistent}/Programs/shadowdroid/shadowdroid.exe"
+      "$HOME/scoop/shims/shadowdroid.exe"
+    )
+  fi
+  for other in "${others[@]}"; do
+    [ -n "$other" ] && [ -x "$other" ] && { cli=ok; break; }
+  done
+fi
 
+# How to install or update the CLI on this machine. Every message is built
+# from literal text, each command spelled out: plugin directories refuse a
+# hook whose messages tell the agent to run something held in a variable.
+if [ "$os" = windows ]; then
+  if [ -n "$have_scoop" ]; then tool=scoop; else tool=powershell; fi
+elif [ -n "$have_brew" ]; then
+  tool=brew
+else
+  tool=installer
+fi
 context=""
 notice=""
-if ! sd_find; then
-  if [ -n "$SD_TOO_OLD" ]; then
-    command="$(install_cmd 1)"
-    context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${SD_TOO_OLD}."
-    notice="ShadowDroid: the shadowdroid CLI is out of date. Ask $agent to update it, or run: $command"
-  else
-    command="$(install_cmd 0)"
-    context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
-    notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask $agent, or run: $command"
-  fi
-  context="$context Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): $command ."
-  case "$os" in
-    windows) [ -z "$have_scoop" ] && context="$context Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH." ;;
-    *) [ -z "$have_brew" ] && context="$context It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards." ;;
+if [ "$cli" = old ]; then
+  context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
+  notice="ShadowDroid: the shadowdroid CLI is out of date. Ask ${agent} to update it, or run:"
+elif [ "$cli" = missing ]; then
+  context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
+  notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask ${agent}, or run:"
+fi
+if [ "$cli" = ok ]; then
+  :
+elif [ "$tool" = brew ] && [ "$cli" = old ]; then
+  notice+=" brew update && brew upgrade shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): brew update && brew upgrade shadowdroid ."
+elif [ "$tool" = brew ]; then
+  notice+=" brew install shadowdroid-dev/tap/shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): brew install shadowdroid-dev/tap/shadowdroid ."
+elif [ "$tool" = scoop ] && [ "$cli" = old ]; then
+  notice+=" scoop update shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): scoop update shadowdroid ."
+elif [ "$tool" = scoop ]; then
+  notice+=" scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ."
+elif [ "$tool" = powershell ]; then
+  notice+=" irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
+else
+  notice+=" curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
+  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
+fi
+if [ "$cli" != ok ]; then
+  context+=" Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI ${reconnect}. The device service is installed on the first 'shadowdroid connect'. The CLI is free for everyone, including commercial use (ShadowDroid License)."
+fi
+
+# A newer release of the CLI on PATH, from the cache the CLI refreshes once a
+# day (update-check.json). Never the network here; off with
+# SHADOWDROID_NO_UPDATE_CHECK, like the CLI's own notice.
+update=""
+no_update_check="$(printf '%s' "${SHADOWDROID_NO_UPDATE_CHECK:-}" | tr '[:upper:]' '[:lower:]')"
+case "$no_update_check" in
+  1 | true | yes | on) no_update_check=1 ;;
+  *) no_update_check="" ;;
+esac
+update_cache="${SHADOWDROID_HOME:-$HOME/.shadowdroid}/update-check.json"
+if [ "$cli" = ok ] && [ -n "${version:-}" ] && [ -z "$no_update_check" ] && [ -f "$update_cache" ]; then
+  latest="$(sed -n 's/^ *"latest_version": *"\([^"]*\)".*/\1/p' "$update_cache" | head -n 1)"
+  case "$latest" in
+    "" | *[!0-9.]*) latest="" ;;
   esac
-  context="$context Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI $reconnect. The device service is installed on the first 'shadowdroid connect'. The CLI is free for individuals and teams up to 10 users (ShadowDroid License)."
+  if [ -n "$latest" ] && ! sd_version_at_least "$version" "$latest"; then
+    update="$latest"
+  fi
+fi
+# Issues this user reported that a newer release fixes, written by the CLI's
+# daily check for the version that wrote it (feedback-status.json).
+fixed_reports=""
+status_file="${SHADOWDROID_HOME:-$HOME/.shadowdroid}/feedback-status.json"
+if [ -n "$update" ] && [ -f "$status_file" ]; then
+  status_for="$(sed -n 's/^ *"installed": *"\([^"]*\)".*/\1/p' "$status_file" | head -n 1)"
+  fixed_reports="$(sed -n 's/^ *"fixed_issues": *"\([^"]*\)".*/\1/p' "$status_file" | head -n 1)"
+  case "$fixed_reports" in
+    *[!0-9#,\ ]*) fixed_reports="" ;;
+  esac
+  if [ "$status_for" != "$version" ]; then
+    fixed_reports=""
+  fi
+fi
+if [ -n "$update" ]; then
+  fixes_note=""
+  if [ -n "$fixed_reports" ]; then
+    fixes_note="; it fixes ${fixed_reports}, which you reported"
+  fi
+  notice="ShadowDroid ${update} is available (you have ${version})${fixes_note}. Ask ${agent} to update it, or run: shadowdroid update"
+  context="A newer shadowdroid CLI release is available: ${update} (installed: ${version}). Mention it to the user once. If they want it, 'shadowdroid update --json' returns the update command for how the CLI was installed (update.command); run that only with the user's approval, then 'shadowdroid init' to bring the ShadowDroid plugin and skills to the same version."
+  if [ -n "$fixed_reports" ]; then
+    context+=" The update fixes issues the user reported with shadowdroid feedback: ${fixed_reports}."
+  fi
 fi
 
 if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
-  case "$os" in
-    macos) adb_cmd="brew install --cask android-platform-tools" ;;
-    windows) adb_cmd="scoop install adb" ;;
-    *) adb_cmd="the distribution's package (for example: sudo apt install adb)" ;;
-  esac
-  context="${context:+$context }adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with: $adb_cmd."
-  [ -n "$notice" ] || notice="ShadowDroid: adb was not found. Install Android platform-tools: $adb_cmd"
+  if [ -n "$context" ]; then
+    context+=" "
+  fi
+  context+="adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with:"
+  if [ "$os" = macos ]; then
+    context+=" brew install --cask android-platform-tools."
+    if [ -z "$notice" ]; then
+      notice="ShadowDroid: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools"
+    fi
+  elif [ "$os" = windows ]; then
+    context+=" scoop install adb."
+    if [ -z "$notice" ]; then
+      notice="ShadowDroid: adb was not found. Install Android platform-tools: scoop install adb"
+    fi
+  else
+    context+=" the distribution's package (for example: sudo apt install adb)."
+    if [ -z "$notice" ]; then
+      notice="ShadowDroid: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)"
+    fi
+  fi
 fi
 
 [ -n "$context" ] || exit 0

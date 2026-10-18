@@ -1,6 +1,6 @@
 {
   "name": "shadowdroid",
-  "version": "2.0.8",
+  "version": "2.1.0",
   "description": "Run, test and debug Android apps from Codex through the ShadowDroid CLI: deploy and apply changes, drive the UI, read crashes and logs, inspect and intercept network traffic, and debug on emulators and devices.",
   "author": {
     "name": "Andrii",

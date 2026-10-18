@@ -1,0 +1,57 @@
+# Labels issues drafted by `shadowdroid feedback draft` and flags duplicates.
+#
+# A report carries two hidden markers:
+#   <!-- shadowdroid-fingerprint: fp1-… -->
+#   <!-- shadowdroid-report: kind=bug code=… fault=… id=fb-… -->
+# This labels it `agent-report`, `kind:*`, `code:*` and `fault:*`, and when an
+# open agent report already has the same fingerprint, comments with a link and
+# labels it `duplicate` for a maintainer to close. The release pipeline builds
+# known-issues.json from the same markers.
+name: Triage agent reports
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    if: contains(github.event.issue.body, 'shadowdroid-fingerprint:')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const body = issue.body || '';
+            const fp = (body.match(/<!--\s*shadowdroid-fingerprint:\s*(fp1-[A-Za-z0-9_.\-]+)\s*-->/) || [])[1];
+            if (!fp) return;
+            const meta = {};
+            const report = (body.match(/<!--\s*shadowdroid-report:([^>]*)-->/) || [])[1] || '';
+            for (const pair of report.trim().split(/\s+/)) {
+              const [key, value] = pair.split('=');
+              if (key && value && /^[a-z0-9_.\-]+$/.test(value)) meta[key] = value;
+            }
+            const labels = ['agent-report'];
+            if (meta.kind) labels.push(`kind:${meta.kind}`);
+            if (meta.code) labels.push(`code:${meta.code}`.slice(0, 50));
+            if (meta.fault) labels.push(`fault:${meta.fault}`);
+            await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels });
+
+            if (context.payload.action !== 'opened') return;
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo, state: 'open', labels: 'agent-report', per_page: 100,
+            });
+            const original = open
+              .filter(other => other.number !== issue.number && !other.pull_request)
+              .filter(other => (other.body || '').includes(`shadowdroid-fingerprint: ${fp} `))
+              .sort((a, b) => a.number - b.number)[0];
+            if (!original) return;
+            await github.rest.issues.createComment({
+              ...context.repo, issue_number: issue.number,
+              body: `This looks like a duplicate of #${original.number} (same fingerprint \`${fp}\`). ` +
+                    `Details added there help most; a maintainer will close this one if it is the same problem.`,
+            });
+            await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: ['duplicate'] });

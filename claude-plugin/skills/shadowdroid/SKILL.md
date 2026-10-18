@@ -87,7 +87,8 @@ A `tls_error` event means the app rejected the CA: run `net trust --auto`
 recovery), `--guide net` (proxy, rules, intercept), `--guide debugger`
 (debugger, layout, runtime), `--guide state` (app/device/permission/files
 state), `--guide evidence` (checkpoints, video), `--guide faults` (failure
-injection), `--guide verification` (coding-task checks, concurrent agents).
+injection), `--guide verification` (coding-task checks, concurrent agents),
+`--guide feedback` (report a ShadowDroid bug: errors with `fault: "shadowdroid"`).
 
 Prefer typed verbs (`app install --grant-all`, `perm grant`, `appops set`,
 `files pull --run-as`) over `device shell`. `debug auto <pkg>` starts a
@@ -119,5 +120,5 @@ Core groups below. For an unfamiliar command run `shadowdroid <group> <sub> --he
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`shadowdroid <command> --help` for details): session, verify, evidence, test, licenses, update, init, commands, usage, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`shadowdroid <command> --help` for details): session, verify, evidence, test, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 

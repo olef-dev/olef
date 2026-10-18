@@ -1,7 +1,7 @@
 {
   "name": "shadowdroid",
   "displayName": "ShadowDroid",
-  "version": "2.0.8",
+  "version": "2.1.0",
   "description": "Run, test and debug Android apps from Claude Code: works through the ShadowDroid CLI, and opens a live, interactive emulator/device viewer in the Claude Desktop browser pane when you want to see the app, with Apply Changes builds, annotations you leave on the device, recorded steps for tests, and a status line with the device and what each build did.",
   "author": {
     "name": "ShadowDroid",
@@ -29,12 +29,8 @@
     "viewer": {
       "type": "string",
       "title": "Device viewer",
-      "description": "on-request: Claude works through the shadowdroid CLI and opens the live device viewer when you ask to see the device (or run /device show). always: Claude opens the viewer whenever it runs your app. Ignored when ShadowDroid's show_device setting is window (shadowdroid config init --user --show-device window), which uses the emulator's own window instead.",
-      "default": "on-request",
-      "options": [
-        "on-request",
-        "always"
-      ]
+      "description": "on-request (default): Claude works through the shadowdroid CLI and opens the live device viewer when you ask to see the device (or run /device show). always: Claude opens the viewer whenever it runs your app. Ignored when ShadowDroid's show_device setting is window (shadowdroid config init --user --show-device window), which uses the emulator's own window instead.",
+      "default": "on-request"
     },
     "auto_approve_device_actions": {
       "type": "boolean",

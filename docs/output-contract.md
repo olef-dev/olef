@@ -34,6 +34,25 @@ Inside a running `watch` stream, `{"type":"error","stage":…,"code":…,"msg":�
 timeline event, not the terminal one-shot error envelope above. Keep consuming
 unless the stream ends or the task says to stop.
 
+## Whose fault a failure is
+
+Every error also carries `fault`: `shadowdroid` (a ShadowDroid bug),
+`environment` (device, adb, network, toolchain), `usage` (the command, its
+arguments, or an expectation such as a wait that didn't hold) or `app` (the app
+under test). Errors from the on-device service are classified by their HTTP
+status unless the code is known. Only `shadowdroid` errors end `next_actions`
+with `shadowdroid feedback draft --from-last-error`; see
+[Reporting problems](feedback.md).
+
+When a `shadowdroid` error matches a known issue, it carries `known_issue`
+(`issue`, `url`, `state`, `fixed_in`, `update_fixes_it`). If a newer release
+fixes it, `next_actions` starts with `shadowdroid update --json` instead of
+the report suggestion.
+
+An internal crash is reported as an ordinary error with code `internal_panic`
+(exit code 101) and `detail.panic_location`, not as a Rust stack trace.
+`RUST_BACKTRACE=1` adds Rust's own report on stderr.
+
 ## Crash events ride any response
 
 When the app crashed or ANRed since your previous command, the next result
@@ -59,6 +78,11 @@ Read `detail` before re-dumping.
   **stderr**, so `… | jq` already sees clean JSON. Add `--quiet`/`-q` (or
   `SHADOWDROID_QUIET=1`) to silence it entirely — handy when you merge with
   `2>&1`.
+- **The update notice is for people.** The once-a-day "new release" notice
+  prints to stderr only when stderr is a terminal and `--quiet` is off, so a
+  piped or captured run never sees it. Agents get the same fact as
+  `update_available` in `doctor` and `connect` results (see
+  [Updating](updating.md#the-update-notice)).
 - **Selector actions are strict.** Several matches and no exact hit is an
   `ambiguous_match` error listing candidates, never a silent guess.
 

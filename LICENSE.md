@@ -1,6 +1,6 @@
 # ShadowDroid License
 
-Version 1.0, effective October 12, 2026
+Version 1.1, effective October 15, 2026
 
 Copyright (c) 2026 Andrii Olefirenko. All rights reserved.
 
@@ -14,58 +14,30 @@ licensed under those files instead.
 
 ## In short
 
-- **Free** for personal use, education, open-source projects, and any
-  organization with **up to 10 Users**.
-- An organization with **more than 10 Users** needs a **commercial license**
-  for the Users beyond the first 10. Contact
-  [contact@shadowdroid.dev](mailto:contact@shadowdroid.dev).
+- **Free** for everyone: individuals, teams, and organizations of any size,
+  for any purpose, including commercial work.
+- No sign-up, no license key, no per-user fees.
 
 This summary is part of the license; the sections below define its terms.
 
 ## 1. Definitions
 
-- **"User"** means an individual person whose work the Software is used for
-  during a calendar month, whether they run it directly, through an AI agent
-  or assistant, or through automation such as continuous integration. An
-  agent, bot, service account, or CI system is not a User itself; the people
-  whose work it does are.
 - **"Organization"** means a company, government body, non-profit, or other
   legal entity, together with its Affiliates. **"Affiliate"** means any entity
   that controls, is controlled by, or is under common control with it, where
   control means owning more than 50% of the voting interests.
-- **Contractors and consultants** who use the Software for an Organization's
-  work count as Users of that Organization.
-- **"Free Use"** means the uses in section 2.
 
-## 2. Free Use
+## 2. Free use
 
-You may download, install, and use the Software at no cost:
+You may download, install, and use the Software at no cost, for any lawful
+purpose, including personal, educational, open-source, and commercial work,
+in an Organization of any size, directly, through AI agents or assistants, or
+through automation such as continuous integration.
 
-1. **Personal use:** by an individual for their own projects, learning, or
-   evaluation, outside work done for an Organization.
-2. **Education:** by students and teachers for coursework, teaching, and
-   academic research at accredited educational institutions.
-3. **Open source:** for developing, testing, and maintaining software that is
-   released under a license approved by the Open Source Initiative, as long as
-   that work is not done for an Organization that otherwise needs a commercial
-   license for it.
-4. **Organizations with up to 10 Users:** by an Organization whose total
-   number of Users in a calendar month, across all of its teams and
-   Affiliates, is 10 or fewer.
-5. **Evaluation:** by any Organization, for up to 30 days, to decide whether to
-   buy a commercial license.
+## 3. No fees
 
-## 3. Commercial license
-
-An Organization that has more than 10 Users in a calendar month, and whose use
-is not otherwise Free Use, must obtain a commercial license for each User
-beyond the first 10. The first 10 Users remain free. Commercial terms and
-pricing are agreed separately; write to
-[contact@shadowdroid.dev](mailto:contact@shadowdroid.dev).
-
-An Organization may not split itself, its teams, or its Affiliates, or route
-use through agents, automation, or shared accounts, in order to stay within
-the free limit.
+There are no license fees, user limits, or license keys. Contractors and
+consultants may use the Software for their clients' work on the same terms.
 
 ## 4. What you may do
 
@@ -105,6 +77,10 @@ Version 2.0, and remain under it. Their source is available at the
 corresponding tags of
 [shadowdroid-dev/shadowdroid](https://github.com/shadowdroid-dev/shadowdroid).
 
+Releases published with version 1.0 of this license (ShadowDroid 2.0.4 and
+later releases before version 1.1) may also be used under this version 1.1,
+free of the user limit that version 1.0 set.
+
 ## 8. Updates to this license
 
 Each release of the Software is governed by the version of this license that
@@ -114,8 +90,8 @@ when that release is published with it.
 ## 9. Termination
 
 Your rights under this license end automatically if you breach it. If you
-remedy the breach within 30 days of becoming aware of it, for example by
-obtaining a commercial license, your rights are reinstated.
+remedy the breach within 30 days of becoming aware of it, your rights are
+reinstated.
 
 ## 10. No warranty
 
@@ -138,5 +114,5 @@ regard to its conflict-of-laws rules.
 
 ## Contact
 
-Licensing, commercial terms, and questions:
+Licensing and questions:
 [contact@shadowdroid.dev](mailto:contact@shadowdroid.dev)

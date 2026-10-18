@@ -48,6 +48,35 @@ remove it.
 `brew upgrade` on its own uses Homebrew's cached formula and can miss a release
 published minutes ago; `brew update` first refreshes the tap.
 
+### The update notice
+
+You don't have to remember to check. Once a day, after an ordinary command,
+the CLI starts a detached check of the latest release (the same request as
+`shadowdroid update`) and saves the answer in `~/.shadowdroid/update-check.json`.
+The command you ran never waits for it. Everything below reads only that file:
+
+- **In a terminal**, when a newer release is known, the next command ends with
+  a short notice on stderr: the new version, the update command for your
+  install and the release notes link. It's shown at most once a day, never with
+  `--quiet`, and never when stderr isn't a terminal, so scripts and agents that
+  parse the output don't see it.
+- **In JSON**, `doctor` and `connect` results carry `update_available` with
+  `current_version`, `latest_version`, `release_url`, `command` (the update
+  command), `then` (`shadowdroid init`) and `hint`. It never changes
+  `healthy`, and it's absent when you're up to date or nothing is cached yet.
+- **In Claude Code and Codex**, the plugin's SessionStart hook reads the same
+  file and shows a one-line note when a newer release is known, so the agent
+  can offer the update. The hook makes no network request itself.
+
+The same daily check also fetches the release's list of known issues, which
+lets agents tell a problem that is already fixed from a new one (see
+[Reporting problems](feedback.md)). When a newer release fixes an issue you
+reported, the notice and `update_available.fixes_your_reports` say so.
+
+`SHADOWDROID_NO_UPDATE_CHECK=1` turns off the check, the notice, the
+`update_available` field and the plugin note. The daily check is also skipped
+when `CI` is set. `shadowdroid update` still works either way.
+
 ### Building from source is no longer supported
 
 ShadowDroid 2.0 and later are distributed as binaries only. Releases up to
@@ -147,8 +176,11 @@ version.
   point `SHADOWDROID_SERVER_APK` (`SHADOWDROID_APK` before 2.0.6) at the
   server's test APK and `SHADOWDROID_RUNTIME_DIR` at a directory of per-ABI
   runtime libraries.
-- **A mirror:** `SHADOWDROID_UPDATE_LATEST_URL` changes where `update` looks for
-  the latest release (a URL returning GitHub's release JSON).
+- **A mirror:** `SHADOWDROID_UPDATE_LATEST_URL` changes where `update` and the
+  daily check look for the latest release (a URL returning GitHub's release
+  JSON).
+- **No update checks:** `SHADOWDROID_NO_UPDATE_CHECK=1` (see
+  [The update notice](#the-update-notice)).
 
 ## Release notes
 

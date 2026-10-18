@@ -17,7 +17,7 @@ devices. Every answer is compact JSON with the next step built in.
 This repository is ShadowDroid's public home: releases, documentation, the
 changelog, and the issue tracker. Development happens in a private repository.
 
-Free for individuals and teams up to 10 users; see [License](#license).
+Free for everyone, including commercial use; see [License](#license).
 
 ## Install
 
@@ -115,7 +115,11 @@ Details: [Claude Code plugin](claude-plugin/README.md),
 
 ## Reporting issues
 
-[Open an issue](https://github.com/shadowdroid-dev/shadowdroid/issues/new/choose)
+If you use ShadowDroid through an agent, let it report for you: errors that are
+ShadowDroid's fault suggest `shadowdroid feedback draft`, and the agent shows
+you the report before anything is sent. See [reporting problems](docs/feedback.md).
+
+To report by hand, [open an issue](https://github.com/shadowdroid-dev/shadowdroid/issues/new/choose)
 and include the output of:
 
 ```bash
@@ -129,12 +133,10 @@ Please report security problems privately; see [SECURITY.md](SECURITY.md).
 
 ## License
 
-**Free for individuals and teams up to 10 users.** ShadowDroid is free for
-personal use, education, open-source projects, and any organization with up
-to 10 people using it. Organizations with more than 10 users need a commercial
-license for the users beyond the first 10; write to
-[contact@shadowdroid.dev](mailto:contact@shadowdroid.dev). The full terms are
-in the [ShadowDroid License](LICENSE.md).
+**Free for everyone.** ShadowDroid is free for individuals, teams, and
+organizations of any size, for any purpose, including commercial work. No
+sign-up, no license key, no per-user fees. The full terms are in the
+[ShadowDroid License](LICENSE.md).
 
 The Claude Code and Codex plugins in this repository are licensed under
 Apache-2.0 (see their `LICENSE` files). ShadowDroid 1.3.0 and earlier were

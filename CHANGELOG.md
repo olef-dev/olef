@@ -4,6 +4,41 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.1.0
+
+ShadowDroid is now free for everyone, tells you when a new release is out,
+and lets your agent report ShadowDroid bugs for you.
+
+- **Free for everyone:** the [ShadowDroid License](https://github.com/shadowdroid-dev/shadowdroid/blob/main/LICENSE.md) v1.1
+  drops the 10-user limit and the commercial license. Individuals, teams and
+  organizations of any size can use it for any purpose, with no sign-up, key or
+  fees. Releases under v1.0 may also be used under v1.1.
+- **Update notice:** once a day, after an ordinary command, the CLI checks for
+  a newer release in the background and never waits for it. In a terminal you
+  get a short notice at most once a day; `doctor` and `connect` results carry
+  `update_available`; the Claude Code and Codex plugins mention it when a
+  session starts. `SHADOWDROID_NO_UPDATE_CHECK=1` turns it off, and it is
+  skipped when `CI` is set. See [updating](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/updating.md#the-update-notice).
+- **Agents can report ShadowDroid bugs:** `shadowdroid feedback draft` turns a
+  ShadowDroid bug, missing capability, friction or doc mismatch into a report
+  on your computer. You see it first, and nothing is sent until you submit it:
+  `feedback submit` prints a prefilled GitHub issue link, or creates the issue
+  with your `gh` login when you approve (`--via gh --yes`). Reports are
+  redacted and never contain screen text, logs, network traffic or
+  screenshots. When a newer release already fixes the problem, your agent
+  suggests updating instead, and the update notice tells you when a release
+  fixes an issue you reported. See [reporting problems](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/feedback.md).
+- **Errors say whose fault they are:** every JSON error has `fault`:
+  `shadowdroid`, `environment`, `usage` or `app`. Only ShadowDroid's own
+  faults suggest a report. An internal crash is now an ordinary
+  `internal_panic` error (exit code 101) instead of a Rust stack trace.
+- **Plugin fixes:** the plugins' scripts follow plugin-directory rules (literal
+  plugin paths, no computed commands), and the viewer option is free text.
+- **Device facts** in crash events and `collect` now include the ABI.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.0.8
 
 This release hardens UI automation, Apply Changes, and Java/native debugging
