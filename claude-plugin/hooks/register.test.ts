@@ -1,5 +1,5 @@
-import { expect, test } from 'claude-code/testing'
-import { notesContext, runsApply, stepsPrompt } from './register.ts'
+import { expect, mock, test } from 'claude-code/testing'
+import { cloudLine, inProject, notesContext, runsApply, runsShadowdroid, safeName, stepsPrompt } from './register.ts'
 
 const CONTROL = 'mcp__plugin_shadowdroid_shadowdroid__control'
 const BUILD = 'mcp__plugin_shadowdroid_shadowdroid__build'
@@ -167,4 +167,166 @@ test('/device show without a viewer asks Claude for one', async ($) => {
   expect(['Asking Claude to open the device viewer…', 'Ask Claude to show you the device.']).toContain(shown.text)
   const status = await $.command.run({ command: 'device', args: '' })
   expect(status.text).toContain('`/device show` opens the device viewer')
+})
+
+// ShadowDroid Cloud: the CLI's files under ~/.shadowdroid/cloud/.
+const NOW = Date.parse('2026-10-18T20:00:00Z')
+const min = (n: number) => new Date(NOW + n * 60_000).toISOString()
+const LINK = { root: '/work/notes', workspace_id: 'ws_1', name: 'notes', enabled: true, state: 'approved' }
+// biome-ignore lint: loose test values
+const ready = (extra: Record<string, unknown> = {}): any => ({ link: LINK, state: { workspace: 'ws_1', session: 's1', state: 'ready', region: 'us-west1', updated_at: min(0), ...extra } })
+
+test('the cloud line says starting, ready, the idle-stop countdown and stops', async () => {
+  expect(cloudLine(ready({ state: 'starting', stage: 'booting the emulator' }), NOW)).toBe('☁ Cloud: starting (booting the emulator)…')
+  expect(cloudLine(ready({ state: 'starting' }), NOW)).toBe('☁ Cloud: starting…')
+  expect(cloudLine(ready({ idle_stop_at: min(15) }), NOW)).toBe('☁ Cloud: ready')
+  expect(cloudLine(ready({ idle_stop_at: min(4) }), NOW)).toBe('☁ Cloud: ready · idle stop in 4 min')
+  expect(cloudLine(ready({ idle_stop_at: NOW + 20_000 }), NOW)).toBe('☁ Cloud: ready · idle stop in under a minute')
+  expect(cloudLine(ready({ idle_stop_at: min(4), expires_at: min(8) }), NOW)).toBe('☁ Cloud: ready · session ends in 8 min')
+  expect(cloudLine(ready({ state: 'stopping' }), NOW)).toBe('☁ Cloud: stopping…')
+  expect(cloudLine(ready({ state: 'idle' }), NOW)).toBe('☁ Cloud: stopped when idle · the next command resumes it')
+  expect(cloudLine(ready({ state: 'stopped', session: null }), NOW)).toBe('☁ Cloud: stopped')
+  expect(cloudLine(ready({ state: 'error', error: { code: 'cloud_quota_exceeded' } }), NOW)).toBe('☁ Cloud: limit reached')
+  expect(cloudLine(ready({ updated_at: NOW / 1000 }), NOW)).toBe('☁ Cloud: ready')
+  // The session nested under `session` reads the same.
+  expect(cloudLine({ link: LINK, state: { updated_at: min(0), session: { id: 's1', state: 'ready', idle_stop_at: min(3) } } }, NOW)).toBe('☁ Cloud: ready · idle stop in 3 min')
+})
+
+test('sign-in and upload approvals come first; nothing outside cloud mode', async () => {
+  expect(cloudLine({ login: { user_code: 'WXYZ-1234' } }, NOW)).toBe('☁ Cloud: sign in with code WXYZ-1234')
+  expect(cloudLine({ link: { ...LINK, state: 'pending' } }, NOW)).toBe('☁ Cloud: approve the upload in your browser')
+  expect(cloudLine({ link: LINK }, NOW)).toBe('☁ Cloud')
+  expect(cloudLine(undefined, NOW)).toBe(undefined)
+  expect(cloudLine({ link: { ...LINK, enabled: false }, state: ready().state }, NOW)).toBe(undefined)
+})
+
+test('a daemon that is gone: a bare line, or idle-stopped once the idle stop passed', async () => {
+  expect(cloudLine(ready({ updated_at: min(-10) }), NOW)).toBe('☁ Cloud')
+  expect(cloudLine(ready({ updated_at: 'garbage' }), NOW)).toBe('☁ Cloud')
+  expect(cloudLine({ ...ready({ updated_at: undefined }), stateMtime: NOW - 1000 }, NOW)).toBe('☁ Cloud: ready')
+  expect(cloudLine(ready({ updated_at: min(-10), idle_stop_at: min(5) }), NOW)).toBe('☁ Cloud: ready · idle stop in 5 min')
+  expect(cloudLine(ready({ updated_at: min(-20), idle_stop_at: min(-5) }), NOW)).toBe('☁ Cloud: stopped when idle · the next command resumes it')
+})
+
+test('a linked project covers its own folders only', async () => {
+  expect(inProject('/work/notes', '/work/notes')).toBe(true)
+  expect(inProject('/work/notes/', '/work/notes/app')).toBe(true)
+  expect(inProject('/work/notes', '/work/notes2')).toBe(false)
+  expect(inProject('C:\\Work\\Notes', 'c:/work/notes/app')).toBe(true)
+  expect(inProject(undefined, '/work/notes')).toBe(false)
+  expect(safeName('ws:1/x')).toBe('ws_1_x')
+  expect(runsShadowdroid('cd app && shadowdroid cloud link')).toBe(true)
+  expect(runsShadowdroid('ls shadow')).toBe(false)
+})
+
+const CLOUD = '/home/me/.shadowdroid/cloud'
+/** A machine with the CLI's cloud files: `files` maps a path to its text. */
+// biome-ignore lint: test doubles for the engine's nouns
+function cloudMachine(on: any, files: Record<string, string>, root = '/work/notes') {
+  mock.env(on, { HOME: '/home/me' })
+  const clock = mock.clock(on, { now: NOW })
+  on('session.root', async () => ({ value: root }))
+  on('session.start', async ($: unknown, e: { cwd: string }) => ({ cwd: e.cwd }))
+  on('command.register', async () => ({ value: { command: 'device' } }))
+  const missing = () => Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
+  on('fs.read', async ($: unknown, e: { path: string }) => {
+    if (!(e.path in files)) throw missing()
+    return { value: files[e.path] }
+  })
+  on('fs.stat', async ($: unknown, e: { path: string; resolve: boolean }) => {
+    if (e.path === '/tmp/notes') return { value: { kind: 'dir', size: 0, mtimeMs: 0, isLink: true, realPath: '/work/notes' } }
+    if (!(e.path in files)) throw missing()
+    return { value: { kind: 'file', size: files[e.path]!.length, mtimeMs: 0, isLink: false } }
+  })
+  return clock
+}
+const links = (link: Record<string, unknown> = LINK) => JSON.stringify({ version: 1, links: [link, { ...LINK, root: '/work/other', workspace_id: 'ws_2' }] })
+const state = (extra: Record<string, unknown>) => JSON.stringify({ workspace: 'ws_1', session: 's1', region: 'us-west1', updated_at: min(0), ...extra })
+
+test('a linked project shows its cloud session beside the device', async ($, on) => {
+  const { statuses } = record(on)
+  cloudMachine(on, {
+    [`${CLOUD}/links.json`]: links(),
+    [`${CLOUD}/ws_1/state.json`]: state({ state: 'ready', idle_stop_at: min(4) }),
+    [`${CLOUD}/ws_2/state.json`]: state({ state: 'starting' }),
+  })
+  on('tool.call', async () => ({
+    result: {},
+    text: JSON.stringify({ ok: true, device: 'emulator-5554', avd: 'Pixel_9', viewer_url: 'http://127.0.0.1:1/#t=x' }),
+  }))
+  await $.session.start({ cwd: '/work/notes', surface: 'terminal', isInteractive: true })
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: ready · idle stop in 4 min')
+  await $.tool.call({ tool: CONTROL, action: 'attach' })
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: ready · idle stop in 4 min · 📱 Pixel_9 · attached')
+  const shown = await $.command.run({ command: 'device', args: '' })
+  expect(shown.text).toBe('☁ Cloud: ready · idle stop in 4 min (workspace notes, us-west1)\n📱 Pixel_9 (emulator-5554)\nViewer: http://127.0.0.1:1/#t=x')
+})
+
+test('a project opened through a symlink still finds its link', async ($, on) => {
+  const { statuses } = record(on)
+  cloudMachine(on, { [`${CLOUD}/links.json`]: links(), [`${CLOUD}/ws_1/state.json`]: state({ state: 'ready' }) }, '/tmp/notes')
+  await $.session.start({ cwd: '/tmp/notes', surface: 'terminal', isInteractive: true })
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: ready')
+})
+
+test('a starting session is followed until it is ready, then idle', async ($, on) => {
+  const { statuses, toasts } = record(on)
+  const files = { [`${CLOUD}/links.json`]: links(), [`${CLOUD}/ws_1/state.json`]: state({ state: 'starting', stage: 'booting the VM' }) }
+  const clock = cloudMachine(on, files)
+  await $.session.start({ cwd: '/work/notes', surface: 'terminal', isInteractive: true })
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: starting (booting the VM)…')
+  files[`${CLOUD}/ws_1/state.json`] = state({ state: 'ready', idle_stop_at: min(15), updated_at: min(1) })
+  await clock.advance(5000)
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: ready')
+  expect(toasts).toContain('ShadowDroid Cloud: the cloud device is ready')
+  files[`${CLOUD}/ws_1/state.json`] = state({ state: 'ready', expires_at: min(9), updated_at: min(1) })
+  await clock.advance(5000)
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: ready · session ends in 9 min')
+  await clock.advance(5000)
+  expect(toasts.filter(t => t.includes('maximum length')).length).toBe(1)
+  files[`${CLOUD}/ws_1/state.json`] = state({ state: 'idle', updated_at: min(1) })
+  await clock.advance(5000)
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: stopped when idle · the next command resumes it')
+})
+
+test('onboarding: the sign-in code, the upload approval, then the session', async ($, on) => {
+  const { statuses, toasts } = record(on)
+  const files: Record<string, string> = {}
+  cloudMachine(on, files)
+  let reply = '{}'
+  on('tool.call', async () => ({ result: {}, text: reply }))
+  await $.session.start({ cwd: '/work/notes', surface: 'terminal', isInteractive: true })
+  expect(statuses).toEqual([])
+
+  files[`${CLOUD}/login-pending.json`] = JSON.stringify({
+    user_code: 'WXYZ-1234',
+    verification_uri: 'https://app.shadowdroid.dev/activate',
+    verification_uri_complete: 'https://app.shadowdroid.dev/activate?code=WXYZ-1234',
+    expires_at: NOW / 1000 + 600,
+  })
+  await $.tool.call({ tool: 'Bash', command: 'shadowdroid cloud login --no-wait --json' })
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: sign in with code WXYZ-1234')
+  expect(toasts[toasts.length - 1]).toBe('ShadowDroid Cloud sign-in: open https://app.shadowdroid.dev/activate?code=WXYZ-1234 and approve the code WXYZ-1234')
+
+  delete files[`${CLOUD}/login-pending.json`]
+  files[`${CLOUD}/links.json`] = links({ ...LINK, state: 'pending', approval_url: 'https://app.shadowdroid.dev/link/lr_1' })
+  await $.tool.call({ tool: 'Bash', command: 'shadowdroid cloud link --json' })
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: approve the upload in your browser')
+  expect(toasts[toasts.length - 1]).toBe('ShadowDroid Cloud: approve uploading this project at https://app.shadowdroid.dev/link/lr_1')
+
+  files[`${CLOUD}/links.json`] = links()
+  files[`${CLOUD}/ws_1/state.json`] = state({ state: 'starting' })
+  await $.tool.call({ tool: 'Bash', command: 'shadowdroid app apply' })
+  expect(statuses[statuses.length - 1]).toBe('☁ Cloud: starting… · 📱 · build failed')
+
+  reply = JSON.stringify({ ok: false, code: 'cloud_quota_exceeded', msg: 'session-hours used up', detail: { limit: 'session_hours' } })
+  await $.tool.call({ tool: 'Bash', command: 'shadowdroid ui dump' })
+  expect(toasts[toasts.length - 1]).toBe('ShadowDroid Cloud: a usage limit was reached; `shadowdroid cloud usage` shows your limits and when they reset')
+})
+
+test('cloud mode off for this project leaves the status line alone', async ($, on) => {
+  const { statuses } = record(on)
+  cloudMachine(on, { [`${CLOUD}/links.json`]: links({ ...LINK, enabled: false }), [`${CLOUD}/ws_1/state.json`]: state({ state: 'ready' }) })
+  await $.session.start({ cwd: '/work/notes', surface: 'terminal', isInteractive: true })
+  expect(statuses).toEqual([])
 })

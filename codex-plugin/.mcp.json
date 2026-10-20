@@ -19,6 +19,12 @@
       "env": {
         "SHADOWDROID_AGENT": "codex"
       }
+    },
+    "shadowdroid-cloud": {
+      "type": "http",
+      "url": "https://mcp.shadowdroid.dev/mcp",
+      "startup_timeout_sec": 30,
+      "tool_timeout_sec": 900
     }
   }
 }

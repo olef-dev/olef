@@ -1,12 +1,48 @@
 ---
 name: android-device
-description: Run, test, debug and visually verify the user's Android app on an emulator or device with ShadowDroid, through the `shadowdroid` CLI, and with a live device viewer in Claude Desktop when the user wants to see or use the device themselves. Use whenever the user wants to run, try, test, or see their Android app ("run the app", "does this screen look right?", "tap through onboarding", "show me", "test on Pixel 9"), boot an emulator, or check a change on a device.
+description: Run, test, debug and visually verify the user's Android app on an emulator or device with ShadowDroid, through the `shadowdroid` CLI, and with a live device viewer in Claude Desktop when the user wants to see or use the device themselves. Use whenever the user wants to run, try, test, or see their Android app ("run the app", "does this screen look right?", "tap through onboarding", "show me", "test on Pixel 9"), boot an emulator, or check a change on a device, including on a machine with no Android SDK (ShadowDroid Cloud).
 ---
 
 # Android device
 
 Work through the `shadowdroid` CLI (Bash). Open the device viewer only
 when the user wants to see or use the device.
+
+## No Android SDK here: local or ShadowDroid Cloud
+
+When `shadowdroid doctor --json` (or the session's ShadowDroid note) finds no
+Android SDK, adb or device and the project isn't linked to ShadowDroid Cloud,
+ask the user which they want before installing anything:
+
+- **Set up Android locally:** Android Studio, or the SDK and platform-tools.
+- **ShadowDroid Cloud:** nothing else to install. The project is uploaded to
+  their cloud workspace and builds and runs on a cloud emulator (an
+  invite-only alpha).
+
+For Cloud, with the user's yes for each step:
+
+1. `shadowdroid cloud login --no-wait --json` returns a code and a page on
+   app.shadowdroid.dev: give both to the user to sign in and approve (the
+   status line shows the code too), then run `shadowdroid cloud login`, which
+   returns once they have.
+2. `shadowdroid cloud link` in the project's root (or an empty folder made for
+   a new project), never any other folder. The user approves the upload in
+   the terminal or on the page it links.
+3. Everything below then works unchanged against the cloud emulator: `app
+   apply`, `ui …`, screenshots, the viewer. Don't boot an emulator. The first
+   command starts the session (up to about 2 minutes; on
+   `cloud_session_starting`, wait and run it again), and after 15 idle minutes
+   it stops until the next command.
+4. `shadowdroid cloud usage` shows hours and limits, and `shadowdroid cloud
+   stop` ends the session when the user is done. On `cloud_quota_exceeded`,
+   tell the user which limit and when it resets, and don't retry.
+   `shadowdroid commands --guide cloud` has every `cloud_*` error and Gradle
+   tasks without a local JDK (`cloud run`).
+
+With no `shadowdroid` CLI but the ShadowDroid Cloud MCP tools
+(`create_workspace`, `write_files`, `build_and_run`, `screenshot`,
+`open_viewer`), work through those instead: the project then lives in a
+hosted cloud workspace, and `export_project` returns it as a zip.
 
 ## Working through the CLI (the default)
 
@@ -159,4 +195,6 @@ You don't need to run `shadowdroid connect` yourself.
   device; tell the user rather than retrying.
 - **Privacy.** Screenshots are sent to Anthropic, so don't sign in to real
   accounts on a device you use. Treat physical phones with extra care. Ask
-  before opening URLs that carry user data.
+  before opening URLs that carry user data. In a project linked to
+  ShadowDroid Cloud, its files, builds and screen also go to ShadowDroid
+  Cloud.

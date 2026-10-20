@@ -4,7 +4,20 @@ import type { Register } from 'claude-code'
 const PREFIX = 'mcp__plugin_shadowdroid_shadowdroid__'
 
 type Device = { serial: string; avd?: string; viewerUrl?: string }
-type Session = { device?: Device; poll?: { cancel: () => void } }
+type Timer = { cancel: () => void }
+type Session = {
+  device?: Device
+  poll?: Timer
+  /** The device part of the status line, as last set. */
+  deviceStatus?: string
+  /** The cloud part of the status line, absent outside ShadowDroid Cloud. */
+  cloudStatus?: string
+  cloud?: CloudView
+  cloudDirs?: string[]
+  cloudPoll?: Timer
+  /** The toasts already raised (`toastOnce`). */
+  toasted?: Set<string>
+}
 type Json = Record<string, unknown>
 
 /** The tool's JSON result: the first parseable object in its text. */
@@ -45,6 +58,258 @@ export function runsApply(command: unknown): boolean {
   return typeof command === 'string' && /\bshadowdroid\b[^|;&\n]*\bapp\s+apply\b/.test(command)
 }
 
+/** A shell command that runs the `shadowdroid` CLI at all. */
+export function runsShadowdroid(command: unknown): boolean {
+  return typeof command === 'string' && /\bshadowdroid\b/.test(command)
+}
+
+// ShadowDroid Cloud, from the CLI's files under `~/.shadowdroid/cloud/`
+// (SHADOWDROID_HOME moves them), all optional:
+//   links.json          { links: [{ root, workspace_id, name, enabled, state, approval_url?, zone? }] }
+//   login-pending.json  { user_code, verification_uri, verification_uri_complete?, expires_at }
+//   <workspace>/state.json, written by the workspace's daemon:
+//     { workspace, session, state, stage?, region?, idle_stop_at?, expires_at?,
+//       updated_at?, error?: { code, message? } }
+// `state` is starting | ready | stopping | idle | stopped | error. Times are
+// RFC 3339 strings, epoch milliseconds or epoch seconds. A file older than
+// 3 minutes, with no idle stop still ahead, is a daemon that's gone.
+
+type CloudView = { link?: Json; state?: Json; stateMtime?: number; login?: Json }
+
+/** Milliseconds since the epoch, from an RFC 3339 string or a number of seconds or milliseconds. */
+function epochMs(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) return value < 1e11 ? value * 1000 : value
+  if (typeof value === 'string') {
+    const ms = Date.parse(value)
+    return Number.isNaN(ms) ? undefined : ms
+  }
+  return undefined
+}
+
+const STALE_MS = 3 * 60_000
+const COUNTDOWN_MS = 10 * 60_000
+
+function minutesLeft(at: number, now: number): string {
+  const minutes = Math.ceil((at - now) / 60_000)
+  return minutes <= 1 ? 'in under a minute' : `in ${minutes} min`
+}
+
+/** Comparable form of a local path: forward slashes, no trailing slash, Windows drives case-folded. */
+function normalPath(path: string): string {
+  const slashed = path.replace(/\\/g, '/').replace(/\/+$/, '')
+  return /^[A-Za-z]:/.test(slashed) ? slashed.toLowerCase() : slashed
+}
+
+/** Whether `dir` is the linked project's root or inside it. */
+export function inProject(projectRoot: unknown, dir: string): boolean {
+  if (typeof projectRoot !== 'string' || !projectRoot) return false
+  const root = normalPath(projectRoot)
+  const here = normalPath(dir)
+  return here === root || here.startsWith(`${root}/`)
+}
+
+/** The workspace directory's name, as the CLI makes one path component of a workspace id. */
+export function safeName(id: string): string {
+  return id.replace(/[^A-Za-z0-9_-]/g, '_') || '_'
+}
+
+/** The session fields of a state.json, flat or under `session`. */
+function sessionOf(state: Json | undefined): Json {
+  const nested = state?.session
+  return nested && typeof nested === 'object' ? { ...state, ...(nested as Json) } : (state ?? {})
+}
+
+/** The cloud part of the status line, or undefined when there is nothing to say. */
+export function cloudLine(view: CloudView | undefined, now: number): string | undefined {
+  const code = view?.login?.user_code
+  if (typeof code === 'string' && code) return `☁ Cloud: sign in with code ${code}`
+  const link = view?.link
+  if (!link || link.enabled === false) return undefined
+  if (link.state === 'pending') return '☁ Cloud: approve the upload in your browser'
+  if (!view.state) return '☁ Cloud'
+  const s = sessionOf(view.state)
+  const what = typeof s.state === 'string' ? s.state : 'stopped'
+  const idle = epochMs(s.idle_stop_at)
+  const end = epochMs(s.expires_at)
+  const fresh = Math.max(epochMs(view.state.updated_at) ?? 0, view.stateMtime ?? 0)
+  if (what === 'ready' && idle !== undefined && now > idle && fresh < idle) {
+    return '☁ Cloud: stopped when idle · the next command resumes it'
+  }
+  if (now - fresh > STALE_MS && !(idle !== undefined && idle > now)) return '☁ Cloud'
+  switch (what) {
+    case 'starting': {
+      const stage = typeof s.stage === 'string' && s.stage ? ` (${s.stage})` : ''
+      return `☁ Cloud: starting${stage}…`
+    }
+    case 'ready': {
+      if (end !== undefined && end > now && end - now <= COUNTDOWN_MS) {
+        return `☁ Cloud: ready · session ends ${minutesLeft(end, now)}`
+      }
+      if (idle !== undefined && idle > now && idle - now <= COUNTDOWN_MS) {
+        return `☁ Cloud: ready · idle stop ${minutesLeft(idle, now)}`
+      }
+      return '☁ Cloud: ready'
+    }
+    case 'stopping':
+      return '☁ Cloud: stopping…'
+    case 'idle':
+      return '☁ Cloud: stopped when idle · the next command resumes it'
+    case 'error': {
+      const err = (s.error as Json | undefined)?.code
+      if (err === 'cloud_quota_exceeded') return '☁ Cloud: limit reached'
+      if (err === 'cloud_auth_required') return '☁ Cloud: sign-in needed'
+      return '☁ Cloud: error'
+    }
+    default:
+      return '☁ Cloud: stopped'
+  }
+}
+
+/** Whether the cloud line can still change on its own (so worth polling). */
+function cloudLive(view: CloudView, line: string | undefined): boolean {
+  if (!line || line === '☁ Cloud') return false
+  if (view.login || view.link?.state === 'pending') return true
+  const what = sessionOf(view.state).state
+  return what === 'starting' || what === 'ready' || what === 'stopping'
+}
+
+/** Where the CLI keeps its cloud files: `$SHADOWDROID_HOME/cloud`, else `~/.shadowdroid/cloud`. */
+// biome-ignore lint: `$` is the engine's
+async function cloudDir($: any): Promise<string | undefined> {
+  const custom = await $.env.get('SHADOWDROID_HOME')
+  if (custom) return `${custom}/cloud`
+  const home = (await $.env.get('HOME')) || (await $.env.get('USERPROFILE'))
+  return home ? `${home}/.shadowdroid/cloud` : undefined
+}
+
+// biome-ignore lint: `$` is the engine's
+async function readJson($: any, file: string): Promise<Json | undefined> {
+  try {
+    const value = JSON.parse(await $.fs.read(file))
+    return value && typeof value === 'object' ? (value as Json) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/** This session's folder, and where it really is when a link leads there. */
+// biome-ignore lint: `$` is the engine's
+async function sessionDirs($: any): Promise<string[]> {
+  let here: string
+  try {
+    here = await $.session.root()
+  } catch {
+    here = await $.session.cwd()
+  }
+  try {
+    const real = (await $.fs.stat(here, { resolve: true }))?.realPath
+    if (typeof real === 'string' && real !== here) return [here, real]
+  } catch {
+    // as given
+  }
+  return [here]
+}
+
+/** What the CLI's files say about ShadowDroid Cloud for this session's project. */
+// biome-ignore lint: `$` is the engine's
+async function readCloud($: any, dirs: string[]): Promise<CloudView | undefined> {
+  const dir = await cloudDir($)
+  if (!dir) return undefined
+  const view: CloudView = {}
+  const login = await readJson($, `${dir}/login-pending.json`)
+  const loginEnds = epochMs(login?.expires_at)
+  if (login && typeof login.user_code === 'string' && (loginEnds === undefined || loginEnds > (await $.clock.now()))) {
+    view.login = login
+  }
+  const links = (await readJson($, `${dir}/links.json`))?.links
+  if (Array.isArray(links)) {
+    for (const link of links as Json[]) {
+      if (!dirs.some(d => inProject(link.root, d))) continue
+      if (!view.link || String(link.root).length > String(view.link.root).length) view.link = link
+    }
+  }
+  const id = view.link?.workspace_id
+  if (typeof id === 'string' && id && view.link?.enabled !== false) {
+    const file = `${dir}/${safeName(id)}/state.json`
+    view.state = await readJson($, file)
+    if (view.state) {
+      try {
+        view.stateMtime = (await $.fs.stat(file))?.mtimeMs
+      } catch {
+        // updated_at alone
+      }
+    }
+  }
+  return view.login || view.link ? view : undefined
+}
+
+/** The status line: the cloud part, then the device part. */
+// biome-ignore lint: `$` is the engine's
+function show($: any, session: Session): void {
+  const parts = [session.cloudStatus, session.deviceStatus].filter(Boolean)
+  $.ui.status(parts.length ? parts.join(' · ') : undefined)
+}
+
+// biome-ignore lint: `$` is the engine's
+function setStatus($: any, session: Session, text: string): void {
+  session.deviceStatus = text
+  show($, session)
+}
+
+/** Each toast once per session: `key` names what it is about. */
+// biome-ignore lint: `$` is the engine's
+function toastOnce($: any, session: Session, key: string, text: string): void {
+  session.toasted ??= new Set()
+  if (session.toasted.has(key)) return
+  session.toasted.add(key)
+  $.ui.toast(text)
+}
+
+/** Re-read the cloud files and redraw what changed. */
+// biome-ignore lint: `$` is the engine's
+async function refreshCloud($: any, session: Session): Promise<void> {
+  session.cloudDirs ??= await sessionDirs($)
+  const before = sessionOf(session.cloud?.state).state
+  const view = await readCloud($, session.cloudDirs).catch(() => undefined)
+  session.cloud = view
+  const now = await $.clock.now()
+  const line = cloudLine(view, now)
+  const login = view?.login
+  if (login) {
+    const url = login.verification_uri_complete ?? login.verification_uri
+    toastOnce($, session, `login:${login.user_code}`, `ShadowDroid Cloud sign-in: open ${url} and approve the code ${login.user_code}`)
+  }
+  if (view?.link?.state === 'pending' && typeof view.link.approval_url === 'string') {
+    toastOnce($, session, `link:${view.link.approval_url}`, `ShadowDroid Cloud: approve uploading this project at ${view.link.approval_url}`)
+  }
+  const after = sessionOf(view?.state)
+  if (before === 'starting' && after.state === 'ready') $.ui.toast('ShadowDroid Cloud: the cloud device is ready')
+  const end = epochMs(after.expires_at)
+  if (after.state === 'ready' && end !== undefined && end > now && end - now <= COUNTDOWN_MS) {
+    toastOnce(
+      $,
+      session,
+      `end:${String(after.session ?? after.id ?? '')}`,
+      `ShadowDroid Cloud: this session reaches its maximum length ${minutesLeft(end, now)}; the next command starts a new one if you have hours left`,
+    )
+  }
+  if (line !== session.cloudStatus) {
+    session.cloudStatus = line
+    show($, session)
+  }
+  const live = view !== undefined && cloudLive(view, line)
+  if (live && !session.cloudPoll) {
+    try {
+      session.cloudPoll = $.clock.every(5000, () => refreshCloud($, session).catch(() => undefined))
+    } catch {
+      // no timers here (a test host): the line updates after each command
+    }
+  } else if (!live && session.cloudPoll) {
+    session.cloudPoll.cancel()
+    session.cloudPoll = undefined
+  }
+}
+
 /** What Claude is asked when the person runs `/device show`. */
 export const SHOW_PROMPT = 'Show me the Android device in the viewer so I can see and use it.'
 
@@ -77,11 +342,12 @@ function react($: any, session: Session, tool: string, action: string | undefine
     const message = text ?? ''
     if (message.includes('consent_required')) {
       $.ui.toast('Claude is waiting for you: click "Let Claude use it" in the device viewer')
-      $.ui.status(`${label(session.device)} · waiting for your OK in the viewer`)
+      setStatus($, session, `${label(session.device)} · waiting for your OK in the viewer`)
     } else if (message.includes('device_reserved')) {
       $.ui.toast('Another Claude session or tool is using this device')
-    } else if (tool === 'build') {
-      $.ui.status(`${label(session.device)} · build failed`)
+    } else {
+      cloudErrorToast($, message)
+      if (tool === 'build') setStatus($, session, `${label(session.device)} · build failed`)
     }
     return
   }
@@ -95,17 +361,17 @@ function react($: any, session: Session, tool: string, action: string | undefine
     }
   }
   if (tool === 'control' && action === 'detach') {
-    $.ui.status(`${label(session.device)} · released`)
+    setStatus($, session, `${label(session.device)} · released`)
     session.device = undefined
     return
   }
   if (tool === 'boot' || (tool === 'control' && action === 'attach')) {
-    $.ui.status(`${label(session.device)} · attached`)
+    setStatus($, session, `${label(session.device)} · attached`)
   }
   if (tool !== 'build') return
 
   const timings = (value.timings ?? {}) as Json
-  $.ui.status(`${label(session.device)} · ${buildOutcome(value)} ${seconds(timings.total_ms)}`.trim())
+  setStatus($, session, `${label(session.device)} · ${buildOutcome(value)} ${seconds(timings.total_ms)}`.trim())
   const crash = value.crash as Json | undefined
   const composeError = value.compose_error as Json | undefined
   if (crash || value.app_alive === false) {
@@ -122,6 +388,20 @@ function react($: any, session: Session, tool: string, action: string | undefine
   }
   // A reinstall is routine, not an error: the status line says it, and the
   // viewer's Builds tab says why.
+}
+
+/** A toast for the ShadowDroid Cloud errors only the person can resolve; true when one was raised. */
+// biome-ignore lint: `$` is the engine's
+function cloudErrorToast($: any, text: string): boolean {
+  if (text.includes('cloud_quota_exceeded')) {
+    $.ui.toast('ShadowDroid Cloud: a usage limit was reached; `shadowdroid cloud usage` shows your limits and when they reset')
+    return true
+  }
+  if (text.includes('cloud_invite_required')) {
+    $.ui.toast('ShadowDroid Cloud needs an invite during the alpha; accept yours on shadowdroid.dev')
+    return true
+  }
+  return false
 }
 
 /** The viewer's base URL and token, from `http://127.0.0.1:PORT/#t=TOKEN`. */
@@ -215,11 +495,24 @@ export const register: Register = on => {
       description: 'The Android device Claude is using; `/device show` opens the device viewer',
       argumentHint: '[show]',
     })
+    try {
+      await refreshCloud($, session)
+    } catch {
+      // display only
+    }
     return next(e)
   })
 
   on('command.run', { command: 'device' }, async ($, e) => {
     const device = session.device
+    const link = session.cloud?.link
+    const region = sessionOf(session.cloud?.state).region
+    const where = link
+      ? [typeof link.name === 'string' ? `workspace ${link.name}` : '', typeof region === 'string' ? region : '']
+          .filter(Boolean)
+          .join(', ')
+      : ''
+    const cloudNote = session.cloudStatus ? `${session.cloudStatus}${where ? ` (${where})` : ''}` : undefined
     if (e.args.trim() === 'show') {
       if (device?.viewerUrl) return { text: `Viewer: ${device.viewerUrl}` }
       // Not from here: this hook holds the turn the prompt would wait on.
@@ -231,9 +524,11 @@ export const register: Register = on => {
       return { text: 'Asking Claude to open the device viewer…' }
     }
     if (!device) {
-      return { text: 'No Android device in this session yet. Ask Claude to run the app; `/device show` opens the device viewer.' }
+      const none = 'No Android device in this session yet. Ask Claude to run the app; `/device show` opens the device viewer.'
+      return { text: cloudNote ? `${cloudNote}\n${none}` : none }
     }
-    const lines = [`${label(device)} (${device.serial})`]
+    const lines = cloudNote ? [cloudNote] : []
+    lines.push(`${label(device)} (${device.serial})`)
     lines.push(device.viewerUrl ? `Viewer: ${device.viewerUrl}` : 'No viewer open: `/device show` opens one.')
     return { text: lines.join('\n') }
   })
@@ -255,14 +550,31 @@ export const register: Register = on => {
     .catch(($, e, next) => next(e))
 
   on('tool.call', async ($, e, next) => {
+    const command = (e as unknown as Json).command
+    // Any other `shadowdroid` command: it may sign in, link, start or stop a
+    // cloud session, and a cloud limit is worth a toast.
+    if (e.tool === 'Bash' && runsShadowdroid(command) && !runsApply(command)) {
+      const ran = await next(e)
+      try {
+        if (typeof ran?.text === 'string') cloudErrorToast($, ran.text)
+        await refreshCloud($, session)
+      } catch {
+        // display only
+      }
+      return ran
+    }
     // Working through the CLI: `shadowdroid app apply` still updates the status line.
-    if (e.tool === 'Bash' && runsApply((e as unknown as Json).command)) {
-      $.ui.status(`${label(session.device)} · building…`)
+    if (e.tool === 'Bash' && runsApply(command)) {
+      setStatus($, session, `${label(session.device)} · building…`)
       const ran = await next(e)
       try {
         const value = applyResult(typeof ran?.text === 'string' ? ran.text : undefined)
         if (value) react($, session, 'build', undefined, { text: JSON.stringify(value) })
-        else $.ui.status(`${label(session.device)} · build failed`)
+        else {
+          setStatus($, session, `${label(session.device)} · build failed`)
+          if (typeof ran?.text === 'string') cloudErrorToast($, ran.text)
+        }
+        await refreshCloud($, session)
       } catch {
         // display only
       }
@@ -272,11 +584,13 @@ export const register: Register = on => {
     const tool = e.tool.slice(PREFIX.length)
     const args = e as unknown as Json
     const action = typeof args.action === 'string' ? args.action : undefined
-    if (tool === 'build') $.ui.status(`${label(session.device)} · building…`)
+    if (tool === 'build') setStatus($, session, `${label(session.device)} · building…`)
     const ran = await next(e)
     // Display only: nothing here may change or fail the tool's result.
     try {
       react($, session, tool, action, ran)
+      // In cloud mode the tools run there too, and may start or wake the session.
+      if (session.cloud) await refreshCloud($, session)
     } catch {
       // ignore
     }

@@ -4,6 +4,66 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.2.0
+
+Record a flow once and replay it as a test without AI, and try ShadowDroid
+Cloud, an invite-only alpha that builds and runs your app on a cloud emulator.
+
+- **Tests from recordings:** record a flow in the device viewer (the Record
+  button) or let your agent explore the app, then `shadowdroid record save
+  <name>` writes a test folder: `test.sh`, a Bash script of one `shadowdroid`
+  command per step, plus a screenshot of every step, a README and
+  `recording.json`. Saving drops dead ends, typos and refused commands, picks
+  stable selectors, turns typed values into parameters, and replays the test
+  once before writing it. Each step names its element and checks its own
+  result, so the script needs no sleeps. See [recording tests](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/recording.md).
+- **Test runs:** `shadowdroid test run <folders…>` runs tests with `--repeat`,
+  `--params` data sets and retries, and writes JUnit, `report.json`, an HTML
+  report with the expected and actual screen of a failing step, and a flake
+  report. A failure names its step, an error `code` and `fault` (`test`,
+  `app` or `environment`), and the evidence: an app crash or process death,
+  a system dialog or notification shade covering the app, airplane mode.
+  `test lint` checks scripts, `test show` prints one, and `test heal` proposes
+  a patch when an id or text changed. See [test runs](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/test-runs.md).
+- **Sessions set up their starting state:** `session open` takes `--app`,
+  `--clear-data`, `--launch`, `--expect-*`, `--profile automation`, and
+  permission state: `--grant`, `--revoke`, `--deny P` (undone at close),
+  `--reset-permission P` and `--reset-permissions`, so a system permission
+  dialog appears again on every run; `perm dialog allow-foreground|allow-once|deny`
+  answers one. A session keeps a journal of what was done in it, and in a
+  session with `--app` an input command fails before it acts when the app is
+  not in front (its process died, it crashed, or system UI or another app
+  covers it), and a crash of any of the app's processes fails the step. See
+  [sessions](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/sessions.md).
+- **One-command steps:** `ui tap`, `long-tap` and `swipe` take a selector,
+  `--wait-ms` for the element to appear and `--reveal` to scroll it into
+  view; `ui type --value-env` types a value from an environment variable
+  without echoing it.
+- **ShadowDroid Cloud (invite-only alpha):** with no Android SDK on your
+  machine, `shadowdroid cloud login` and `shadowdroid cloud link` upload your
+  project to a cloud workspace; then every `shadowdroid` command, `app apply`
+  builds and the device viewer run against a cloud emulator, and `cloud run --
+  ./gradlew …` runs Gradle there. `cloud status`, `cloud usage` and
+  `cloud stop` show and end the session. The Codex plugin also lists the
+  hosted MCP server at `mcp.shadowdroid.dev`, which works with no CLI
+  installed. Sign in at [app.shadowdroid.dev](https://app.shadowdroid.dev) to
+  join the list or accept an invite. See the
+  [terms](https://shadowdroid.dev/terms), the
+  [acceptable use policy](https://shadowdroid.dev/acceptable-use) and the
+  [privacy policy](https://shadowdroid.dev/privacy#cloud).
+- **Gestures finish on time:** `ui long-tap`, `swipe`, `drag` and `swipe-ext`
+  now take their requested duration (a 300 ms swipe took about 2 s, and a
+  1.5 s hold could time out and need a device reboot). `session recover`
+  clears an interrupted UI gesture without a reboot when the device service
+  is idle or gone.
+- **Server install fixes:** a release CLI run inside a ShadowDroid source
+  checkout no longer installs that checkout's server build, and a server of
+  the wrong version fails at once with `apk_version_mismatch` instead of a
+  73-second wait.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.1.0
 
 ShadowDroid is now free for everyone, tells you when a new release is out,

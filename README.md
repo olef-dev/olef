@@ -63,6 +63,34 @@ shadowdroid init             # add the agent plugins and skills
 If anything is off, `shadowdroid doctor` diagnoses the setup and
 `doctor --fix` repairs it.
 
+## Tests from recordings
+
+Record a flow once, in the device viewer or by letting an agent drive the
+app, and `shadowdroid record save` writes it as a test: a Bash script of one
+`shadowdroid` command per step, each naming its element and checking its own
+result. `shadowdroid test run` replays it without AI and writes JUnit and an
+HTML report with screenshots. See [recording tests](docs/recording.md) and
+[test runs](docs/test-runs.md).
+
+## ShadowDroid Cloud (invite-only alpha)
+
+No Android SDK on your machine? ShadowDroid Cloud builds your project and runs
+it on a cloud emulator; every `shadowdroid` command and the device viewer work
+the same way:
+
+```bash
+shadowdroid cloud login      # approve this machine at app.shadowdroid.dev
+shadowdroid cloud link       # upload this project to your cloud workspace
+shadowdroid app apply        # build and run it on the cloud emulator
+```
+
+The Codex plugin can also use the hosted MCP server at `mcp.shadowdroid.dev`
+with no CLI installed. Cloud is an invite-only alpha in one region: sign in
+at [app.shadowdroid.dev](https://app.shadowdroid.dev) to join the list, or
+enter your invite code there. See the
+[terms](https://shadowdroid.dev/terms) and
+[privacy policy](https://shadowdroid.dev/privacy#cloud).
+
 ## Updating
 
 ```bash
@@ -104,6 +132,8 @@ Details: [Claude Code plugin](claude-plugin/README.md),
 - [The agent loop](docs/agent-loop.md): how agents read, act and verify
 - [Output contract](docs/output-contract.md): the JSON every command returns
 - [Debugging](docs/debugging.md): logs, `why`, crashes and the debugger
+- [Recording tests](docs/recording.md) and [test runs](docs/test-runs.md):
+  record a flow, replay it as a Bash test, read the report
 - [Network](docs/network.md): the built-in proxy, interception and rules
 - [Updating](docs/updating.md): `shadowdroid update` and what follows the CLI
 - [Device state](docs/device-state.md), [sessions](docs/sessions.md),

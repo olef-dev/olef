@@ -42,6 +42,17 @@ reservation, annotations and recorded steps.
 5. When the user is done, call `control` `detach`. Emulators the `boot` tool
    started shut down 10 minutes after detach.
 
+## ShadowDroid Cloud
+
+In a project linked to ShadowDroid Cloud (`shadowdroid cloud status --json`),
+the device is the cloud session's emulator: `control` `attach` and the viewer
+work the same, forwarded to this machine, and `boot` isn't needed. Setting
+Cloud up, when there is no Android SDK and the user chooses it over a local
+install, is in `shadowdroid commands --guide cloud`; ask before signing in or
+uploading anything. With no `shadowdroid` CLI but the ShadowDroid Cloud MCP
+tools, `open_viewer` returns a live viewer link (view.shadowdroid.dev) to open
+in the in-app browser.
+
 ## Viewer or emulator window
 
 The user picks how they see the device; it's ShadowDroid's `show_device`
@@ -73,3 +84,5 @@ then boot), and say the app's in-memory state is lost.
   tools get `device_reserved`. Tell the user rather than retrying.
 - **Privacy.** Screenshots are sent to OpenAI, so don't sign in to real
   accounts on a device you use. Ask before opening URLs that carry user data.
+  In a project linked to ShadowDroid Cloud, its files, builds and screen also
+  go to ShadowDroid Cloud.

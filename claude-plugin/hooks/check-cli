@@ -2,9 +2,11 @@
 # SessionStart: when the shadowdroid CLI (or adb) is missing or too old, tell
 # the agent how to install it on this OS and show the user a one-line note;
 # when the CLI's update cache knows a newer release, say so the same way.
-# Silent when everything is in place and current. Never installs anything
-# itself: the agent offers the command and runs it only with the user's
-# approval.
+# With no local Android toolchain, ShadowDroid Cloud is offered next to the
+# local install, and a project linked to it needs no adb at all. Silent when
+# everything is in place and current. Never installs, signs in or uploads
+# anything itself: the agent offers the command and runs it only with the
+# user's approval.
 # Usage: check-cli [claude|codex] (the plugin it runs for; default claude).
 # Both plugins ship this same file.
 set -u
@@ -162,7 +164,55 @@ if [ -n "$update" ]; then
   fi
 fi
 
+toolchain=ok
 if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
+  toolchain=missing
+fi
+
+# ShadowDroid Cloud matters only without a local toolchain. The CLI answers
+# for the project in this folder: linked (cloud mode on), off (linked, cloud
+# mode off), signed_in (not linked), available (the cloud verbs exist, not
+# signed in) or unsupported (a CLI without them). Without a CLI to ask, it
+# stays unknown: the CLI the user installs has them. The CLI gets 4 s, and
+# any answer but its own JSON counts as unsupported.
+cloud=unknown
+if [ "$toolchain" = missing ] && [ "$cli" = ok ] && command -v shadowdroid >/dev/null 2>&1; then
+  cloud=unsupported
+  cloud_out=""
+  cloud_tmp="$(mktemp 2>/dev/null)"
+  if [ -n "$cloud_tmp" ]; then
+    shadowdroid cloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
+    cloud_pid=$!
+    waited=0
+    while kill -0 "$cloud_pid" 2>/dev/null && [ "$waited" -lt 40 ]; do
+      sleep 0.1
+      waited=$((waited + 1))
+    done
+    kill "$cloud_pid" 2>/dev/null
+    wait "$cloud_pid" 2>/dev/null
+    cloud_out="$(tr -d ' \t\r\n' <"$cloud_tmp")"
+    rm -f "$cloud_tmp"
+  fi
+  case "$cloud_out" in
+    *'"linked":true'*'"enabled":false'* | *'"enabled":false'*'"linked":true'*) cloud=off ;;
+    *'"linked":true'*) cloud=linked ;;
+    *'"signed_in":true'*) cloud=signed_in ;;
+    *'"cmd":"cloud_status"'* | *'"signed_in":'* | *'"code":"cloud_'*) cloud=available ;;
+  esac
+fi
+# A plugin whose MCP config names the remote ShadowDroid Cloud server works
+# without the CLI too, in a cloud-hosted workspace.
+remote_mcp=""
+if grep -qF 'mcp.shadowdroid.dev' "${CLAUDE_PLUGIN_ROOT}/.mcp.json" 2>/dev/null; then
+  remote_mcp=1
+fi
+
+if [ "$toolchain" = missing ] && [ "$cloud" = linked ]; then
+  if [ -n "$context" ]; then
+    context+=" "
+  fi
+  context+="This project is linked to ShadowDroid Cloud with cloud mode on: shadowdroid commands build and run the app on a cloud emulator, so adb, the Android SDK and a JDK are not needed on this machine. Don't install them unless the user asks. 'shadowdroid cloud status' shows the session, and 'shadowdroid commands --guide cloud' covers usage, limits and cloud errors."
+elif [ "$toolchain" = missing ]; then
   if [ -n "$context" ]; then
     context+=" "
   fi
@@ -183,6 +233,26 @@ if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
       notice="ShadowDroid: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)"
     fi
   fi
+  # The install notices get the cloud option; the update notice stands alone.
+  if [ "$cloud" = off ]; then
+    context+=" This project is linked to ShadowDroid Cloud, but cloud mode is off. 'shadowdroid cloud on' runs it in the cloud again, with no Android SDK or adb here; ask the user which they want."
+    if [ -z "$update" ]; then
+      notice+=" Or run it in the cloud again: shadowdroid cloud on"
+    fi
+  elif [ "$cloud" = signed_in ]; then
+    context+=" The user is signed in to ShadowDroid Cloud, but this folder isn't linked. Before installing anything, ask whether to set up Android locally or build and run in the cloud: 'shadowdroid cloud link' in the project's root uploads it once the user approves. 'shadowdroid commands --guide cloud' has the steps."
+    if [ -z "$update" ]; then
+      notice+=" Or no setup: build and run in the cloud (invite-only alpha), shadowdroid cloud link"
+    fi
+  elif [ "$cloud" != unsupported ]; then
+    context+=" Or no setup: ShadowDroid Cloud builds and runs the app on a cloud emulator, with nothing else to install (an invite-only alpha). Before installing anything, ask the user which they want: set up Android locally, or ShadowDroid Cloud ('shadowdroid cloud login' signs them in through the browser, then 'shadowdroid cloud link' in the project's root uploads it once they approve). Never sign the user up, sign in or upload code without their yes. 'shadowdroid commands --guide cloud' has the steps."
+    if [ -z "$update" ]; then
+      notice+=" Or no setup: build and run in the cloud (invite-only alpha), shadowdroid cloud login"
+    fi
+  fi
+fi
+if [ "$cli" != ok ] && [ -n "$remote_mcp" ]; then
+  context+=" This plugin also has the ShadowDroid Cloud MCP tools (mcp.shadowdroid.dev), which work without the CLI: the project then lives in a cloud-hosted workspace (create_workspace, write_files, build_and_run, screenshot, open_viewer, export_project), and the first call asks the user to sign in. Offer that or installing the CLI, which keeps the project in this folder, and let the user choose."
 fi
 
 [ -n "$context" ] || exit 0
@@ -192,5 +262,11 @@ json_escape() {
   s="${s//\\/\\\\}"; s="${s//\"/\\\"}"; s="${s//$'\n'/\\n}"; s="${s//$'\r'/}"; s="${s//$'\t'/\\t}"
   printf '%s' "$s"
 }
+# A project in cloud mode needs nothing from the user: context only.
+if [ -z "$notice" ]; then
+  printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' \
+    "$(json_escape "$context")"
+  exit 0
+fi
 printf '{"systemMessage":"%s","hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' \
   "$(json_escape "$notice")" "$(json_escape "$context")"

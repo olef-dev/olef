@@ -184,6 +184,53 @@ because repeating it can toggle a switch back or submit a form twice.
 blocks until that app reaches the foreground (e.g. a Custom Tab or share sheet
 opened), and `--pkg-not <package>` blocks until the screen leaves it.
 
+## One command per step
+
+A test step is one command that waits for its target, acts, and checks the
+result, with no `sleep`, `jq` or second command. The verbs that act on one
+element (`ui tap`, `ui text`, `ui set-progress`, `ui long-tap`,
+`ui double-tap`, `ui swipe`) share these flags:
+
+| Flag | What it does |
+| --- | --- |
+| `--wait-ms N` | Retries while the target is absent, ambiguous, disabled, covered or off screen. Those refusals happen on the device before any input, so a retry never acts twice; anything that may have been delivered is never retried. The result carries `target_wait` (`attempts`, `waited_ms`, `waited_for`). Default: one attempt. |
+| `--reveal` | Before acting, if the target isn't visible: waits for the screen to settle, hides the keyboard, scrolls the nearest list down then up (12 swipes at most); a keyboard covering the target is hidden too. Reports `reveal`. Needs `--rid`, `--text` or `--desc`. |
+| `--expect-checked [BOOL]`, `--expect-selected [BOOL]`, `--expect-enabled [BOOL]` | A postcondition on the target itself, read back by its selector on a stable screen (like `--expect-text`, and exclusive with the other `--expect-*`). Checked is read from the nearest checkable node around or inside the target. A failure says what the state was; Compose reports selectable chips as checked, and `--expect-selected` says so. |
+
+`ui long-tap`, `ui double-tap` and `ui swipe` take `--rid/--text/--desc/--xpath/
+--id/--handle` as well as coordinates. The element must be unique, enabled
+and not covered (`element_disabled`, `element_occluded`, `element_offscreen`,
+before any input); the touch lands on its centre, or on a clear point when part
+of it is covered. An element swipe needs `--direction` (the finger's
+direction) and travels `--scale` of the element (default 0.6).
+
+`ui tap --via touch` sends a real finger tap at the element's visible point
+instead of an accessibility click, for views that react to touches but not to
+clicks; the result's `action` is `touch`.
+
+`ui wait --checked/--selected/--enabled BOOL`, `--value N` (a range within half
+a step) and `--has-text TEXT` add conditions to the selector's element.
+`--has-text` matches what the element shows: its text, its description, and
+the text drawn inside its bounds. A timeout reports the state the element had
+in `detail.target`.
+
+`ui text --value-env NAME` types the value of an environment variable. The
+output names the variable instead of echoing the value, omits the readback,
+and every JSON string the command prints has the value replaced by
+`[secret:NAME]`. A missing variable fails with `value_env_missing` before
+anything is typed.
+
+`perm dialog allow-foreground|allow-once|deny` answers the runtime-permission
+dialog on screen by meaning, whatever its button ids on this Android version:
+it waits for the dialog (`--wait-ms`, default 5000), taps the answer, and waits
+for the dialog to close or the next one to replace it (`next_dialog`). A dialog
+without that answer fails with `dialog_choice_unavailable` and the answers it
+offers. `perm grant` skips the dialog; this is for flows that must go through
+it.
+
+`samples/shadowdroid-test-app/tests/shadowdroid/mission_recovery/test.sh` is a
+whole flow written this way.
+
 ## Sliders and ranges
 
 Platform and Compose sliders expose their accessibility `range` (`type`,
@@ -257,14 +304,14 @@ left. `commands --guide faults` has the details.
 | --- | --- |
 | **Discovery/setup** | `commands --json --depth 1`, `commands --json --describe '<path>'`, `commands --guide '<topic>'`, `config paths` / `schema` / `explain` / `init` / `validate`, `skill`, `init`, `update`, `usage` |
 | **Session/diagnostics** | `devices`, `connect`, `disconnect`, `test`, `doctor`, `collect`, `why`, `log` |
-| **UI automation** | `ui dump`, `ui audit`, `ui gen`, `ui screenshot`, `ui find`, `ui tap`, `ui set-progress`, `ui double-tap`, `ui long-tap`, `ui swipe`, `ui drag`, `ui swipe-ext`, `ui pinch`, `ui scroll-to`, `ui focus`, `ui text`, `ui pin`, `ui key`, `ui hide-keyboard`, `ui back`, `ui home`, `ui wait`, `ui toast` (action verbs take `--observe`, `--if-screen`, and `--if-interaction`; tap/progress/text also accept `--handle`) |
+| **UI automation** | `ui dump`, `ui audit`, `ui gen`, `ui screenshot`, `ui find`, `ui tap`, `ui set-progress`, `ui double-tap`, `ui long-tap`, `ui swipe`, `ui drag`, `ui swipe-ext`, `ui pinch`, `ui scroll-to`, `ui focus`, `ui text`, `ui pin`, `ui key`, `ui hide-keyboard`, `ui back`, `ui home`, `ui wait`, `ui toast` (action verbs take `--observe`, `--if-screen`, and `--if-interaction`; tap/progress/text/long-tap/double-tap/swipe also accept `--handle`, `--wait-ms` and `--reveal`) |
 | **Triage** | `why` (one-read verdict + evidence), `log` (structured app-scoped logcat + parsed crashes) |
 | **Live timeline** | `watch` (screen changes, crashes, ANRs, toasts, watcher actions, debugger logpoint hits, and HTTP events when network capture is active) |
 | **Screen video** | `video record -o DIR [--duration 30s]`; detached `video start -o DIR`, `video status`, `video mark LABEL`, `video stop` |
 | **Layout / Compose** | `layout snapshot`, `layout diff`, `layout source`, `layout recompositions` |
 | **Debugger** | `debug auto`, `snapshot`, `record`, `replay`, `status`, `sessions`, `clients`, `attach`, `break`, `breakpoints`, `logpoint add` / `list` / `events` / `follow` / `remove` / `clear`, `pause`, `resume`, `step-in`, `step-over`, `step-out`, `stop`, `detach`, `stack`, `threads`, `variables`, `eval`, `inspect`, `coroutines`, `continue-until`, `watch`, `step-until-screen-change`, `step-until-log`, `run-until-crash`, `native`, `tombstones` (`attach --mode java\|native\|mixed`; `--engine java\|native` picks the engine when a process has both) |
 | **App lifecycle/state** | `app start`, `stop`, `install`, `reinstall`, `clear`, `info`, `wait`, `current`; `app state snapshot`, `restore`, `recover`, `cleanup` |
-| **Permissions/app-ops** | `perm grant`, `revoke`, `list`, `reset`; `appops get`, `set` |
+| **Permissions/app-ops** | `perm grant`, `revoke`, `list`, `reset`, `dialog`; `appops get`, `set` |
 | **Device/system** | `device info`, `shell`, `wake`, `sleep`, `unlock`, `orientation`, `clipboard`, `notifications`, `quick-settings`, `open-url` |
 | **Display profile** | `profile snapshot`, `apply`, `reset` (animations, font, density, size, rotation) |
 | **Files** | `files ls`, `push`, `pull` (add `--run-as --app <pkg>` for private debuggable-app paths) |

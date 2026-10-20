@@ -26,7 +26,7 @@ shadowdroid ui wait --text "<expected>" --timeout-ms 5000
 shadowdroid ui wait --stable                 # until animations/loading settle
 shadowdroid ui scroll-to --rid <id> [--tap]
 shadowdroid ui set-progress --rid <slider> --value <n>
-shadowdroid ui long-tap <x> <y> --duration-ms 800
+shadowdroid ui long-tap --rid <id> --duration-ms 800
 shadowdroid ui key back|home|enter|dpad_center
 shadowdroid why --app <pkg>                  # crash / ANR / network / not-foreground verdict
 shadowdroid log --app <pkg> --last 2m        # app logcat, crash blocks parsed
@@ -57,6 +57,8 @@ Android's single `UiAutomation` slot, so `uiautomator dump`, `android layout`
 and Espresso fail while connected: wrap them in `shadowdroid test -- <command>`,
 or `disconnect` first. `doctor --json` diagnoses the host-device pipe.
 `config init --project` and `config validate --json` manage project config.
+No Android SDK or adb? Ask whether to set up locally or use ShadowDroid
+Cloud; `--guide cloud` covers sign-in, linking, usage and `cloud_*` errors.
 
 ## Output contract
 
@@ -88,7 +90,8 @@ recovery), `--guide net` (proxy, rules, intercept), `--guide debugger`
 (debugger, layout, runtime), `--guide state` (app/device/permission/files
 state), `--guide evidence` (checkpoints, video), `--guide faults` (failure
 injection), `--guide verification` (coding-task checks, concurrent agents),
-`--guide feedback` (report a ShadowDroid bug: errors with `fault: "shadowdroid"`).
+`--guide test` (test scripts, session settings, `test run`), `--guide feedback`
+(report a ShadowDroid bug: errors with `fault: "shadowdroid"`).
 
 Prefer typed verbs (`app install --grant-all`, `perm grant`, `appops set`,
 `files pull --run-as`) over `device shell`. `debug auto <pkg>` starts a
@@ -120,5 +123,5 @@ Core groups below. For an unfamiliar command run `shadowdroid <group> <sub> --he
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`shadowdroid <command> --help` for details): session, verify, evidence, test, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`shadowdroid <command> --help` for details): session, verify, evidence, cloud, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 
