@@ -48,7 +48,10 @@ forwarded to the app or upstream are never changed. The session log is written
 `--redact-pixels` (PNG only) blacks out matching accessibility bounds, but
 still reports that Android may not expose every rendered glyph. `collect`
 marks screenshots potentially sensitive unless `--redact-screenshots`
-explicitly blacks out matching bounds.
+explicitly blacks out matching bounds. The device viewer's annotation
+overviews and crops are full-screen pixels too: they are captured with
+`--redact-pixels` whenever the redaction policy is on (`SHADOWDROID_REDACT`
+or `redaction.enabled`), and report `pixels_redacted` per screen.
 
 Video is a stricter boundary: global `--redact` does not alter MP4 pixels.
 Every `video` bundle is marked as containing sensitive, unencrypted data;

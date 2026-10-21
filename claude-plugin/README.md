@@ -57,8 +57,9 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
 - **Annotate** (Cmd+E). Click an element or drag around an area on the
   device and write what should change; numbered markers stay on screen.
   Claude reads them with the `annotations` tool. Each note comes with the
-  element, a selector, a crop, and, in debuggable Compose apps, the
-  composable and source line that drew it. "Send to Claude" submits them,
+  element, a selector, and, in debuggable Compose apps, the composable and
+  source line that drew it, plus a screenshot of each screen with the notes
+  outlined and numbered. "Send to Claude" submits them,
   and pending notes also ride along with your next message.
 - **Record steps** (Cmd+T). Records your taps, swipes, typing and keys. Each
   tap is resolved to the element it hit, so Claude can turn the steps into a
@@ -213,7 +214,7 @@ without the MCP server:
 | `build` | `shadowdroid app apply` (same result, including `screen`, `logged_errors`, `failed_requests`) |
 | `boot` | `shadowdroid emulator list` / `emulator boot <avd>` / `emulator kill <avd>` |
 | `control` `touch_path` / `touch2_path` | `shadowdroid ui path x,y … [--fingers 2]` (pixels) |
-| `annotations` | `shadowdroid pane annotations` (crops saved as PNG files) |
+| `annotations` | `shadowdroid pane annotations` (screen overviews saved as PNG files) |
 | `recording` | `shadowdroid pane steps` |
 | the viewer | `shadowdroid pane` |
 

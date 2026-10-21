@@ -91,6 +91,23 @@ enter your invite code there. See the
 [terms](https://shadowdroid.dev/terms) and
 [privacy policy](https://shadowdroid.dev/privacy#cloud).
 
+## Real phones from Google Cloud (preview)
+
+Drive real phones from Google Cloud's Developer Device Platform like a USB
+device. Sessions are billed to your own Google Cloud project (`ddp.project`
+in `.shadowdroid/config.json`); set `ddp.budget_usd_per_day` to let agents
+reserve within a daily limit, otherwise each reserve asks you to confirm:
+
+```bash
+shadowdroid devices catalog --physical --available   # specs like ddp:tokay-36
+shadowdroid devices reserve ddp:tokay-36             # attached as 127.0.0.1:<port>
+shadowdroid -d ddp:tokay-36 app apply                # every command works on it
+shadowdroid devices release ddp:tokay-36             # or it is released when idle
+```
+
+`net` capture works through a relay in the ShadowDroid server. DDP is a
+Google Cloud Preview service; see [configuration](docs/configuration.md).
+
 ## Updating
 
 ```bash

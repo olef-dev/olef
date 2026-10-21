@@ -31,7 +31,8 @@ reservation, annotations and recorded steps.
    annotations" prompt in the composer, and they press Enter. Then call
    `annotations`: each note has the comment, the element and its selector,
    `source` (the composables that drew it, innermost first, with file and
-   line) and a crop of the screen. Address each by its number `n`, apply the
+   line); an image of each screen shows every note outlined in red with its
+   number. Address each by its number `n`, apply the
    change, and check the result.
 4. **Turn what the user did into a test.** Record steps (the list button, or
    ⌥T) records the user's taps, swipes, typing and keys; "Make a test"

@@ -461,7 +461,7 @@ export function notesContext(items: Json[]): string {
     const code = (n.used_in as Json[] | undefined)?.[0]
     return `${n.n}. ${target(n)}${at}${code ? `, used in ${code}` : ''}: ${n.comment || '(no comment)'}`
   })
-  return ['Device annotations (crops and selectors: `annotations` tool):', ...lines].join('\n')
+  return ['Device annotations (screens with numbered notes, selectors and source: `annotations` tool):', ...lines].join('\n')
 }
 
 /** Recorded steps, one line each, for the prompt "Make a test" submits. */

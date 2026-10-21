@@ -128,8 +128,9 @@ your own checks: the CLI is cheaper.
    change; "Send to Claude" submits them. When they say they've annotated
    something, or a prompt's context lists pending annotations, call the
    `annotations` tool (or run `shadowdroid pane annotations`, which saves the
-   crops as PNG files). Each has the user's comment, the element and its
-   selector, `source`, and a crop of the screen. `source` lists the
+   images as PNG files). Each has the user's comment, the element and its
+   selector, and `source`; an image of each screen shows every note outlined
+   in red with its number. `source` lists the
    composables that drew it, innermost first, each with the file and line
    where it's called (`Button` at `MainScreen.kt:57`). Address each by its
    number `n`, apply the change, then check the result.

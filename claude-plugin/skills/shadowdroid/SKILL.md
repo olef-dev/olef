@@ -107,7 +107,7 @@ debugging workflow; expression evaluation can have side effects.
 
 Core groups below. For an unfamiliar command run `shadowdroid <group> <sub> --help`; `commands --depth 1` lists every member.
 
-- **`devices`** — List attached devices / emulators
+- **`devices`** — List attached devices / emulators, or reserve billed remote ones
 - **`connect`** — Install the server APK, start it, and verify
 - **`disconnect`** — Stop the server and remove the port forward
 - **`doctor`** — Diagnose (and optionally repair) the host↔device pipe

@@ -4,6 +4,48 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.3.0
+
+Real phones from Google Cloud, driven like a USB device (preview), and
+device-viewer annotations that show where each note is.
+
+- **Remote devices (preview):** reserve real phones from Google Cloud's
+  Developer Device Platform and use every ShadowDroid command on them:
+  `devices catalog` lists what your project can reserve, `devices reserve
+  ddp:<id>` attaches one to adb as `127.0.0.1:<port>`, and `-d ddp:<id>`
+  (or a named target with `"serial": "ddp:<id>"`) drives it. `session open
+  -d ddp:<id>` reserves it for a session and `session close` releases it.
+  Sessions are billed to your own Google Cloud project (`ddp.project`), using
+  your gcloud or application-default credentials. DDP is a Google Cloud
+  Preview service. See [configuration](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/configuration.md#remote-devices-google-cloud-ddp-preview).
+- **Real phones from ShadowDroid (limited preview):** with `"billing":
+  "shadowdroid"` in `ddp`, the phones come from ShadowDroid instead, billed to
+  your ShadowDroid account after `shadowdroid cloud login`, with no Google
+  Cloud project or credentials of your own. It is enabled per account while
+  in preview.
+- **Spending guardrails:** set `ddp.budget_usd_per_day` and agents may reserve
+  devices until the day's spend reaches it; held devices are then released.
+  Without a budget, each reserve asks you to confirm in a terminal, and an
+  agent gets `cost_confirmation_required`. `devices leases` shows each lease's
+  cost and the day's spend. A reserved device is released after 10 minutes
+  without use (Android Studio's polling doesn't count) and is extended while
+  used for up to 2 hours; both are configurable.
+- **`net` without `adb reverse`:** devices that refuse `adb reverse` (remote
+  device farms) now reach the capture proxy through a relay in the ShadowDroid
+  server; `net status` reports `wiring: "relay"`. On a device without reverse
+  and without the relay, `net start` used to fail with "parse ADB response
+  length"; it now explains what is missing.
+- **`doctor`** reports device capabilities (adb reverse) and, for a reserved
+  device, its lease and time left.
+- **Annotations show where each note is:** the viewer's `annotations` (MCP
+  tool and `pane annotations`) now return one image per screen with every
+  note outlined in red and numbered, plus the same list of comments,
+  elements, selectors and source lines. Crops come only for very small
+  notes, or all of them with `crops: true` / `--crops`.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.2.0
 
 Record a flow once and replay it as a test without AI, and try ShadowDroid

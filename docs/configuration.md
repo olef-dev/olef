@@ -81,6 +81,56 @@ AVD names are host configuration. Commit target bindings only when the team
 standardizes those names; otherwise define `targets` in the user config and
 keep only the project's `default_target` / app `target` roles in project config.
 
+## Remote devices (Google Cloud DDP, preview)
+
+ShadowDroid can reserve real phones from Google Cloud's Developer Device
+Platform and drive them like a USB device. Sessions are billed to your own
+Google Cloud project; setting the project is the opt-in:
+
+```json
+{ "ddp": { "project": "my-gcp-project", "budget_usd_per_day": 10 } }
+```
+
+`GOOGLE_CLOUD_PROJECT` works too. Alternatively `"billing": "shadowdroid"`
+uses real phones from ShadowDroid, billed to your ShadowDroid account (sign in
+with `shadowdroid cloud login`; limited preview, enabled per account): no
+Google Cloud project or credentials needed, and the device's connection goes
+through ShadowDroid. Credentials come from your Google Cloud
+login: application default credentials (`gcloud auth application-default
+login`), the GCE metadata server, or `gcloud auth print-access-token`
+(`SHADOWDROID_DDP_AUTH=gcloud` uses gcloud first). The project needs the
+`devicestreaming`, `devicerun` and `testing` APIs enabled.
+
+```bash
+shadowdroid devices catalog --physical --available     # specs like ddp:komodo-35
+shadowdroid devices reserve ddp:komodo-35              # → serial 127.0.0.1:<port>
+shadowdroid -d ddp:komodo-35 app apply                 # any verb, by spec or serial
+shadowdroid devices release ddp:komodo-35
+```
+
+- Spending: with `ddp.budget_usd_per_day` set, agents may reserve devices
+  until the day's (UTC) spend reaches it, and held devices are released when
+  it does; without it every reserve asks you to confirm in a terminal (an
+  agent gets `cost_confirmation_required`). `devices leases` shows each
+  lease's cost and the day's spend. Spend is estimated from DDP's preview list
+  prices ($0.15/min physical, $0.017/min virtual; `ddp.price_per_minute_usd`
+  overrides).
+- A reserved device is held by a background daemon that extends the session
+  while it is used (up to `ddp.max_duration_ms` / `--max-duration-ms`,
+  default 2 h) and releases it after `ddp.idle_release_ms` /
+  `--idle-release-ms` without use (default 10 min). Android Studio's routine
+  polling of attached devices does not count as use.
+- `-d ddp:<id>` only uses a device you already reserved; it never starts a
+  billed session. `session open -d ddp:<id>` reserves it and `session close`
+  releases it.
+- A named target can point at a spec: `"targets": {"pixel9": {"serial": "ddp:tokay-35"}}`.
+- DDP devices are production builds without `adb reverse`, root or an
+  emulator console. `net` still works: the device reaches the proxy through
+  a relay in the ShadowDroid server (`net status` reports `wiring: relay`).
+  HTTPS interception needs the proxy CA trusted, which on these builds means
+  a manual user-CA install (`net trust --push`) and an app that trusts user
+  CAs. Faults that need the emulator console are unavailable.
+
 ## Project path and source mapping
 
 The `project` path matters for debugging: `why` and `log` use it to map crash

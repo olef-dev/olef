@@ -99,7 +99,7 @@ test('pending annotations ride along with the next prompt', async ($, on) => {
   await $.prompt.submit({ text: 'fix these' })
   expect(asked[0].url).toBe('http://127.0.0.1:4321/api/annotations')
   expect(asked[0].token).toBe('abc123')
-  expect(seen?.[0]).toBe('Device annotations (crops and selectors: `annotations` tool):\n1. "Fav button" (Text, MainScreen.kt:57): make it bigger')
+  expect(seen?.[0]).toBe('Device annotations (screens with numbered notes, selectors and source: `annotations` tool):\n1. "Fav button" (Text, MainScreen.kt:57): make it bigger')
 })
 
 test('a note on a View-based screen names its layout and the code using it', async () => {
@@ -115,7 +115,7 @@ test('a note on a View-based screen names its layout and the code using it', asy
       },
     ]),
   ).toBe(
-    'Device annotations (crops and selectors: `annotations` tool):\n1. "Search by title" (SearchView, res/layout/include_search_bar.xml), used in search/Presenter.kt:68,101: make it purple',
+    'Device annotations (screens with numbered notes, selectors and source: `annotations` tool):\n1. "Search by title" (SearchView, res/layout/include_search_bar.xml), used in search/Presenter.kt:68,101: make it purple',
   )
 })
 
