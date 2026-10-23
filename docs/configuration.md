@@ -102,6 +102,7 @@ login`), the GCE metadata server, or `gcloud auth print-access-token`
 `devicestreaming`, `devicerun` and `testing` APIs enabled.
 
 ```bash
+shadowdroid devices list                               # every device: local, Cloud, real phones
 shadowdroid devices catalog --physical --available     # specs like ddp:komodo-35
 shadowdroid devices reserve ddp:komodo-35              # → serial 127.0.0.1:<port>
 shadowdroid -d ddp:komodo-35 app apply                 # any verb, by spec or serial
@@ -110,8 +111,10 @@ shadowdroid devices release ddp:komodo-35
 
 - Spending: with `ddp.budget_usd_per_day` set, agents may reserve devices
   until the day's (UTC) spend reaches it, and held devices are released when
-  it does; without it every reserve asks you to confirm in a terminal (an
-  agent gets `cost_confirmation_required`). `devices leases` shows each
+  it does. Without it, the first reserve of the day asks you (in a terminal,
+  or in the device viewer when an agent asks: it gets
+  `cost_confirmation_required` until you click Reserve); your yes approves
+  billed devices for the rest of that day, up to $10. `devices leases` shows each
   lease's cost and the day's spend. Spend is estimated from DDP's preview list
   prices ($0.15/min physical, $0.017/min virtual; `ddp.price_per_minute_usd`
   overrides).
@@ -120,6 +123,10 @@ shadowdroid devices release ddp:komodo-35
   default 2 h) and releases it after `ddp.idle_release_ms` /
   `--idle-release-ms` without use (default 10 min). Android Studio's routine
   polling of attached devices does not count as use.
+- The device viewer's title is a device picker: attached devices, AVDs to
+  boot, this project's Cloud emulator and real phones with their price, and
+  a reserved phone's time left, cost and Release. Agents use the MCP
+  `devices` tool, which shows its request in the viewer.
 - `-d ddp:<id>` only uses a device you already reserved; it never starts a
   billed session. `session open -d ddp:<id>` reserves it and `session close`
   releases it.

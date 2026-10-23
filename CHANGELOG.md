@@ -4,6 +4,39 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.4.0
+
+One device picker for everything your app can run on, and secrets for
+ShadowDroid Cloud workspaces.
+
+- **Device picker:** the device viewer, the MCP `devices` tool and `devices
+  list` now show one list of every device the app can run on: attached
+  devices and emulators, AVDs you can boot, this project's ShadowDroid Cloud
+  emulator, and real phones from Google Cloud's Developer Device Platform with
+  their price and availability. In the viewer, the device chip opens a picker
+  with search and filters; billed devices show their cost first, and a
+  reserved phone shows its time left, cost, Add 30 minutes and Release.
+- **A daily limit for billed devices:** reserving a billed device needs
+  `ddp.budget_usd_per_day`, or your approval for the day (a terminal yes, or
+  Reserve in the viewer), covering that UTC day up to $10. Agents get
+  `cost_confirmation_required` and the viewer shows their request; only you
+  can approve it.
+- **Cloud workspace secrets:** `shadowdroid cloud secret set NAME
+  --value-stdin` stores an environment variable for every build and command
+  in your cloud workspace, and `cloud secret set NAME --file
+  app/google-services.json` stores a file that appears at that path in the
+  cloud copy only. Values are write-only, never written to the workspace disk
+  or its backups, and masked as `***` in command output. `cloud secret list`
+  shows what is stored and `cloud secret rm NAME` deletes one. The workspace
+  page on [app.shadowdroid.dev](https://app.shadowdroid.dev) manages them too,
+  along with emulator Reset, backups, archiving and storage.
+- **Steadier remote phones:** a reserved phone's connection now survives
+  repeated stream drops; before, a lease ended after five reconnects, and
+  relay tokens end a stream about every 15 minutes.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.3.0
 
 Real phones from Google Cloud, driven like a USB device (preview), and

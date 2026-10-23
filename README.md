@@ -95,8 +95,10 @@ enter your invite code there. See the
 
 Drive real phones from Google Cloud's Developer Device Platform like a USB
 device. Sessions are billed to your own Google Cloud project (`ddp.project`
-in `.shadowdroid/config.json`); set `ddp.budget_usd_per_day` to let agents
-reserve within a daily limit, otherwise each reserve asks you to confirm:
+in `.shadowdroid/config.json`). Pick one in the device viewer, or let your
+agent ask for one there: the first reserve of the day shows its price and asks
+you, and your yes covers that day up to $10 (`ddp.budget_usd_per_day` sets your
+own limit):
 
 ```bash
 shadowdroid devices catalog --physical --available   # specs like ddp:tokay-36
