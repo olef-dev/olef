@@ -4,6 +4,18 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.6.2
+
+- **Steady live video from devices that send it in pieces:** older devices
+  (Android 9, Fire TV sticks on Fire OS 7) without adb's `delayed_ack` send
+  each frame in several packets, each waiting for a reply, so over Wi-Fi or
+  a device lab the viewer could get half frames and keep restarting
+  ("Decoder error"). The viewer now learns how long a frame can take to
+  arrive from each device and waits for the rest.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.6.1
 
 Fixes for device labs and hot apply.
