@@ -110,6 +110,28 @@ shadowdroid devices release ddp:tokay-36             # or it is released when id
 `net` capture works through a relay in the ShadowDroid server. DDP is a
 Google Cloud Preview service; see [configuration](docs/configuration.md).
 
+## Your own device lab (preview)
+
+Lease devices on your own machine (a phone, a Fire TV stick, any adb device)
+from anywhere through ShadowDroid Cloud, for Cloud accounts with remote
+devices enabled:
+
+```bash
+shadowdroid lab register --name desk --reset lease_only   # this machine becomes a lab
+shadowdroid lab add 192.168.1.20:5555 --name firetv       # the device asks once to trust the lab's key
+shadowdroid lab service install                           # keep the lab agent running (prints one sudo command)
+
+# from any machine signed in to the same account:
+shadowdroid devices reserve lab:desk/firetv               # attached as 127.0.0.1:<port>
+shadowdroid -d lab:desk/firetv app apply
+shadowdroid devices view lab:desk/firetv                  # a view.shadowdroid.dev link
+shadowdroid devices release lab:desk/firetv               # the lab resets the device
+```
+
+The lab uses its own adb server and key and offers only the devices you
+enrol. After each lease it undoes what the lease did and checks the device;
+`--reset lease_only` is for devices you also use yourself.
+
 ## Updating
 
 ```bash

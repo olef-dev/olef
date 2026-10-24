@@ -4,6 +4,45 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.5.0
+
+Your own device lab: phones, TV sticks and other devices on your machine,
+leased through ShadowDroid Cloud from anywhere.
+
+- **`shadowdroid lab`** (preview, for ShadowDroid Cloud accounts with remote
+  devices enabled): `lab register --name desk` registers this machine as a
+  lab, `lab add <ip>:5555 --name firetv` (or a USB serial, or `lab pair` for
+  Android 11+ wireless debugging) enrols a device, and `lab serve` (or `lab
+  service install`, a macOS LaunchDaemon or a systemd unit) keeps it online.
+  The lab runs its own adb server with its own key, so your adb server, your
+  key and Android Studio are untouched, and only enrolled devices are ever
+  offered. Your own lab devices are free.
+- **Lab devices everywhere:** `shadowdroid devices reserve lab:desk/firetv`
+  from any machine attaches the device like a USB one, and every command
+  works on it (`ui dump`, `app apply` with hot apply, `net`, `debug`). `devices
+  list --source lab` and the device viewer's picker list them; `devices view`
+  prints a [view.shadowdroid.dev](https://view.shadowdroid.dev) link to watch
+  or drive one in a browser. After each lease the lab resets the device: it
+  uninstalls what the lease installed, deletes what it created and restores
+  the settings it changed, then checks; a device that doesn't check out is
+  quarantined instead of offered again. `--reset lease_only` keeps devices
+  you also use yourself as they were.
+- **TV remote in the viewer:** TV devices get an on-screen D-pad, OK, Back,
+  Home, Menu and media keys; Enter presses OK.
+- **Idle release counts what you do in the viewer:** a lab device you drive
+  only in the viewer stays leased while you tap.
+- **Team orgs:** `cloud org list|use|create|invite|members|leave`. Every
+  account has a personal org; `cloud org create` makes a team org, `cloud org
+  invite` gives you a one-person invite link to share, and `cloud org use`
+  picks the org that new links, leases, `cloud usage` and `cloud plan` use on
+  this machine.
+- **`cloud plan`** lists the plans and manages a paid plan (change, payment
+  portal, spend cap, credits) once paid plans open; the alpha plan is
+  unchanged.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.4.0
 
 One device picker for everything your app can run on, and secrets for
