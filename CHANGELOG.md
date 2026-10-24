@@ -4,6 +4,26 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.6.1
+
+Fixes for device labs and hot apply.
+
+- **Live video from Android 9 devices** (Fire TV sticks on Fire OS 7, older
+  phones): their `screenrecord` doesn't take "no time limit", so the device
+  viewer now records in 3-minute pieces there and joins them. Before, the
+  viewer stayed on "Starting video…".
+- **Hot apply on machines without the emulator package** (CI runners,
+  servers): `app apply` finds the SDK's build-tools through `ANDROID_HOME`,
+  `ANDROID_SDK_ROOT` or the SDK adb comes from. Before, every apply there
+  reinstalled ("Android SDK build-tools (d8, dexdump) not found").
+- **A lab lease that ends before it's ready says why:** `cloud_device_offline`
+  when the lab agent stopped, instead of "DDP could not provide …".
+- **`lab` reports a device's screen** as `width`, `height`, `density` (what
+  apps get) and the panel size, not the raw `wm` output.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.6.0
 
 Today's approval for billed phones now lives on your ShadowDroid Cloud

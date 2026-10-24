@@ -13,7 +13,7 @@
       "name": "shadowdroid",
       "source": "./claude-plugin",
       "description": "Run, test and debug Android apps from Claude Code with a live, interactive emulator/device viewer in the Claude Desktop browser pane, Apply Changes, annotations and a status line.",
-      "version": "2.6.0",
+      "version": "2.6.1",
       "category": "development",
       "keywords": [
         "android",
