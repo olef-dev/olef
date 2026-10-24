@@ -1,7 +1,7 @@
 {
   "name": "shadowdroid",
   "displayName": "ShadowDroid",
-  "version": "2.6.3",
+  "version": "2.7.0",
   "description": "Run, test and debug Android apps from Claude Code: works through the ShadowDroid CLI, and opens a live, interactive emulator/device viewer in the Claude Desktop browser pane when you want to see the app, with Apply Changes builds, annotations you leave on the device, recorded steps for tests, and a status line with the device and what each build did.",
   "author": {
     "name": "ShadowDroid",

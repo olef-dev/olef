@@ -4,6 +4,29 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.7.0
+
+- **Pair on a Cloud session:** when a teammate shares their ShadowDroid
+  Cloud workspace with you, its viewer shows who is here and who is
+  driving. One person drives at a time; **Take control** hands it over and
+  **Hand back** returns it. Watchers see the device without driving it.
+- **`shadowdroid cloud share`:** invite a teammate in your team org to pair
+  on (or, with `--watch`, watch) the linked workspace, list who it's shared
+  with, and take access away (`cloud share add|rm`).
+- **`shadowdroid cloud project`:** projects are a team org's shared
+  definition of one app: its GitHub repository, shared environment and
+  shared secrets (for every workspace, or for CI or agents only), and who
+  works on it. `cloud project list|show|create|grant`, `secret-set`,
+  `secret-rm`, and `cloud project workspace <project>` to make your own
+  workspace from one, with no GitHub access of your own needed.
+- **Admins look inside only when the org allows it:** in a team org, an
+  owner decides whether admins may watch (or control) a member's workspace;
+  each look needs a reason, lasts up to an hour, and the member sees who and
+  why. This ships in ShadowDroid Cloud.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.6.3
 
 - **No more smeared video after a late frame:** when part of a frame
