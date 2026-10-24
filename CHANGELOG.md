@@ -4,6 +4,28 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.6.3
+
+- **No more smeared video after a late frame:** when part of a frame
+  arrived after the viewer had already sent it on, the Android app's
+  decoder showed smears until the next key frame. The viewer now restarts
+  the stream at once with a fresh key frame.
+- **Lab devices show their own name** in the viewer's title, instead of
+  the device host's internal adb address, and the viewer stops cleanly
+  when the lease ends.
+- **Labs come back within seconds after a device host restart:** a lab
+  agent now says that ShadowDroid's device host isn't reachable (not that
+  a session may be starting) and retries every 5 seconds instead of
+  backing off to 30.
+- **ShadowDroid Cloud: streamed output no longer lags in workspaces with
+  secrets.** The secret masking held back the last bytes of every output
+  chunk until more output arrived, so prompts and live output could stall.
+  It now holds back only bytes that could start a secret. This ships in
+  the Cloud workers, not the CLI.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.6.2
 
 - **Steady live video from devices that send it in pieces:** older devices
