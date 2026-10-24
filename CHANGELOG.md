@@ -4,6 +4,30 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.6.0
+
+Today's approval for billed phones now lives on your ShadowDroid Cloud
+account.
+
+- **One approval a day, on your account:** when you approve real phones
+  billed to ShadowDroid (a yes in the terminal, or Reserve in the device
+  viewer), the approval is kept on ShadowDroid Cloud for the rest of the UTC
+  day, up to $10. Agents on any of your machines reserve within it, and your
+  org sees it against its caps. An agent that needs more than is left gets
+  `cost_confirmation_required`; past a spending cap your org set, it gets
+  `budget_exhausted`. Phones billed to your own Google Cloud project work as
+  before.
+- **Changed:** for phones billed to ShadowDroid, `ddp.budget_usd_per_day` in
+  the project config no longer stands in for your approval, because an agent
+  can edit that file; it can only lower the approval. Approve once a day
+  instead.
+
+Older CLIs keep working: their billed phones are approved in the terminal
+as before.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.5.0
 
 Your own device lab: phones, TV sticks and other devices on your machine,

@@ -114,8 +114,12 @@ shadowdroid devices release ddp:komodo-35
   it does. Without it, the first reserve of the day asks you (in a terminal,
   or in the device viewer when an agent asks: it gets
   `cost_confirmation_required` until you click Reserve); your yes approves
-  billed devices for the rest of that day, up to $10. `devices leases` shows each
-  lease's cost and the day's spend. Spend is estimated from DDP's preview list
+  billed devices for the rest of that day, up to $10. With `"billing":
+  "shadowdroid"` that approval is kept on your ShadowDroid Cloud account
+  (agents on any of your machines use it, and your org's caps apply), and
+  `ddp.budget_usd_per_day` can only lower it, never replace it: an agent can
+  edit the project config. `devices leases` shows each lease's cost and the
+  day's spend. Spend is estimated from DDP's preview list
   prices ($0.15/min physical, $0.017/min virtual; `ddp.price_per_minute_usd`
   overrides).
 - A reserved device is held by a background daemon that extends the session
