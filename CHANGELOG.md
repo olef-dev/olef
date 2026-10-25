@@ -4,6 +4,22 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.7.1
+
+- **Labs no longer quarantine a Samsung phone for a setting nobody
+  touched:** after each lease a lab checks that the device is back the way
+  it was. Samsung's state for continuing apps on other Galaxy devices
+  changes on its own whenever such devices come and go nearby, and the
+  check took it for something the lease had left behind, so the phone went
+  out of service. Labs now ignore those settings.
+
+To update a lab, install the new CLI where the lab agent runs it, run
+`shadowdroid lab service install` with it, then `shadowdroid lab service
+stop` and `shadowdroid lab service start`.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.7.0
 
 - **Pair on a Cloud session:** when a teammate shares their ShadowDroid
