@@ -4,6 +4,27 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.7.2
+
+The device viewer (`shadowdroid pane`, the agent apps' viewer and
+view.shadowdroid.dev) is easier to use on tablets, phones and narrow panes:
+
+- **Bigger targets:** toolbar and zoom buttons are 36 px with a mouse and
+  44 px on a touch screen.
+- **Zoom moved to the status bar,** so it never covers the device.
+- **One toolbar row in a narrow pane:** below 560 px, Recents, Rotate,
+  Annotate, Record steps and the side panel move into the settings menu.
+- **"Live · idle" on a still screen** instead of "0 fps"; the frame rate
+  shows while the screen changes, and the stream's size is in the status
+  tooltip.
+- **Sharper on wide panes:** the Auto video quality picks Sharp when the
+  pane is wide, so small text isn't soft.
+- **Primary buttons use the ShadowDroid red** ("Let Claude use it", Reserve,
+  Keep) in light and dark; the rest of the viewer stays neutral.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.7.1
 
 - **Labs no longer quarantine a Samsung phone for a setting nobody
