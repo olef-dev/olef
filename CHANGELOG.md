@@ -4,6 +4,28 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.7.4
+
+- **A lab phone on wireless debugging stays online when its name changes:**
+  the lab agent knows each enrolled device by its hardware serial, not the
+  exact adb serial it was enrolled under. A phone whose wireless-debugging
+  name became `adb-<serial>-<id> (2)._adb-tls-connect._tcp` after a restart
+  (or got a new id after wireless debugging was reset) was reported offline
+  although it was connected; the agent now finds it under its new name, and
+  reconnects it through the wireless-debugging services it sees on the
+  network. `lab add` records the hardware serial; devices enrolled before
+  work too. `lab devices` shows each enrolled device under the name it has
+  now.
+- **Your own lab works without real-phones access** (a Cloud change, live
+  already): `shadowdroid lab register` and reserving your own lab's devices
+  no longer need the real-phones preview. It's needed only for phones
+  ShadowDroid bills.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`. On a lab host, run `shadowdroid lab service install`
+with the new CLI (it points the service at it), then `lab service stop` and
+`lab service start`.
+
 ## v2.7.3
 
 - **The viewer no longer shows a nonsense idle timeout for lab devices:**
