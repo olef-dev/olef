@@ -4,6 +4,19 @@ Release notes for ShadowDroid. Every release, with its binaries, is on the
 [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
 
 
+## v2.7.3
+
+- **The viewer no longer shows a nonsense idle timeout for lab devices:**
+  a lab lease the Cloud manages never idle-releases from the viewer, so the
+  lease tooltip no longer says "released after 307445734561826 min without
+  use".
+- **The viewer names the leased device by its kind:** the menu says
+  "Release this TV" (or tablet, or device) for a lab TV or tablet, and the
+  idle warning says what it's counting for.
+
+Update with `shadowdroid update`, run the command it prints, then
+`shadowdroid init`.
+
 ## v2.7.2
 
 The device viewer (`shadowdroid pane`, the agent apps' viewer and
