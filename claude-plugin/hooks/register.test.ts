@@ -1,8 +1,8 @@
 import { expect, mock, test } from 'claude-code/testing'
-import { cloudLine, inProject, notesContext, runsApply, runsShadowdroid, safeName, stepsPrompt } from './register.ts'
+import { cloudLine, inProject, notesContext, runsApply, runsOlef, safeName, stepsPrompt } from './register.ts'
 
-const CONTROL = 'mcp__plugin_shadowdroid_shadowdroid__control'
-const BUILD = 'mcp__plugin_shadowdroid_shadowdroid__build'
+const CONTROL = 'mcp__plugin_olef_olef__control'
+const BUILD = 'mcp__plugin_olef_olef__build'
 
 // biome-ignore lint: test doubles for the engine's ui events
 function record(on: any) {
@@ -138,7 +138,7 @@ test('other tools pass through untouched', async ($, on) => {
   expect(toasts).toEqual([])
 })
 
-test('shadowdroid app apply through Bash updates the status line', async ($, on) => {
+test('olef app apply through Bash updates the status line', async ($, on) => {
   const { statuses, toasts } = record(on)
   on('tool.call', async () => ({
     result: {},
@@ -147,7 +147,7 @@ test('shadowdroid app apply through Bash updates the status line', async ($, on)
       JSON.stringify({ cmd: 'app_apply', ok: true, type: 'action', action: 'reinstall', device: 'emulator-5554', app_alive: true, timings: { total_ms: 4300 } }),
     ].join('\n'),
   }))
-  await $.tool.call({ tool: 'Bash', command: 'shadowdroid -q app apply --module app' })
+  await $.tool.call({ tool: 'Bash', command: 'olef -q app apply --module app' })
   expect(statuses[0]).toBe('📱 · building…')
   expect(statuses[statuses.length - 1]).toBe('📱 emulator-5554 · reinstalled 4.3 s')
   expect(toasts).toEqual([])
@@ -155,10 +155,10 @@ test('shadowdroid app apply through Bash updates the status line', async ($, on)
   expect(statuses.length).toBe(2)
 })
 
-test('only shadowdroid app apply counts as a build', async () => {
-  expect(runsApply('cd app && shadowdroid -d emulator-5554 app apply --at-least restart-activity')).toBe(true)
-  expect(runsApply('shadowdroid app start com.example')).toBe(false)
-  expect(runsApply('echo shadowdroid; ./gradlew app apply')).toBe(false)
+test('only olef app apply counts as a build', async () => {
+  expect(runsApply('cd app && olef -d emulator-5554 app apply --at-least restart-activity')).toBe(true)
+  expect(runsApply('olef app start com.example')).toBe(false)
+  expect(runsApply('echo olef; ./gradlew app apply')).toBe(false)
 })
 
 test('/device show without a viewer asks Claude for one', async ($) => {
@@ -169,7 +169,7 @@ test('/device show without a viewer asks Claude for one', async ($) => {
   expect(status.text).toContain('`/device show` opens the device viewer')
 })
 
-// ShadowDroid Cloud: the CLI's files under ~/.shadowdroid/cloud/.
+// Olef Cloud: the CLI's files under ~/.olef/cloud/.
 const NOW = Date.parse('2026-10-18T20:00:00Z')
 const min = (n: number) => new Date(NOW + n * 60_000).toISOString()
 const LINK = { root: '/work/notes', workspace_id: 'ws_1', name: 'notes', enabled: true, state: 'approved' }
@@ -215,11 +215,11 @@ test('a linked project covers its own folders only', async () => {
   expect(inProject('C:\\Work\\Notes', 'c:/work/notes/app')).toBe(true)
   expect(inProject(undefined, '/work/notes')).toBe(false)
   expect(safeName('ws:1/x')).toBe('ws_1_x')
-  expect(runsShadowdroid('cd app && shadowdroid cloud link')).toBe(true)
-  expect(runsShadowdroid('ls shadow')).toBe(false)
+  expect(runsOlef('cd app && olef cloud link')).toBe(true)
+  expect(runsOlef('ls shadow')).toBe(false)
 })
 
-const CLOUD = '/home/me/.shadowdroid/cloud'
+const CLOUD = '/home/me/.olef/cloud'
 /** A machine with the CLI's cloud files: `files` maps a path to its text. */
 // biome-ignore lint: test doubles for the engine's nouns
 function cloudMachine(on: any, files: Record<string, string>, root = '/work/notes') {
@@ -278,7 +278,7 @@ test('a starting session is followed until it is ready, then idle', async ($, on
   files[`${CLOUD}/ws_1/state.json`] = state({ state: 'ready', idle_stop_at: min(15), updated_at: min(1) })
   await clock.advance(5000)
   expect(statuses[statuses.length - 1]).toBe('☁ Cloud: ready')
-  expect(toasts).toContain('ShadowDroid Cloud: the cloud device is ready')
+  expect(toasts).toContain('Olef Cloud: the cloud device is ready')
   files[`${CLOUD}/ws_1/state.json`] = state({ state: 'ready', expires_at: min(9), updated_at: min(1) })
   await clock.advance(5000)
   expect(statuses[statuses.length - 1]).toBe('☁ Cloud: ready · session ends in 9 min')
@@ -304,24 +304,24 @@ test('onboarding: the sign-in code, the upload approval, then the session', asyn
     verification_uri_complete: 'https://app.shadowdroid.dev/activate?code=WXYZ-1234',
     expires_at: NOW / 1000 + 600,
   })
-  await $.tool.call({ tool: 'Bash', command: 'shadowdroid cloud login --no-wait --json' })
+  await $.tool.call({ tool: 'Bash', command: 'olef cloud login --no-wait --json' })
   expect(statuses[statuses.length - 1]).toBe('☁ Cloud: sign in with code WXYZ-1234')
-  expect(toasts[toasts.length - 1]).toBe('ShadowDroid Cloud sign-in: open https://app.shadowdroid.dev/activate?code=WXYZ-1234 and approve the code WXYZ-1234')
+  expect(toasts[toasts.length - 1]).toBe('Olef Cloud sign-in: open https://app.shadowdroid.dev/activate?code=WXYZ-1234 and approve the code WXYZ-1234')
 
   delete files[`${CLOUD}/login-pending.json`]
   files[`${CLOUD}/links.json`] = links({ ...LINK, state: 'pending', approval_url: 'https://app.shadowdroid.dev/link/lr_1' })
-  await $.tool.call({ tool: 'Bash', command: 'shadowdroid cloud link --json' })
+  await $.tool.call({ tool: 'Bash', command: 'olef cloud link --json' })
   expect(statuses[statuses.length - 1]).toBe('☁ Cloud: approve the upload in your browser')
-  expect(toasts[toasts.length - 1]).toBe('ShadowDroid Cloud: approve uploading this project at https://app.shadowdroid.dev/link/lr_1')
+  expect(toasts[toasts.length - 1]).toBe('Olef Cloud: approve uploading this project at https://app.shadowdroid.dev/link/lr_1')
 
   files[`${CLOUD}/links.json`] = links()
   files[`${CLOUD}/ws_1/state.json`] = state({ state: 'starting' })
-  await $.tool.call({ tool: 'Bash', command: 'shadowdroid app apply' })
+  await $.tool.call({ tool: 'Bash', command: 'olef app apply' })
   expect(statuses[statuses.length - 1]).toBe('☁ Cloud: starting… · 📱 · build failed')
 
   reply = JSON.stringify({ ok: false, code: 'cloud_quota_exceeded', msg: 'session-hours used up', detail: { limit: 'session_hours' } })
-  await $.tool.call({ tool: 'Bash', command: 'shadowdroid ui dump' })
-  expect(toasts[toasts.length - 1]).toBe('ShadowDroid Cloud: a usage limit was reached; `shadowdroid cloud usage` shows your limits and when they reset')
+  await $.tool.call({ tool: 'Bash', command: 'olef ui dump' })
+  expect(toasts[toasts.length - 1]).toBe('Olef Cloud: a usage limit was reached; `olef cloud usage` shows your limits and when they reset')
 })
 
 test('cloud mode off for this project leaves the status line alone', async ($, on) => {

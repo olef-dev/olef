@@ -3,10 +3,10 @@
 [← README](../README.md)
 
 This is the canonical operating contract for LLMs and coding agents driving
-ShadowDroid. The loop is **read → act → confirm**, and ShadowDroid is built so
+Olef. The loop is **read → act → confirm**, and Olef is built so
 each step costs as few round-trips as possible.
 
-1. **Discover the surface once.** Start with `shadowdroid commands --json
+1. **Discover the surface once.** Start with `olef commands --json
    --depth 1`; use `commands --json --describe 'ui tap'` for one command,
    `commands --guide net|debugger|state` for a domain driving guide, or
    omit `--depth` for the full tree. Schema version 3 contains canonical paths,
@@ -14,13 +14,13 @@ each step costs as few round-trips as possible.
    groups, arity, and trailing/hyphen-value behavior), output contracts, and
    agent decision hints. Do not invent command names from memory or scrape
    `--help` prose.
-2. **Put repeated context in config.** `shadowdroid config init ...` then
+2. **Put repeated context in config.** `olef config init ...` then
    `config validate --json`. Use an app alias instead of spending tokens on
    `--package`/`--project`/`--debugger` every call. See
    [configuration.md](configuration.md).
-3. **Connect.** `shadowdroid connect`; if it fails, `shadowdroid doctor --json`,
+3. **Connect.** `olef connect`; if it fails, `olef doctor --json`,
    then `doctor --fix` only when repair side effects are acceptable.
-4. **Read by dumping.** `shadowdroid ui dump` returns the actionable tree as a
+4. **Read by dumping.** `olef ui dump` returns the actionable tree as a
    compact element list plus strict content identity, actionable interaction
    identity, screen-bound handles, and freshness metadata. Act only
    from `snapshot_state: "consistent"`; a lifecycle race is retried within a
@@ -39,18 +39,18 @@ each step costs as few round-trips as possible.
 6. **Confirm.** `ui wait --text/--rid/--pkg` blocks until the expected state and
    echoes the matched element; a timeout returns `top_texts` so you see what the
    screen became instead of guessing.
-7. **Watch when timing matters.** `shadowdroid watch` streams screen diffs,
+7. **Watch when timing matters.** `olef watch` streams screen diffs,
    crashes, ANRs, toasts, watcher actions, debugger logpoint hits, and
    (with `net` running) HTTP events on one JSONL timeline.
-8. **Triage failures with one read.** After any surprise, `shadowdroid why`
-   returns a verdict + evidence; `shadowdroid log --last 5m` gives the structured
+8. **Triage failures with one read.** After any surprise, `olef why`
+   returns a verdict + evidence; `olef log --last 5m` gives the structured
    logcat behind it. You rarely need both plus a screenshot — start with `why`.
-9. **Go deeper only when needed.** `shadowdroid debug ...` (the standalone
+9. **Go deeper only when needed.** `olef debug ...` (the standalone
    Java/Kotlin and C/C++ debugger as JSON; `debug attach --mode
-   java|native|mixed`) and `shadowdroid layout ...` (Compose semantics/source/
+   java|native|mixed`) and `olef layout ...` (Compose semantics/source/
    recompositions) when UI polling can't answer *why*. See
    [debugging.md](debugging.md).
-10. **Free the slot for instrumentation.** `shadowdroid test -- <cmd>` (or
+10. **Free the slot for instrumentation.** `olef test -- <cmd>` (or
     `disconnect` first) before Espresso / UI Automator runs — Android allows one
     `UiAutomation` owner at a time.
 
@@ -75,11 +75,11 @@ Every `ui dump` also reports `accessibility_completeness`. UIAutomator cannot
 prove that custom-drawn or unexported Compose controls are represented, so the
 normal tree is explicitly marked `unverified` instead of looking deceptively
 complete. For a debuggable app, ask for the deeper comparison (it attaches
-the ShadowDroid runtime and reads the app's own Compose inspector):
+the Olef runtime and reads the app's own Compose inspector):
 
 ```bash
-shadowdroid ui dump --deep
-shadowdroid ui tap --fallback-id cs:12345 --if-screen <screen-hash>
+olef ui dump --deep
+olef ui tap --fallback-id cs:12345 --if-screen <screen-hash>
 ```
 
 Missing Compose nodes are returned under `fallback.elements` with an id,
@@ -228,7 +228,7 @@ without that answer fails with `dialog_choice_unavailable` and the answers it
 offers. `perm grant` skips the dialog; this is for flows that must go through
 it.
 
-`samples/shadowdroid-test-app/tests/shadowdroid/mission_recovery/test.sh` is a
+`samples/shadowdroid-test-app/tests/olef/mission_recovery/test.sh` is a
 whole flow written this way.
 
 ## Sliders and ranges
@@ -236,13 +236,13 @@ whole flow written this way.
 Platform and Compose sliders expose their accessibility `range` (`type`,
 `min`, `max`, `current`, and nullable `step`) plus stable `actions` in the
 normal `ui dump` shape. Android's range API does not expose a declared discrete
-step, so ShadowDroid leaves `step:null` unless a future platform surface can
+step, so Olef leaves `step:null` unless a future platform surface can
 prove it. Set a slider semantically and verify the resulting range readback:
 
 ```bash
-shadowdroid ui set-progress --desc "Follow stand-off slider" --value 0.45 --observe
-shadowdroid ui set-progress --rid distance_slider --percent 80 --if-interaction <interaction-hash>
-shadowdroid ui set-progress --handle <handle> --percent 50 --observe
+olef ui set-progress --desc "Follow stand-off slider" --value 0.45 --observe
+olef ui set-progress --rid distance_slider --percent 80 --if-interaction <interaction-hash>
+olef ui set-progress --handle <handle> --percent 50 --observe
 ```
 
 Out-of-range values fail unless `--clamp` is explicit. Missing range semantics
@@ -252,7 +252,7 @@ approximate track click and reports when readback could not verify it.
 ## Entering a PIN without echoing it
 
 Numeric system keypads can be driven without returning the secret in action
-JSON: `shadowdroid ui pin "$DEVICE_PIN" --if-interaction <interaction-hash>`.
+JSON: `olef ui pin "$DEVICE_PIN" --if-interaction <interaction-hash>`.
 The command preflights every required digit before entering anything, activates
 each label through its clickable ancestor, and presses Enter by default;
 `--no-submit` leaves the digits entered for controlled validation. Its output
@@ -319,7 +319,7 @@ left. `commands --guide faults` has the details.
 | **Runtime** | `runtime attach` (`--startup`, `--restart`, `--coroutine-probes`), `status`, `detach`, `coroutines` |
 | **Authoring/testing helpers** | `ui audit` (selector gaps), `ui gen` (Screen Object scaffold), `net export fixtures` (replayable response set + `manifest.json`, GraphQL keyed by operationName), `test` (instrumentation command with the slot freed), `debug replay --repeat --diff` (flake hunting) |
 
-Run `shadowdroid commands --json --depth 1` for the live catalog,
+Run `olef commands --json --depth 1` for the live catalog,
 `commands --json --describe '<path>'` for one command, or `--help` for a human
 view.
 

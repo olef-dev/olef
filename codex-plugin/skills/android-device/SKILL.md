@@ -1,13 +1,13 @@
 ---
 name: android-device
-description: Show the user's Android emulator or device live in Codex, so they can watch, tap, annotate the screen or record steps for a test, through this plugin's ShadowDroid tools. Use whenever the user wants to see or try their Android app themselves ("show me", "let me try it", "open the emulator", "I want to tap around"), to annotate the screen, or to turn what they did on the device into a test.
+description: Show the user's Android emulator or device live in Codex, so they can watch, tap, annotate the screen or record steps for a test, through this plugin's Olef tools. Use whenever the user wants to see or try their Android app themselves ("show me", "let me try it", "open the emulator", "I want to tap around"), to annotate the screen, or to turn what they did on the device into a test.
 ---
 
 # Android device viewer
 
-The `shadowdroid` skill covers running, testing and debugging through the
+The `olef` skill covers running, testing and debugging through the
 CLI; use it for your own checks. This skill is for putting the device in
-front of the user. Use this plugin's MCP tools for that, not `shadowdroid
+front of the user. Use this plugin's MCP tools for that, not `olef
 pane` in a terminal: the tools share one viewer with the device's consent,
 reservation, annotations and recorded steps.
 
@@ -18,7 +18,7 @@ reservation, annotations and recorded steps.
    `viewer_url` in the in-app browser and make it visible, beside the chat.
    The viewer streams the screen live; the user can tap, type, rotate, take
    screenshots and record there.
-2. Keep working as before. `shadowdroid` commands you run in the shell now
+2. Keep working as before. `olef` commands you run in the shell now
    share the attached device's reservation. While the viewer is open,
    prefer the `build` tool (with `project_dir` set to the app's Gradle root)
    to `app apply`: it is the same apply and also lists the build in the
@@ -38,25 +38,25 @@ reservation, annotations and recorded steps.
    ⌥T) records the user's taps, swipes, typing and keys; "Make a test"
    puts a prompt in the composer the same way. When they ask for a test from
    it, call `recording`, write the test in the project's style
-   (Compose `onNodeWithText(…).performClick()`, Espresso, or `shadowdroid ui`
+   (Compose `onNodeWithText(…).performClick()`, Espresso, or `olef ui`
    commands), prefer selectors over coordinates, and run it.
 5. When the user is done, call `control` `detach`. Emulators the `boot` tool
    started shut down 10 minutes after detach.
 
-## ShadowDroid Cloud
+## Olef Cloud
 
-In a project linked to ShadowDroid Cloud (`shadowdroid cloud status --json`),
+In a project linked to Olef Cloud (`olef cloud status --json`),
 the device is the cloud session's emulator: `control` `attach` and the viewer
 work the same, forwarded to this machine, and `boot` isn't needed. Setting
 Cloud up, when there is no Android SDK and the user chooses it over a local
-install, is in `shadowdroid commands --guide cloud`; ask before signing in or
-uploading anything. With no `shadowdroid` CLI but the ShadowDroid Cloud MCP
+install, is in `olef commands --guide cloud`; ask before signing in or
+uploading anything. With no `olef` CLI but the Olef Cloud MCP
 tools, `open_viewer` returns a live viewer link (view.shadowdroid.dev) to open
 in the in-app browser.
 
 ## Viewer or emulator window
 
-The user picks how they see the device; it's ShadowDroid's `show_device`
+The user picks how they see the device; it's Olef's `show_device`
 setting:
 
 - `viewer` (the default): the live viewer in Codex's in-app browser.
@@ -66,11 +66,11 @@ setting:
 
 When they ask to change it for good ("use the emulator window from now on",
 "show me the viewer by default"), run
-`shadowdroid config init --user --show-device window` (or `viewer`) and tell
+`olef config init --user --show-device window` (or `viewer`) and tell
 them it fully applies in a new session. For a one-off ("open the emulator
 window this time"), just do it: `boot` with `window: true`, or
-`shadowdroid emulator boot <avd>`. An emulator already running without a
-window can't show one; offer to restart it (`shadowdroid emulator kill`,
+`olef emulator boot <avd>`. An emulator already running without a
+window can't show one; offer to restart it (`olef emulator kill`,
 then boot), and say the app's in-memory state is lost.
 
 ## Rules
@@ -85,5 +85,5 @@ then boot), and say the app's in-memory state is lost.
   tools get `device_reserved`. Tell the user rather than retrying.
 - **Privacy.** Screenshots are sent to OpenAI, so don't sign in to real
   accounts on a device you use. Ask before opening URLs that carry user data.
-  In a project linked to ShadowDroid Cloud, its files, builds and screen also
-  go to ShadowDroid Cloud.
+  In a project linked to Olef Cloud, its files, builds and screen also
+  go to Olef Cloud.

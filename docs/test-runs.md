@@ -1,13 +1,13 @@
 # Test runs
 
-A ShadowDroid test is a folder with a Bash script, `test.sh`, that drives
-the app with one `shadowdroid` command per step. Each command waits for its
+An Olef test is a folder with a Bash script, `test.sh`, that drives
+the app with one `olef` command per step. Each command waits for its
 target and checks its own result, so the script needs no sleeps, no `jq` and no
 library. Running it needs no model and no API key: an agent explores once,
 and the test replays without AI.
 
 ```text
-tests/shadowdroid/mission_recovery/
+tests/olef/mission_recovery/
   test.sh          the script (executable)
   screens/         optional: one screenshot per step (<step>.jpg), shown next to the screen now when that step fails
   data/            optional: data sets for --params (*.env)
@@ -33,19 +33,19 @@ cd "$(dirname "$0")"
 APP=io.github.andriyo.shadowdroid.sample
 CALLSIGN="${CALLSIGN:-Ada}"
 
-step() { export SHADOWDROID_STEP="$1"; }
+step() { export OLEF_STEP="$1"; }
 TOKEN="$(mktemp -d)/session.token"
-trap 'shadowdroid --session-file "$TOKEN" session close --exit-code $?' EXIT
-shadowdroid session open --token-out "$TOKEN" --agent test:mission_recovery --app "$APP" \
+trap 'olef --session-file "$TOKEN" session close --exit-code $?' EXIT
+olef session open --token-out "$TOKEN" --agent test:mission_recovery --app "$APP" \
   --clear-data --profile automation --launch .MainActivity --expect-rid status_text
-export SHADOWDROID_SESSION_FILE="$TOKEN"
+export OLEF_SESSION_FILE="$TOKEN"
 
 step open-mission
-shadowdroid ui tap --rid nav_mission --expect-rid mission_claim_button
+olef ui tap --rid nav_mission --expect-rid mission_claim_button
 
 step claim-incident
-shadowdroid ui text --rid name_input --clear "$CALLSIGN"
-shadowdroid ui tap --rid mission_claim_button --expect-text "Incident claimed by $CALLSIGN"
+olef ui text --rid name_input --clear "$CALLSIGN"
+olef ui tap --rid mission_claim_button --expect-text "Incident claimed by $CALLSIGN"
 ```
 
 - **Header**: `set -euo pipefail`, `cd` to the test's folder, parameters,
@@ -64,20 +64,20 @@ shadowdroid ui tap --rid mission_claim_button --expect-text "Incident claimed by
   single quotes, only parameters in double quotes.
 
 Any language can run the same commands: start with `session open`, stop at
-the first non-zero exit, set `SHADOWDROID_STEP` per step, and close the
+the first non-zero exit, set `OLEF_STEP` per step, and close the
 session in a `finally`. `test show test.sh --json` gives each step's argv.
 
 ## Running
 
 ```bash
-shadowdroid test run tests/shadowdroid
-shadowdroid test run tests/shadowdroid/mission_recovery --repeat 10 --junit-out build/junit.xml
-shadowdroid test run tests/shadowdroid --retries 1 --shard 2/4 --artifacts-dir build/sd-runs
-shadowdroid test run tests/shadowdroid/checkout --params 'data/*.env'
+olef test run tests/olef
+olef test run tests/olef/mission_recovery --repeat 10 --junit-out build/junit.xml
+olef test run tests/olef --retries 1 --shard 2/4 --artifacts-dir build/sd-runs
+olef test run tests/olef/checkout --params 'data/*.env'
 ```
 
 `test run` runs each folder's `test.sh` through its shebang (else `bash`),
-one at a time. Each run gets its own folder, named by `SHADOWDROID_RUN_DIR`;
+one at a time. Each run gets its own folder, named by `OLEF_RUN_DIR`;
 the script's `session open` writes the journal, failure report and
 `report.html` there. The runner itself holds no device lock: the scripts'
 sessions reserve the device, nested under yours when you hold one. Device
@@ -93,7 +93,7 @@ passed to the scripts.
 | `--capture steps\|failures\|off` | Evidence per step (default `failures`; `steps` keeps a screenshot of every step) |
 | `--shard I/N` | Run only shard I of N of the sorted test list |
 | `--junit-out FILE` | JUnit XML (default `<artifacts-dir>/junit.xml`) |
-| `--artifacts-dir DIR` | Run folders and reports (default `.shadowdroid/test-runs/run-<ms>/`) |
+| `--artifacts-dir DIR` | Run folders and reports (default `.olef/test-runs/run-<ms>/`) |
 | `--fail-fast` | Stop after the first test that fails (after its retries) |
 
 The run writes `junit.xml`, `report.json` and an index `report.html` linking
@@ -105,7 +105,7 @@ failed, naming the first failure in plain words, its `fault`, and the
 
 One `<testsuite>` per test run (per repetition with `--repeat`), one
 `<testcase>` per step. A failure whose fault is `app` or `test` is a
-`<failure>`; `environment` or `shadowdroid` is an `<error>`. Steps a failed
+`<failure>`; `environment` or `olef` is an `<error>`. Steps a failed
 run never reached are `<skipped>`. A repetition that passed after a retry
 carries Surefire's `<flakyFailure>` for the earlier failure (`<rerunFailure>`
 when it still failed). Each suite names its run folder.
@@ -128,7 +128,7 @@ The failing command's error carries `detail.test_failure`, saved as
   'Relay calibrated at 71%' did not appear; the screen shows 'Relay
   calibrated at 70%' instead"), and whose fault it is: `app` (a check
   failed, a crash), `test` (the selector no longer matches), `environment`
-  (system UI, no network, an injected fault) or `shadowdroid`.
+  (system UI, no network, an injected fault) or `olef`.
 - **Expected vs actual**: the step's recorded screenshot next to the screen
   now, the closest on-screen texts, error texts the app shows.
 - **Near misses**: `closest` selectors (a misspelt id's real one first).
@@ -143,7 +143,7 @@ value built from a parameter.
 
 ## Reports from direct runs
 
-`bash test.sh` leaves its session folder under `.shadowdroid/sessions/`.
+`bash test.sh` leaves its session folder under `.olef/sessions/`.
 `test report <folders>…` builds the same JUnit and flake report from such
 folders (or from a test run's artifacts), and `--baseline <run>` flags steps
 whose median time grew by at least 1.5× and 500 ms.
@@ -157,6 +157,6 @@ parameters, secrets in literal text (an error), Bash 4 features, and custom
 code it cannot read. `test show test.sh [--json]` prints the parameters,
 steps and argv lists.
 
-`shadowdroid test -- <command>` still runs instrumentation tests with the
+`olef test -- <command>` still runs instrumentation tests with the
 UiAutomation slot freed; only a program literally named like a subcommand
 (`run`, `report`, …) needs the `--`.

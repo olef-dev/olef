@@ -1,13 +1,13 @@
-# ShadowDroid License
+# Olef License
 
 Version 1.1, effective October 15, 2026
 
 Copyright (c) 2026 Andrii Olefirenko. All rights reserved.
 
-This license covers the ShadowDroid software distributed in binary form: the
-`shadowdroid` command-line tool, the on-device service APKs, the runtime agent
+This license covers the Olef software distributed in binary form: the
+`olef` command-line tool, the on-device service APKs, the runtime agent
 libraries, and any other binaries published on the
-[ShadowDroid releases](https://github.com/shadowdroid-dev/shadowdroid/releases)
+[Olef releases](https://github.com/olef-dev/olef/releases)
 or through package managers (the "Software"). The Claude Code and Codex plugins
 and other files in the public repository that carry their own license file are
 licensed under those files instead.
@@ -68,14 +68,14 @@ You may not:
 The Software includes open-source components that remain under their own
 licenses. Nothing in this license limits your rights under those licenses.
 Their notices are in THIRD-PARTY-NOTICES.txt, which ships in every release
-archive and on each release page, and `shadowdroid licenses` prints them.
+archive and on each release page, and `olef licenses` prints them.
 
 ## 7. Earlier versions
 
-ShadowDroid version 1.3.0 and earlier were released under the Apache License,
+Olef version 1.3.0 and earlier were released under the Apache License,
 Version 2.0, and remain under it. Their source is available at the
 corresponding tags of
-[shadowdroid-dev/shadowdroid](https://github.com/shadowdroid-dev/shadowdroid).
+[olef-dev/olef](https://github.com/olef-dev/olef).
 
 Releases published with version 1.0 of this license (ShadowDroid 2.0.4 and
 later releases before version 1.1) may also be used under this version 1.1,
@@ -115,4 +115,4 @@ regard to its conflict-of-laws rules.
 ## Contact
 
 Licensing and questions:
-[contact@shadowdroid.dev](mailto:contact@shadowdroid.dev)
+[contact@olef.dev](mailto:contact@olef.dev)

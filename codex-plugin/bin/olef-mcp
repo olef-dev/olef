@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Start `olef mcp` for Codex.
+#
+# A binary built in an Olef checkout (…/cli/target/{debug,release}/)
+# gets that checkout's server APK and runtime agent, so local builds need no
+# other setup.
+set -u
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../lib/plugin-env.sh
+. "$root/lib/plugin-env.sh"
+# shellcheck source=../lib/find-olef.sh
+. "$root/lib/find-olef.sh"
+
+if sd_find; then
+  # Make adb and the emulator findable for the same reason as PATH above.
+  if sd_find_platform_tools; then
+    export PATH="$SD_PLATFORM_TOOLS:$PATH"
+  fi
+  # A checkout build: use its own server APK and runtime agent.
+  case "$SD_BIN" in
+    */cli/target/debug/olef* | */cli/target/release/olef*)
+      repo="${SD_BIN%/cli/target/*}"
+      apk="$repo/server/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+      if [ -z "${OLEF_APK:-}" ] && [ -f "$apk" ]; then
+        export OLEF_APK="$apk"
+      fi
+      if [ -z "${OLEF_RUNTIME_DIR:-}" ] && [ -d "$repo/agent/native/build/out" ]; then
+        export OLEF_RUNTIME_DIR="$repo/agent/native/build/out"
+      fi
+      ;;
+  esac
+  exec "$SD_BIN" mcp "$@"
+fi
+
+{
+  if [ -n "$SD_TOO_OLD" ]; then
+    echo "Found olef at ${SD_TOO_OLD}, but this plugin needs ${OLEF_MIN_VERSION} or newer (with \`olef mcp\`)."
+  else
+    echo "olef was not found."
+  fi
+  cat <<'MSG'
+Install or update it:
+  brew install olef-dev/tap/olef   # macOS / Linux  (brew update && brew upgrade olef)
+  scoop install olef                      # Windows        (scoop update olef)
+or point OLEF_BIN at the binary, then restart Codex.
+MSG
+} >&2
+exit 1

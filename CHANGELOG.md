@@ -1,8 +1,78 @@
 # Changelog
 
-Release notes for ShadowDroid. Every release, with its binaries, is on the
-[Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases).
+Release notes for Olef. Every release, with its binaries, is on the
+[Releases page](https://github.com/olef-dev/olef/releases).
 
+
+## v3.0.0
+
+**ShadowDroid is now Olef.** Same CLI, device service, runtime, plugins and
+Cloud, under a new name, a new home at [olef.dev](https://olef.dev) and a
+new look. Updating moves you across; scripts that call `shadowdroid` keep
+working.
+
+### What changes
+
+- **The command is `olef`.** Every install also puts a `shadowdroid` command
+  next to it that runs `olef` (a link on macOS and Linux, a `.cmd` shim on
+  Windows), so scripts, CI and recorded tests keep working.
+- **Your settings move once.** The first `olef` run moves `~/.shadowdroid` to
+  `~/.olef` (leaving a `~/.shadowdroid` link on macOS and Linux) and a
+  project's `.shadowdroid/` folder to `.olef/`. The proxy CA moves as it is,
+  so devices that trust it keep trusting it. A `~/.olef` that already exists
+  is kept as `~/.olef.before-move-<time>`.
+- **Environment variables are `OLEF_*`.** `SHADOWDROID_*` names aren't read
+  any more: rename them (`SHADOWDROID_DEVICE` → `OLEF_DEVICE`, and so on).
+  `olef doctor` lists any still set, with their new names.
+- **The device service is `dev.olef.server`.** The first `olef connect`
+  removes the old `io.github.andriyo.shadowdroid` service from each device and
+  installs the new one.
+- **The agent plugins are `olef`.** Run `olef init` to install them, then
+  remove the old `shadowdroid` plugin from Claude Code (`/plugin uninstall
+  shadowdroid@shadowdroid`) or Codex. The MCP tools are now
+  `mcp__plugin_olef_olef__*`, so update any permission rules that named the
+  old ones.
+- **The repositories moved** to the [`olef-dev`](https://github.com/olef-dev)
+  organization. Old URLs redirect; new installs use
+  `brew install olef-dev/tap/olef` or the installers below.
+- **New CA name:** a CA created from now on is "Olef MITM CA". An existing
+  one is kept as it is.
+
+### What keeps working
+
+- Recorded tests in `tests/shadowdroid/` and steps that start with
+  `shadowdroid`, a project's `.shadowdroidignore`, and `--billing shadowdroid`.
+- Olef Cloud: your account, workspaces, sign-in and the existing
+  `app.shadowdroid.dev`, `api.shadowdroid.dev` and `mcp.shadowdroid.dev`
+  addresses. The same services now also answer on `app.olef.dev`,
+  `api.olef.dev` and `mcp.olef.dev`.
+
+### Also new
+
+- **A new look:** the Olef mark and palette in the device viewer, the Cloud
+  web app and the plugin icons.
+- **Sign in to Olef Cloud with an email link** (live already): no password,
+  the same invite rules as GitHub and Google sign-in.
+
+### Update
+
+- **Homebrew:** `brew update && brew upgrade` moves you to the `olef` formula.
+- **macOS and Linux installer:**
+  `curl --proto '=https' --tlsv1.2 -LsSf https://github.com/olef-dev/olef/releases/latest/download/olef-installer.sh | sh`
+- **Scoop:** `scoop update shadowdroid` keeps working; to switch names,
+  `scoop uninstall shadowdroid; scoop install olef`.
+- **Windows installer:**
+  `powershell -ExecutionPolicy Bypass -c "irm https://github.com/olef-dev/olef/releases/latest/download/olef-installer.ps1 | iex"`
+
+Then run `olef init`. More in
+[Updating Olef](https://github.com/olef-dev/olef/blob/main/docs/updating.md).
+
+**On a lab host,** the service has a new name too. Remove the old one, then
+install the new one with `olef lab service install` and `olef lab service
+start`:
+
+- macOS: `sudo sh -c 'launchctl bootout system/dev.shadowdroid.lab; rm -f /Library/LaunchDaemons/dev.shadowdroid.lab.plist'`
+- Linux: `sudo sh -c 'systemctl disable --now shadowdroid-lab; rm -f /etc/systemd/system/shadowdroid-lab.service'`
 
 ## v2.7.4
 
@@ -1079,4 +1149,4 @@ Crates.io and IDE marketplace publication are separate distribution channels.
 
 ## Earlier releases
 
-See the [Releases page](https://github.com/shadowdroid-dev/shadowdroid/releases) for v1.1.0 and earlier.
+See the [Releases page](https://github.com/olef-dev/olef/releases) for v1.1.0 and earlier.

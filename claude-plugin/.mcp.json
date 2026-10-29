@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "shadowdroid": {
+    "olef": {
       "command": "bash",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/bin/shadowdroid-mcp"
+        "${CLAUDE_PLUGIN_ROOT}/bin/olef-mcp"
       ],
       "env": {
-        "SHADOWDROID_VIEWER": "${user_config.viewer}"
+        "OLEF_VIEWER": "${user_config.viewer}"
       }
     }
   }

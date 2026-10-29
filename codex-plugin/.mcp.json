@@ -1,7 +1,7 @@
 {
   "mcpServers": {
-    "shadowdroid": {
-      "command": "./bin/shadowdroid-mcp",
+    "olef": {
+      "command": "./bin/olef-mcp",
       "cwd": ".",
       "env_vars": [
         "PATH",
@@ -9,18 +9,18 @@
         "ANDROID_HOME",
         "ANDROID_SDK_ROOT",
         "JAVA_HOME",
-        "SHADOWDROID_BIN",
-        "SHADOWDROID_APK",
-        "SHADOWDROID_RUNTIME_DIR",
-        "SHADOWDROID_VIEWER"
+        "OLEF_BIN",
+        "OLEF_APK",
+        "OLEF_RUNTIME_DIR",
+        "OLEF_VIEWER"
       ],
       "startup_timeout_sec": 30,
       "tool_timeout_sec": 900,
       "env": {
-        "SHADOWDROID_AGENT": "codex"
+        "OLEF_AGENT": "codex"
       }
     },
-    "shadowdroid-cloud": {
+    "olef-cloud": {
       "type": "http",
       "url": "https://mcp.shadowdroid.dev/mcp",
       "startup_timeout_sec": 30,

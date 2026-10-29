@@ -3,23 +3,23 @@
 [← README](../README.md)
 
 Put repeated values in config instead of spending prompt/context on every
-command. Config lives in a folder: the global `~/.shadowdroid/config.json` is
-loaded first, then a project `.shadowdroid/config.json` from each of the current
+command. Config lives in a folder: the global `~/.olef/config.json` is
+loaded first, then a project `.olef/config.json` from each of the current
 directory's ancestors, with the nearest project file winning.
 
-All host state lives in `~/.shadowdroid` (user config, device locks and session
+All host state lives in `~/.olef` (user config, device locks and session
 authority, proxy CA, debugger registry, APK/runtime caches). Set
-`SHADOWDROID_HOME` to move it, for example into an agent's workspace when its
-sandbox may only write there; ShadowDroid then also leaves user-scope agent
+`OLEF_HOME` to move it, for example into an agent's workspace when its
+sandbox may only write there; Olef then also leaves user-scope agent
 skills untouched.
 
 ```bash
-shadowdroid config schema --json
-shadowdroid config init --project --app Livd --package com.livd --app-target mobile \
+olef config schema --json
+olef config init --project --app Livd --package com.livd --app-target mobile \
   --default-target mobile --target-name mobile --target-avd Livd_Pixel_9_API_36 \
   --target-start if-needed --target-form-factor mobile \
   --project-path /Users/you/Work/Livd --json
-shadowdroid config validate --json
+olef config validate --json
 ```
 
 ```json
@@ -61,21 +61,21 @@ shadowdroid config validate --json
 
 ## Named targets
 
-Named targets make multi-project and mobile/TV work deterministic. ShadowDroid
+Named targets make multi-project and mobile/TV work deterministic. Olef
 matches a running emulator by its stable AVD name, discovers its current adb
 serial, and reuses it. If none is running, `start: "if-needed"` opts into
 starting that existing AVD and waiting for Android to finish booting; the
-default policy is `never`. ShadowDroid never silently creates an AVD. Physical
+default policy is `never`. Olef never silently creates an AVD. Physical
 devices use a target entry with `"serial": "..."` and are never auto-started.
 
-Use `shadowdroid --target tv connect` to override `default_target`; explicit
-`-d/--device` has highest precedence. `shadowdroid devices` stays passive and
+Use `olef --target tv connect` to override `default_target`; explicit
+`-d/--device` has highest precedence. `olef devices` stays passive and
 includes the AVD name when Android exposes it. AVD claims under
-`~/.shadowdroid/targets/claims/` prevent two projects from silently sharing one
+`~/.olef/targets/claims/` prevent two projects from silently sharing one
 emulator — and therefore its accounts, proxy, and single UiAutomation slot. Use
 `--takeover` only for an intentional reassignment. Startup uses the Android SDK
 emulator found via `ANDROID_SDK_ROOT` / `ANDROID_HOME` / PATH; set
-`SHADOWDROID_EMULATOR` for an explicit executable.
+`OLEF_EMULATOR` for an explicit executable.
 
 AVD names are host configuration. Commit target bindings only when the team
 standardizes those names; otherwise define `targets` in the user config and
@@ -83,7 +83,7 @@ keep only the project's `default_target` / app `target` roles in project config.
 
 ## Remote devices (Google Cloud DDP, preview)
 
-ShadowDroid can reserve real phones from Google Cloud's Developer Device
+Olef can reserve real phones from Google Cloud's Developer Device
 Platform and drive them like a USB device. Sessions are billed to your own
 Google Cloud project; setting the project is the opt-in:
 
@@ -91,22 +91,22 @@ Google Cloud project; setting the project is the opt-in:
 { "ddp": { "project": "my-gcp-project", "budget_usd_per_day": 10 } }
 ```
 
-`GOOGLE_CLOUD_PROJECT` works too. Alternatively `"billing": "shadowdroid"`
-uses real phones from ShadowDroid, billed to your ShadowDroid account (sign in
-with `shadowdroid cloud login`; limited preview, enabled per account): no
+`GOOGLE_CLOUD_PROJECT` works too. Alternatively `"billing": "olef"`
+uses real phones from Olef, billed to your Olef account (sign in
+with `olef cloud login`; limited preview, enabled per account): no
 Google Cloud project or credentials needed, and the device's connection goes
-through ShadowDroid. Credentials come from your Google Cloud
+through Olef. Credentials come from your Google Cloud
 login: application default credentials (`gcloud auth application-default
 login`), the GCE metadata server, or `gcloud auth print-access-token`
-(`SHADOWDROID_DDP_AUTH=gcloud` uses gcloud first). The project needs the
+(`OLEF_DDP_AUTH=gcloud` uses gcloud first). The project needs the
 `devicestreaming`, `devicerun` and `testing` APIs enabled.
 
 ```bash
-shadowdroid devices list                               # every device: local, Cloud, real phones
-shadowdroid devices catalog --physical --available     # specs like ddp:komodo-35
-shadowdroid devices reserve ddp:komodo-35              # → serial 127.0.0.1:<port>
-shadowdroid -d ddp:komodo-35 app apply                 # any verb, by spec or serial
-shadowdroid devices release ddp:komodo-35
+olef devices list                               # every device: local, Cloud, real phones
+olef devices catalog --physical --available     # specs like ddp:komodo-35
+olef devices reserve ddp:komodo-35              # → serial 127.0.0.1:<port>
+olef -d ddp:komodo-35 app apply                 # any verb, by spec or serial
+olef devices release ddp:komodo-35
 ```
 
 - Spending: with `ddp.budget_usd_per_day` set, agents may reserve devices
@@ -115,7 +115,7 @@ shadowdroid devices release ddp:komodo-35
   or in the device viewer when an agent asks: it gets
   `cost_confirmation_required` until you click Reserve); your yes approves
   billed devices for the rest of that day, up to $10. With `"billing":
-  "shadowdroid"` that approval is kept on your ShadowDroid Cloud account
+  "olef"` that approval is kept on your Olef Cloud account
   (agents on any of your machines use it, and your org's caps apply), and
   `ddp.budget_usd_per_day` can only lower it, never replace it: an agent can
   edit the project config. `devices leases` shows each lease's cost and the
@@ -137,7 +137,7 @@ shadowdroid devices release ddp:komodo-35
 - A named target can point at a spec: `"targets": {"pixel9": {"serial": "ddp:tokay-35"}}`.
 - DDP devices are production builds without `adb reverse`, root or an
   emulator console. `net` still works: the device reaches the proxy through
-  a relay in the ShadowDroid server (`net status` reports `wiring: relay`).
+  a relay in the Olef server (`net status` reports `wiring: relay`).
   HTTPS interception needs the proxy CA trusted, which on these builds means
   a manual user-CA install (`net trust --push`) and an app that trusts user
   CAs. Faults that need the emulator console are unavailable.
@@ -157,8 +157,8 @@ unstripped `.so` symbols in its Gradle outputs.
 at the top level or per app alias (`apps.<alias>.debug_mode`, which wins);
 `config init --debug-mode <mode>` writes it.
 
-Native debugging needs an Android NDK on the host. ShadowDroid looks in
-`SHADOWDROID_NDK`, `ANDROID_NDK_HOME`, `ANDROID_NDK_ROOT`, `ANDROID_NDK`, then
+Native debugging needs an Android NDK on the host. Olef looks in
+`OLEF_NDK`, `ANDROID_NDK_HOME`, `ANDROID_NDK_ROOT`, `ANDROID_NDK`, then
 the newest `<sdk>/ndk/<version>`. See
 [debugging](debugging.md#native-and-mixed-debugging).
 
@@ -178,10 +178,10 @@ from loading, recovery commands still work because they run before normal
 config loading:
 
 ```bash
-shadowdroid config paths --json
-shadowdroid config validate --json  # non-zero config_invalid with report in detail
-shadowdroid config schema --json
-shadowdroid commands --json --depth 1
+olef config paths --json
+olef config validate --json  # non-zero config_invalid with report in detail
+olef config schema --json
+olef commands --json --depth 1
 ```
 
 ## Injection safety
@@ -194,16 +194,16 @@ before entering an Android shell command. Values containing `;`, newlines,
 
 ## Per-project proxy CA
 
-The `net` MITM proxy signs with a CA that ShadowDroid resolves per invocation:
+The `net` MITM proxy signs with a CA that Olef resolves per invocation:
 an explicit `proxy.ca_cert`/`proxy.ca_key` in config (absolute or `~/` paths),
-else a per-project convention CA at `<project>/.shadowdroid/ca.{crt,key}`, else
-the global `~/.shadowdroid/net/ca.{crt,key}`. Mint a project CA with
-`shadowdroid net ca reset --project` (or import your own with `net ca import
+else a per-project convention CA at `<project>/.olef/ca.{crt,key}`, else
+the global `~/.olef/net/ca.{crt,key}`. Mint a project CA with
+`olef net ca reset --project` (or import your own with `net ca import
 --project --cert …`); `config init --project` and the project-scoped `net ca`
-verbs write a `.shadowdroid/.gitignore` so the CA cert, key, and `.bak` backups
+verbs write a `.olef/.gitignore` so the CA cert, key, and `.bak` backups
 are never committed.
 
-Set `proxy.ca_trusted: true` to tell ShadowDroid the CA is already trusted on
+Set `proxy.ca_trusted: true` to tell Olef the CA is already trusted on
 the device (e.g. baked into a custom emulator image) — `net trust`/`net check`
 then skip the adb install and trust-store readback and report the basis as
 `asserted`. Even without it, a successful `net trust`/`net check` is cached per

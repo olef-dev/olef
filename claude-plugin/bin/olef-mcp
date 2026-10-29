@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Start `olef mcp` for Claude Code (run as `bash olef-mcp`, so it
+# also works on Windows, where Claude Code runs hooks and servers in Git Bash).
+#
+# A binary built in an Olef checkout (…/cli/target/{debug,release}/)
+# gets that checkout's server APK and runtime agent, so local builds need no
+# other setup. hooks/check-cli tells Claude how to install a missing CLI.
+set -u
+
+# A literal path from the plugin root (Claude Code sets it for MCP servers),
+# so plugin directories can follow it.
+# shellcheck source=../lib/plugin-env.sh
+. "${CLAUDE_PLUGIN_ROOT}/lib/plugin-env.sh"
+# shellcheck source=../lib/find-olef.sh
+. "${CLAUDE_PLUGIN_ROOT}/lib/find-olef.sh"
+
+if sd_find; then
+  # Make adb and the emulator findable for the same reason as PATH above.
+  if sd_find_platform_tools; then
+    export PATH="$SD_PLATFORM_TOOLS:$PATH"
+  fi
+  # A checkout build: use its own server APK and runtime agent.
+  case "$SD_BIN" in
+    */cli/target/debug/olef* | */cli/target/release/olef*)
+      repo="${SD_BIN%/cli/target/*}"
+      apk="$repo/server/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+      if [ -z "${OLEF_APK:-}" ] && [ -f "$apk" ]; then
+        export OLEF_APK="$apk"
+      fi
+      if [ -z "${OLEF_RUNTIME_DIR:-}" ] && [ -d "$repo/agent/native/build/out" ]; then
+        export OLEF_RUNTIME_DIR="$repo/agent/native/build/out"
+      fi
+      ;;
+  esac
+  exec "$SD_BIN" mcp "$@"
+fi
+
+{
+  if [ -n "$SD_TOO_OLD" ]; then
+    echo "Found olef at ${SD_TOO_OLD}, but this plugin needs ${OLEF_MIN_VERSION} or newer (with \`olef mcp\`)."
+  else
+    echo "olef was not found."
+  fi
+  cat <<'MSG'
+Install or update it:
+  brew install olef-dev/tap/olef   # macOS / Linux  (brew update && brew upgrade olef)
+  scoop install olef                      # Windows        (scoop update olef)
+or point OLEF_BIN at the binary. Then run /mcp and reconnect olef.
+MSG
+} >&2
+exit 1

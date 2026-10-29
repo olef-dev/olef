@@ -1,8 +1,8 @@
 # Recording tests
 
 Record a flow once, in the device viewer or by driving the app with
-`shadowdroid` commands, and save it as a test folder: a Bash script of one
-`shadowdroid` command per step, each naming its element and checking its own
+`olef` commands, and save it as a test folder: a Bash script of one
+`olef` command per step, each naming its element and checking its own
 result, plus a screenshot of every step. The test then replays without AI;
 see [test runs](test-runs.md) for running and repairing it.
 
@@ -11,21 +11,21 @@ is nothing to switch on: an agent explores, then saves.
 
 The sample app has a folder saved this way from a viewer recording of its
 Mission flow, unedited:
-`samples/shadowdroid-test-app/tests/shadowdroid/mission_recorded/` in the
+`samples/shadowdroid-test-app/tests/olef/mission_recorded/` in the
 development repository (its hand-written twin is `mission_recovery`).
 
 ```bash
 TOKEN="$(mktemp -d)/session.token"
-shadowdroid session open --agent explorer --token-out "$TOKEN" \
+olef session open --agent explorer --token-out "$TOKEN" \
   --app io.github.andriyo.shadowdroid.sample --clear-data --profile automation \
   --launch .MainActivity --expect-rid status_text
-export SHADOWDROID_SESSION_FILE="$TOKEN"
-shadowdroid record step open-mission
-shadowdroid ui tap --rid nav_mission --expect-rid mission_claim_button
+export OLEF_SESSION_FILE="$TOKEN"
+olef record step open-mission
+olef ui tap --rid nav_mission --expect-rid mission_claim_button
 …                                          # explore; dead ends and typos are fine
-shadowdroid record save mission_recovery   # clean up, compile, replay, write the folder
-shadowdroid test run tests/shadowdroid/mission_recovery --repeat 3
-shadowdroid session close
+olef record save mission_recovery   # clean up, compile, replay, write the folder
+olef test run tests/olef/mission_recovery --repeat 3
+olef session close
 ```
 
 ## In the viewer
@@ -58,12 +58,12 @@ can mix the person's input and the agent's commands.
 | --- | --- |
 | `record start [--app P] [--clear-data] [--launch [ACTIVITY]] [--expect-rid R \| --expect-text T]` | Begins a recording, optionally from a fresh start. A bare `--launch` relaunches the app's screen in front. `--clear-data` refuses to clear anything but an installed app of yours. |
 | `record stop` | Ends it and keeps the screen it ended on (the last step's checks are read from it). |
-| `record step "<name>"` | Names the commands that follow: `step pay-with-the-saved-card`. Commands with `SHADOWDROID_STEP` set keep that name. |
+| `record step "<name>"` | Names the commands that follow: `step pay-with-the-saved-card`. Commands with `OLEF_STEP` set keep that name. |
 | `record mark <name>` | Names a point, for `record save --from/--to`. |
 | `record check <selector> [--has-text S \| --checked [B] \| --selected [B] \| --enabled [B] \| --gone]` | Adds a check of your own; it must hold now. Written as `ui wait …` under `# checked by you`. |
 | `record show` | The recording as it would be saved: each step's lines, what clean-up removes and why, and the script. Changes nothing. |
 | `record status` | Whether a recording is on, and how much it holds. |
-| `record save <name> [-o DIR] [--from MARK] [--to MARK] [--last N] [--no-verify] [--force] [--journal DIR]` | Cleans up, compiles, replays and writes the folder (default `tests/shadowdroid/<name>/`, or `tests.dir` in `.shadowdroid/config.json`). |
+| `record save <name> [-o DIR] [--from MARK] [--to MARK] [--last N] [--no-verify] [--force] [--journal DIR]` | Cleans up, compiles, replays and writes the folder (default `tests/olef/<name>/`, or `tests.dir` in `.olef/config.json`). |
 | `record discard` | Starts over from here; the journal itself is kept. |
 
 Without `record start`, `record save` takes the whole session (after the
@@ -83,7 +83,7 @@ silently.
   the replay check.
 - **Reads** (`ui dump`, `ui find`, screenshots, `log`, `why`, `net log`) and
   checks that failed. Waits and checks that passed stay.
-- **ShadowDroid tooling**: `net start`/`stop`, `video`, `connect`, the
+- **Olef tooling**: `net start`/`stop`, `video`, `connect`, the
   debuggers and the runtime. A test that started the proxy would leave the
   device proxied; `net rule` mocks stay, they are part of the flow.
 - **Dead ends**: a run of actions after which the screen is back where it
@@ -171,7 +171,7 @@ next:
   `--reset-permission` or `--revoke` itself.
 
 ```bash
-shadowdroid session open --token-out "$TOKEN" --agent test:livd_brand_search --app "$APP" \
+olef session open --token-out "$TOKEN" --agent test:livd_brand_search --app "$APP" \
   --profile automation \
   --deny android.permission.POST_NOTIFICATIONS \
   --launch com.livdapp.client.MainActivity --expect-rid home_screen
@@ -180,7 +180,7 @@ shadowdroid session open --token-out "$TOKEN" --agent test:livd_brand_search --a
 ## The replay check
 
 `record save` runs the cleaned script once from a fresh start, in a session
-nested under yours, with the `shadowdroid` that saved it:
+nested under yours, with the `olef` that saved it:
 
 1. It passes: the folder is written.
 2. It fails at a step whose element came from a removed step: the nearest
@@ -198,7 +198,7 @@ The save result lists `verify.replays` (each with its run folder),
 ## The test folder
 
 ```text
-tests/shadowdroid/mission_recovery/
+tests/olef/mission_recovery/
   test.sh          the script (executable); see test runs for the format
   screens/         one half-size JPEG per step (<step>.jpg), committed with the test
   README.md        the steps in plain English, parameters, how to run it, what saving removed

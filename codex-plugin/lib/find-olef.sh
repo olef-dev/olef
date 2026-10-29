@@ -1,20 +1,20 @@
-# Sourced by bin/shadowdroid-mcp after lib/plugin-env.sh: find a usable
-# `shadowdroid` binary.
+# Sourced by bin/olef-mcp after lib/plugin-env.sh: find a usable
+# `olef` binary.
 #
 # Desktop apps don't inherit the login shell's PATH, so besides PATH this also
-# looks in the usual install locations. SHADOWDROID_BIN overrides the search.
-# SHADOWDROID_PLUGIN_TEST_ISOLATE=1 (tests only) skips the fixed locations and
-# the cache below, unless SHADOWDROID_PLUGIN_CACHE names a cache file.
+# looks in the usual install locations. OLEF_BIN overrides the search.
+# OLEF_PLUGIN_TEST_ISOLATE=1 (tests only) skips the fixed locations and
+# the cache below, unless OLEF_PLUGIN_CACHE names a cache file.
 
 # Binaries that passed the check below, so later launches skip running
 # `--version` (Codex starts the server about 20 times when it opens; on
 # Windows each process start is slow). One line per binary:
 # "<mtime> <size> <version> <path>"; a rebuild or upgrade changes the stamp.
 sd_cache_file() {
-  if [ -n "${SHADOWDROID_PLUGIN_CACHE:-}" ]; then
-    printf '%s' "$SHADOWDROID_PLUGIN_CACHE"
-  elif [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
-    printf '%s' "${SHADOWDROID_HOME:-$HOME/.shadowdroid}/cache/plugin-cli-check"
+  if [ -n "${OLEF_PLUGIN_CACHE:-}" ]; then
+    printf '%s' "$OLEF_PLUGIN_CACHE"
+  elif [ "${OLEF_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
+    printf '%s' "${OLEF_HOME:-$HOME/.olef}/cache/plugin-cli-check"
   fi
 }
 
@@ -58,34 +58,34 @@ sd_cache_put() {
   return 0
 }
 
-# Sets SD_BIN to a shadowdroid that is new enough (return 0),
+# Sets SD_BIN to a olef that is new enough (return 0),
 # or SD_TOO_OLD to "path version" of the newest unusable one found (return 1).
 sd_find() {
   SD_BIN=""
   SD_TOO_OLD=""
   local candidates=(
-    "${SHADOWDROID_BIN:-}"
-    "$(command -v shadowdroid 2>/dev/null || true)"
+    "${OLEF_BIN:-}"
+    "$(command -v olef 2>/dev/null || true)"
   )
-  [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" = 1 ] || candidates+=(
-    /opt/homebrew/bin/shadowdroid
-    /usr/local/bin/shadowdroid
-    /home/linuxbrew/.linuxbrew/bin/shadowdroid
-    "$HOME/.local/bin/shadowdroid"
-    "$HOME/.cargo/bin/shadowdroid"
+  [ "${OLEF_PLUGIN_TEST_ISOLATE:-}" = 1 ] || candidates+=(
+    /opt/homebrew/bin/olef
+    /usr/local/bin/olef
+    /home/linuxbrew/.linuxbrew/bin/olef
+    "$HOME/.local/bin/olef"
+    "$HOME/.cargo/bin/olef"
   )
   if [ -n "${LOCALAPPDATA:-}" ]; then
-    candidates+=("$LOCALAPPDATA/Programs/shadowdroid/shadowdroid.exe" "$HOME/scoop/shims/shadowdroid.exe")
+    candidates+=("$LOCALAPPDATA/Programs/olef/olef.exe" "$HOME/scoop/shims/olef.exe")
   fi
   local candidate version
   for candidate in "${candidates[@]}"; do
     [ -n "$candidate" ] && [ -x "$candidate" ] || continue
-    if version="$(sd_cache_get "$candidate")" && sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
+    if version="$(sd_cache_get "$candidate")" && sd_version_at_least "$version" "$OLEF_MIN_VERSION"; then
       SD_BIN="$candidate"
       return 0
     fi
     version="$(sd_version_of "$("$candidate" --version 2>/dev/null)")"
-    if [ -z "$version" ] || ! sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
+    if [ -z "$version" ] || ! sd_version_at_least "$version" "$OLEF_MIN_VERSION"; then
       SD_TOO_OLD="$candidate ${version:-?}"
       continue
     fi

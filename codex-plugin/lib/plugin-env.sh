@@ -1,13 +1,13 @@
-# Sourced by bin/shadowdroid-mcp and hooks/check-cli: settings and helpers
+# Sourced by bin/olef-mcp and hooks/check-cli: settings and helpers
 # that run no program from a computed path, so plugin directories can follow
-# the hook that sources this. Binary search lives in find-shadowdroid.sh.
-# SHADOWDROID_PLUGIN_TEST_ISOLATE=1 (tests only) skips the fixed locations.
+# the hook that sources this. Binary search lives in find-olef.sh.
+# OLEF_PLUGIN_TEST_ISOLATE=1 (tests only) skips the fixed locations.
 
-# Every release from this version on has `shadowdroid mcp` (the first public
+# Every release from this version on has `olef mcp` (the first public
 # one with it is 2.0.3), so the version check alone covers it.
-SHADOWDROID_MIN_VERSION="2.0.4"
+OLEF_MIN_VERSION="2.0.4"
 
-# The version in `shadowdroid --version` output ("shadowdroid 2.0.7").
+# The version in `olef --version` output ("olef 2.0.7").
 sd_version_of() {
   local words
   read -r -a words <<<"$1"
@@ -33,7 +33,7 @@ sd_find_platform_tools() {
   SD_PLATFORM_TOOLS=""
   local sdk
   local sdks=("${ANDROID_HOME:-}" "${ANDROID_SDK_ROOT:-}")
-  if [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
+  if [ "${OLEF_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
     sdks+=("$HOME/Library/Android/sdk" "$HOME/Android/Sdk" "${LOCALAPPDATA:-/nonexistent}/Android/Sdk")
   fi
   for sdk in "${sdks[@]}"; do

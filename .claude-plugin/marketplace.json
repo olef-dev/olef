@@ -1,19 +1,19 @@
 {
-  "name": "shadowdroid",
+  "name": "olef",
   "owner": {
-    "name": "ShadowDroid",
-    "email": "contact@shadowdroid.dev",
-    "url": "https://shadowdroid.dev"
+    "name": "Olef",
+    "email": "contact@olef.dev",
+    "url": "https://olef.dev"
   },
   "metadata": {
-    "description": "The ShadowDroid plugin for Claude Code: Android emulator and device control with a live viewer."
+    "description": "The Olef plugin for Claude Code: Android emulator and device control with a live viewer."
   },
   "plugins": [
     {
-      "name": "shadowdroid",
+      "name": "olef",
       "source": "./claude-plugin",
       "description": "Run, test and debug Android apps from Claude Code with a live, interactive emulator/device viewer in the Claude Desktop browser pane, Apply Changes, annotations and a status line.",
-      "version": "2.7.4",
+      "version": "3.0.0",
       "category": "development",
       "keywords": [
         "android",

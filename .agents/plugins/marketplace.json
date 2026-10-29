@@ -1,11 +1,11 @@
 {
-  "name": "shadowdroid",
+  "name": "olef",
   "interface": {
-    "displayName": "ShadowDroid"
+    "displayName": "Olef"
   },
   "plugins": [
     {
-      "name": "shadowdroid",
+      "name": "olef",
       "source": {
         "source": "local",
         "path": "./codex-plugin"

@@ -13,7 +13,7 @@ omit `ok`, so exit code zero is their success signal.
 
 Streaming commands are explicit JSONL exceptions (`watch`, `log`, `net log`,
 `debug logpoint follow`, and `debug replay`); `test` passes through the wrapped
-command and adds a ShadowDroid trailer. Stream errors have the same `code`,
+command and adds an Olef trailer. Stream errors have the same `code`,
 `retryable`, `detail`, and non-empty `next_actions` recovery fields, while
 terminal stream summaries carry follow-up actions. Human, source, and
 wrapped-command pass-through output cannot embed the JSON field; their exact
@@ -36,17 +36,17 @@ unless the stream ends or the task says to stop.
 
 ## Whose fault a failure is
 
-Every error also carries `fault`: `shadowdroid` (a ShadowDroid bug),
+Every error also carries `fault`: `olef` (an Olef bug),
 `environment` (device, adb, network, toolchain), `usage` (the command, its
 arguments, or an expectation such as a wait that didn't hold) or `app` (the app
 under test). Errors from the on-device service are classified by their HTTP
-status unless the code is known. Only `shadowdroid` errors end `next_actions`
-with `shadowdroid feedback draft --from-last-error`; see
+status unless the code is known. Only `olef` errors end `next_actions`
+with `olef feedback draft --from-last-error`; see
 [Reporting problems](feedback.md).
 
-When a `shadowdroid` error matches a known issue, it carries `known_issue`
+When a `olef` error matches a known issue, it carries `known_issue`
 (`issue`, `url`, `state`, `fixed_in`, `update_fixes_it`). If a newer release
-fixes it, `next_actions` starts with `shadowdroid update --json` instead of
+fixes it, `next_actions` starts with `olef update --json` instead of
 the report suggestion.
 
 An internal crash is reported as an ordinary error with code `internal_panic`
@@ -58,7 +58,7 @@ An internal crash is reported as an ordinary error with code `internal_panic`
 When the app crashed or ANRed since your previous command, the next result
 (action *or* error) carries an `events` array of parsed `{"type":"crash",…}`
 objects. No `watch` required, no separate poll — the crash finds you.
-(`SHADOWDROID_NO_EVENTS=1` opts out.) Delivery is one-shot: each staged event
+(`OLEF_NO_EVENTS=1` opts out.) Delivery is one-shot: each staged event
 is attached to exactly one result.
 
 ## Failures are self-describing
@@ -74,9 +74,9 @@ Read `detail` before re-dumping.
 
 ## Logging and strictness
 
-- **Logs go to stderr.** ShadowDroid's own operational logging is on
+- **Logs go to stderr.** Olef's own operational logging is on
   **stderr**, so `… | jq` already sees clean JSON. Add `--quiet`/`-q` (or
-  `SHADOWDROID_QUIET=1`) to silence it entirely — handy when you merge with
+  `OLEF_QUIET=1`) to silence it entirely — handy when you merge with
   `2>&1`.
 - **The update notice is for people.** The once-a-day "new release" notice
   prints to stderr only when stderr is a terminal and `--quiet` is off, so a
@@ -112,11 +112,11 @@ guessing syntax. The supported leaf size budget is 12 KiB with at least a 35%
 reduction for representative commands; full output retains all metadata.
 
 Schema v4 adds cloud routing. Every command has `runs` (`remote`, `local` or
-`both`: where it executes when the project is linked to ShadowDroid Cloud).
+`both`: where it executes when the project is linked to Olef Cloud).
 Every argument whose value is a path on this host, positionals included, has
 `dir`: `in` (read), `out` (written) or `dir` (a directory read and written);
 any other argument is never rewritten. The root catalog's `remote_model`
-defines these values and classifies each `SHADOWDROID_*` variable as
+defines these values and classifies each `OLEF_*` variable as
 `forward`, `translate` (a host path, rewritten like an `in` argument) or
 `drop`.
 

@@ -1,12 +1,12 @@
 name: Feature request
-description: Suggest something ShadowDroid should do.
+description: Suggest something Olef should do.
 labels: ["enhancement"]
 body:
   - type: textarea
     id: problem
     attributes:
       label: What are you trying to do?
-      description: The task you or your agent were working on, and where ShadowDroid got in the way.
+      description: The task you or your agent were working on, and where Olef got in the way.
     validations:
       required: true
   - type: textarea

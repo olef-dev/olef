@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# SessionStart: when the shadowdroid CLI (or adb) is missing or too old, tell
+# SessionStart: when the olef CLI (or adb) is missing or too old, tell
 # the agent how to install it on this OS and show the user a one-line note;
 # when the CLI's update cache knows a newer release, say so the same way.
-# With no local Android toolchain, ShadowDroid Cloud is offered next to the
+# With no local Android toolchain, Olef Cloud is offered next to the
 # local install, and a project linked to it needs no adb at all. Silent when
 # everything is in place and current. Never installs, signs in or uploads
 # anything itself: the agent offers the command and runs it only with the
@@ -18,7 +18,7 @@ case "${1:-claude}" in
     ;;
   *)
     agent="Claude"
-    reconnect="works immediately through Bash; the plugin's MCP tools (control, build, boot, annotations, recording) start working after the user runs /mcp and reconnects the shadowdroid server, or starts a new session"
+    reconnect="works immediately through Bash; the plugin's MCP tools (control, build, boot, annotations, recording) start working after the user runs /mcp and reconnects the olef server, or starts a new session"
     ;;
 esac
 
@@ -31,7 +31,7 @@ esac
 os="$(sd_os)"
 have_brew=""
 brews=("$(command -v brew 2>/dev/null || true)")
-if [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
+if [ "${OLEF_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
   brews+=(/opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew)
 fi
 for brew in "${brews[@]}"; do
@@ -48,26 +48,26 @@ have_scoop="$(command -v scoop 2>/dev/null || command -v scoop.cmd 2>/dev/null |
 # version when it starts it.
 cli=missing
 too_old=""
-if command -v shadowdroid >/dev/null 2>&1; then
-  version="$(shadowdroid --version 2>/dev/null)"
+if command -v olef >/dev/null 2>&1; then
+  version="$(olef --version 2>/dev/null)"
   version="$(sd_version_of "$version")"
-  if [ -n "$version" ] && sd_version_at_least "$version" "$SHADOWDROID_MIN_VERSION"; then
+  if [ -n "$version" ] && sd_version_at_least "$version" "$OLEF_MIN_VERSION"; then
     cli=ok
   else
     cli=old
-    too_old="shadowdroid ${version:-?}"
+    too_old="olef ${version:-?}"
   fi
 fi
 if [ "$cli" = missing ]; then
-  others=("${SHADOWDROID_BIN:-}")
-  if [ "${SHADOWDROID_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
+  others=("${OLEF_BIN:-}")
+  if [ "${OLEF_PLUGIN_TEST_ISOLATE:-}" != 1 ]; then
     others+=(
-      /opt/homebrew/bin/shadowdroid
-      /usr/local/bin/shadowdroid
-      /home/linuxbrew/.linuxbrew/bin/shadowdroid
-      "$HOME/.local/bin/shadowdroid"
-      "${LOCALAPPDATA:-/nonexistent}/Programs/shadowdroid/shadowdroid.exe"
-      "$HOME/scoop/shims/shadowdroid.exe"
+      /opt/homebrew/bin/olef
+      /usr/local/bin/olef
+      /home/linuxbrew/.linuxbrew/bin/olef
+      "$HOME/.local/bin/olef"
+      "${LOCALAPPDATA:-/nonexistent}/Programs/olef/olef.exe"
+      "$HOME/scoop/shims/olef.exe"
     )
   fi
   for other in "${others[@]}"; do
@@ -88,47 +88,47 @@ fi
 context=""
 notice=""
 if [ "$cli" = old ]; then
-  context="The ShadowDroid plugin needs the shadowdroid CLI ${SHADOWDROID_MIN_VERSION} or newer; found ${too_old}."
-  notice="ShadowDroid: the shadowdroid CLI is out of date. Ask ${agent} to update it, or run:"
+  context="The Olef plugin needs the olef CLI ${OLEF_MIN_VERSION} or newer; found ${too_old}."
+  notice="Olef: the olef CLI is out of date. Ask ${agent} to update it, or run:"
 elif [ "$cli" = missing ]; then
-  context="The ShadowDroid plugin needs the shadowdroid CLI, which is not installed on this machine."
-  notice="ShadowDroid: install the shadowdroid CLI to use this plugin. Ask ${agent}, or run:"
+  context="The Olef plugin needs the olef CLI, which is not installed on this machine."
+  notice="Olef: install the olef CLI to use this plugin. Ask ${agent}, or run:"
 fi
 if [ "$cli" = ok ]; then
   :
 elif [ "$tool" = brew ] && [ "$cli" = old ]; then
-  notice+=" brew update && brew upgrade shadowdroid"
-  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): brew update && brew upgrade shadowdroid ."
+  notice+=" brew update && brew upgrade olef"
+  context+=" Before using Olef, offer to run this command (with the user's approval; it downloads the CLI from the olef-dev releases on GitHub): brew update && brew upgrade olef ."
 elif [ "$tool" = brew ]; then
-  notice+=" brew install shadowdroid-dev/tap/shadowdroid"
-  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): brew install shadowdroid-dev/tap/shadowdroid ."
+  notice+=" brew install olef-dev/tap/olef"
+  context+=" Before using Olef, offer to run this command (with the user's approval; it downloads the CLI from the olef-dev releases on GitHub): brew install olef-dev/tap/olef ."
 elif [ "$tool" = scoop ] && [ "$cli" = old ]; then
-  notice+=" scoop update shadowdroid"
-  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): scoop update shadowdroid ."
+  notice+=" scoop update olef"
+  context+=" Before using Olef, offer to run this command (with the user's approval; it downloads the CLI from the olef-dev releases on GitHub): scoop update olef ."
 elif [ "$tool" = scoop ]; then
-  notice+=" scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid"
-  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket; scoop install shadowdroid ."
+  notice+=" scoop bucket add olef https://github.com/olef-dev/scoop-bucket; scoop install olef"
+  context+=" Before using Olef, offer to run this command (with the user's approval; it downloads the CLI from the olef-dev releases on GitHub): scoop bucket add olef https://github.com/olef-dev/scoop-bucket; scoop install olef ."
 elif [ "$tool" = powershell ]; then
-  notice+=" irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex"
-  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): irm https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.ps1 | iex . Run it in PowerShell; the installer puts shadowdroid.exe on the user's PATH."
+  notice+=" irm https://github.com/olef-dev/olef/releases/latest/download/olef-installer.ps1 | iex"
+  context+=" Before using Olef, offer to run this command (with the user's approval; it downloads the CLI from the olef-dev releases on GitHub): irm https://github.com/olef-dev/olef/releases/latest/download/olef-installer.ps1 | iex . Run it in PowerShell; the installer puts olef.exe on the user's PATH."
 else
-  notice+=" curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh"
-  context+=" Before using ShadowDroid, offer to run this command (with the user's approval; it downloads the CLI from the shadowdroid-dev releases on GitHub): curl --proto '=https' --tlsv1.2 -LsSf https://github.com/shadowdroid-dev/shadowdroid/releases/latest/download/shadowdroid-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'shadowdroid' is not found afterwards."
+  notice+=" curl --proto '=https' --tlsv1.2 -LsSf https://github.com/olef-dev/olef/releases/latest/download/olef-installer.sh | sh"
+  context+=" Before using Olef, offer to run this command (with the user's approval; it downloads the CLI from the olef-dev releases on GitHub): curl --proto '=https' --tlsv1.2 -LsSf https://github.com/olef-dev/olef/releases/latest/download/olef-installer.sh | sh . It installs to ~/.local/bin; add that to PATH if 'olef' is not found afterwards."
 fi
 if [ "$cli" != ok ]; then
-  context+=" Afterwards 'shadowdroid --version' prints the version and the shadowdroid CLI ${reconnect}. The device service is installed on the first 'shadowdroid connect'. The CLI is free for everyone, including commercial use (ShadowDroid License)."
+  context+=" Afterwards 'olef --version' prints the version and the olef CLI ${reconnect}. The device service is installed on the first 'olef connect'. The CLI is free for everyone, including commercial use (Olef License)."
 fi
 
 # A newer release of the CLI on PATH, from the cache the CLI refreshes once a
 # day (update-check.json). Never the network here; off with
-# SHADOWDROID_NO_UPDATE_CHECK, like the CLI's own notice.
+# OLEF_NO_UPDATE_CHECK, like the CLI's own notice.
 update=""
-no_update_check="$(printf '%s' "${SHADOWDROID_NO_UPDATE_CHECK:-}" | tr '[:upper:]' '[:lower:]')"
+no_update_check="$(printf '%s' "${OLEF_NO_UPDATE_CHECK:-}" | tr '[:upper:]' '[:lower:]')"
 case "$no_update_check" in
   1 | true | yes | on) no_update_check=1 ;;
   *) no_update_check="" ;;
 esac
-update_cache="${SHADOWDROID_HOME:-$HOME/.shadowdroid}/update-check.json"
+update_cache="${OLEF_HOME:-$HOME/.olef}/update-check.json"
 if [ "$cli" = ok ] && [ -n "${version:-}" ] && [ -z "$no_update_check" ] && [ -f "$update_cache" ]; then
   latest="$(sed -n 's/^ *"latest_version": *"\([^"]*\)".*/\1/p' "$update_cache" | head -n 1)"
   case "$latest" in
@@ -141,7 +141,7 @@ fi
 # Issues this user reported that a newer release fixes, written by the CLI's
 # daily check for the version that wrote it (feedback-status.json).
 fixed_reports=""
-status_file="${SHADOWDROID_HOME:-$HOME/.shadowdroid}/feedback-status.json"
+status_file="${OLEF_HOME:-$HOME/.olef}/feedback-status.json"
 if [ -n "$update" ] && [ -f "$status_file" ]; then
   status_for="$(sed -n 's/^ *"installed": *"\([^"]*\)".*/\1/p' "$status_file" | head -n 1)"
   fixed_reports="$(sed -n 's/^ *"fixed_issues": *"\([^"]*\)".*/\1/p' "$status_file" | head -n 1)"
@@ -157,10 +157,10 @@ if [ -n "$update" ]; then
   if [ -n "$fixed_reports" ]; then
     fixes_note="; it fixes ${fixed_reports}, which you reported"
   fi
-  notice="ShadowDroid ${update} is available (you have ${version})${fixes_note}. Ask ${agent} to update it, or run: shadowdroid update"
-  context="A newer shadowdroid CLI release is available: ${update} (installed: ${version}). Mention it to the user once. If they want it, 'shadowdroid update --json' returns the update command for how the CLI was installed (update.command); run that only with the user's approval, then 'shadowdroid init' to bring the ShadowDroid plugin and skills to the same version."
+  notice="Olef ${update} is available (you have ${version})${fixes_note}. Ask ${agent} to update it, or run: olef update"
+  context="A newer olef CLI release is available: ${update} (installed: ${version}). Mention it to the user once. If they want it, 'olef update --json' returns the update command for how the CLI was installed (update.command); run that only with the user's approval, then 'olef init' to bring the Olef plugin and skills to the same version."
   if [ -n "$fixed_reports" ]; then
-    context+=" The update fixes issues the user reported with shadowdroid feedback: ${fixed_reports}."
+    context+=" The update fixes issues the user reported with olef feedback: ${fixed_reports}."
   fi
 fi
 
@@ -169,19 +169,19 @@ if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
   toolchain=missing
 fi
 
-# ShadowDroid Cloud matters only without a local toolchain. The CLI answers
+# Olef Cloud matters only without a local toolchain. The CLI answers
 # for the project in this folder: linked (cloud mode on), off (linked, cloud
 # mode off), signed_in (not linked), available (the cloud verbs exist, not
 # signed in) or unsupported (a CLI without them). Without a CLI to ask, it
 # stays unknown: the CLI the user installs has them. The CLI gets 4 s, and
 # any answer but its own JSON counts as unsupported.
 cloud=unknown
-if [ "$toolchain" = missing ] && [ "$cli" = ok ] && command -v shadowdroid >/dev/null 2>&1; then
+if [ "$toolchain" = missing ] && [ "$cli" = ok ] && command -v olef >/dev/null 2>&1; then
   cloud=unsupported
   cloud_out=""
   cloud_tmp="$(mktemp 2>/dev/null)"
   if [ -n "$cloud_tmp" ]; then
-    shadowdroid cloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
+    olef cloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
     cloud_pid=$!
     waited=0
     while kill -0 "$cloud_pid" 2>/dev/null && [ "$waited" -lt 40 ]; do
@@ -200,7 +200,7 @@ if [ "$toolchain" = missing ] && [ "$cli" = ok ] && command -v shadowdroid >/dev
     *'"cmd":"cloud_status"'* | *'"signed_in":'* | *'"code":"cloud_'*) cloud=available ;;
   esac
 fi
-# A plugin whose MCP config names the remote ShadowDroid Cloud server works
+# A plugin whose MCP config names the remote Olef Cloud server works
 # without the CLI too, in a cloud-hosted workspace.
 remote_mcp=""
 if grep -qF 'mcp.shadowdroid.dev' "${CLAUDE_PLUGIN_ROOT}/.mcp.json" 2>/dev/null; then
@@ -211,48 +211,48 @@ if [ "$toolchain" = missing ] && [ "$cloud" = linked ]; then
   if [ -n "$context" ]; then
     context+=" "
   fi
-  context+="This project is linked to ShadowDroid Cloud with cloud mode on: shadowdroid commands build and run the app on a cloud emulator, so adb, the Android SDK and a JDK are not needed on this machine. Don't install them unless the user asks. 'shadowdroid cloud status' shows the session, and 'shadowdroid commands --guide cloud' covers usage, limits and cloud errors."
+  context+="This project is linked to Olef Cloud with cloud mode on: olef commands build and run the app on a cloud emulator, so adb, the Android SDK and a JDK are not needed on this machine. Don't install them unless the user asks. 'olef cloud status' shows the session, and 'olef commands --guide cloud' covers usage, limits and cloud errors."
 elif [ "$toolchain" = missing ]; then
   if [ -n "$context" ]; then
     context+=" "
   fi
-  context+="adb (Android SDK platform-tools) was not found. ShadowDroid needs it to reach devices; Android Studio installs it, or install it with:"
+  context+="adb (Android SDK platform-tools) was not found. Olef needs it to reach devices; Android Studio installs it, or install it with:"
   if [ "$os" = macos ]; then
     context+=" brew install --cask android-platform-tools."
     if [ -z "$notice" ]; then
-      notice="ShadowDroid: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools"
+      notice="Olef: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools"
     fi
   elif [ "$os" = windows ]; then
     context+=" scoop install adb."
     if [ -z "$notice" ]; then
-      notice="ShadowDroid: adb was not found. Install Android platform-tools: scoop install adb"
+      notice="Olef: adb was not found. Install Android platform-tools: scoop install adb"
     fi
   else
     context+=" the distribution's package (for example: sudo apt install adb)."
     if [ -z "$notice" ]; then
-      notice="ShadowDroid: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)"
+      notice="Olef: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)"
     fi
   fi
   # The install notices get the cloud option; the update notice stands alone.
   if [ "$cloud" = off ]; then
-    context+=" This project is linked to ShadowDroid Cloud, but cloud mode is off. 'shadowdroid cloud on' runs it in the cloud again, with no Android SDK or adb here; ask the user which they want."
+    context+=" This project is linked to Olef Cloud, but cloud mode is off. 'olef cloud on' runs it in the cloud again, with no Android SDK or adb here; ask the user which they want."
     if [ -z "$update" ]; then
-      notice+=" Or run it in the cloud again: shadowdroid cloud on"
+      notice+=" Or run it in the cloud again: olef cloud on"
     fi
   elif [ "$cloud" = signed_in ]; then
-    context+=" The user is signed in to ShadowDroid Cloud, but this folder isn't linked. Before installing anything, ask whether to set up Android locally or build and run in the cloud: 'shadowdroid cloud link' in the project's root uploads it once the user approves. 'shadowdroid commands --guide cloud' has the steps."
+    context+=" The user is signed in to Olef Cloud, but this folder isn't linked. Before installing anything, ask whether to set up Android locally or build and run in the cloud: 'olef cloud link' in the project's root uploads it once the user approves. 'olef commands --guide cloud' has the steps."
     if [ -z "$update" ]; then
-      notice+=" Or no setup: build and run in the cloud (invite-only alpha), shadowdroid cloud link"
+      notice+=" Or no setup: build and run in the cloud (invite-only alpha), olef cloud link"
     fi
   elif [ "$cloud" != unsupported ]; then
-    context+=" Or no setup: ShadowDroid Cloud builds and runs the app on a cloud emulator, with nothing else to install (an invite-only alpha). Before installing anything, ask the user which they want: set up Android locally, or ShadowDroid Cloud ('shadowdroid cloud login' signs them in through the browser, then 'shadowdroid cloud link' in the project's root uploads it once they approve). Never sign the user up, sign in or upload code without their yes. 'shadowdroid commands --guide cloud' has the steps."
+    context+=" Or no setup: Olef Cloud builds and runs the app on a cloud emulator, with nothing else to install (an invite-only alpha). Before installing anything, ask the user which they want: set up Android locally, or Olef Cloud ('olef cloud login' signs them in through the browser, then 'olef cloud link' in the project's root uploads it once they approve). Never sign the user up, sign in or upload code without their yes. 'olef commands --guide cloud' has the steps."
     if [ -z "$update" ]; then
-      notice+=" Or no setup: build and run in the cloud (invite-only alpha), shadowdroid cloud login"
+      notice+=" Or no setup: build and run in the cloud (invite-only alpha), olef cloud login"
     fi
   fi
 fi
 if [ "$cli" != ok ] && [ -n "$remote_mcp" ]; then
-  context+=" This plugin also has the ShadowDroid Cloud MCP tools (mcp.shadowdroid.dev), which work without the CLI: the project then lives in a cloud-hosted workspace (create_workspace, write_files, build_and_run, screenshot, open_viewer, export_project), and the first call asks the user to sign in. Offer that or installing the CLI, which keeps the project in this folder, and let the user choose."
+  context+=" This plugin also has the Olef Cloud MCP tools (mcp.shadowdroid.dev), which work without the CLI: the project then lives in a cloud-hosted workspace (create_workspace, write_files, build_and_run, screenshot, open_viewer, export_project), and the first call asks the user to sign in. Offer that or installing the CLI, which keeps the project in this folder, and let the user choose."
 fi
 
 [ -n "$context" ] || exit 0

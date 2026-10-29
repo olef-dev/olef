@@ -122,8 +122,8 @@ the bundle.
 
 `net export har|curl|fixtures` hands flows to other tools by writing a durable
 artifact and returning an actionable summary; HAR defaults to
-`shadowdroid-network.har`, curl to `shadowdroid-network.curl.sh`, and fixtures
-to `shadowdroid-fixtures` unless `--out` selects another path.
+`olef-network.har`, curl to `olef-network.curl.sh`, and fixtures
+to `olef-fixtures` unless `--out` selects another path.
 
 ## Verifying an app is interceptable
 
@@ -143,7 +143,7 @@ for capture, rules and the app (`upstream_content_encoding` and
 `upstream_resp_len` in the flow keep what the server actually sent),
 and **captures WebSocket (WS/WSS) frames**. The proxy validates the real server
 certificate for both HTTPS and WSS, so a tampered network cannot hide behind the
-ShadowDroid CA; `net start --insecure-upstream` (or `proxy.verify_upstream: false`
+Olef CA; `net start --insecure-upstream` (or `proxy.verify_upstream: false`
 in config) accepts a self-signed dev backend you trust.
 
 ## WebSocket capture and drive
@@ -192,7 +192,7 @@ signs and installs *your* CA. `net ca info` shows the active CA and
 `net trust` (`--auto`, the default) installs the CA into the device's
 **system** trust store, falling back to the user store. On a debuggable build,
 such as an emulator's google_apis image, it first restarts adbd as root
-(`adb root`), which briefly drops adb forwards that ShadowDroid re-creates on
+(`adb root`), which briefly drops adb forwards that Olef re-creates on
 the next command; `--no-adb-root` skips that. Physical devices and production
 images (including the android-tv emulator image) cannot become root: use
 `net trust --push` and finish the install in Settings, which needs a screen-lock
@@ -220,9 +220,9 @@ explicit stop/start. See
 `net` only sees traffic that goes through the device proxy and trusts its CA.
 A `tls_error` usually means the app pins certificates or does not trust user
 CAs; clients with custom socket factories, Cronet, or QUIC bypass the proxy
-entirely. For a debug build, trust the ShadowDroid CA in the network security
+entirely. For a debug build, trust the Olef CA in the network security
 config (`net ca info`) or disable pinning in debug. In-process capture for such
-traffic is planned for the ShadowDroid runtime; the former OkHttp AAR companion
+traffic is planned for the Olef runtime; the former OkHttp AAR companion
 has been removed.
 
 ### Guarded JSON response edits
@@ -231,8 +231,8 @@ Use an RFC 6901 JSON pointer to change one existing field, with an expected old
 JSON value and a limit on successful applications (default: one):
 
 ```sh
-shadowdroid --target tv net rule add set-json --host api.example.com --path /graphql --method POST --operation-name SwitchProfile /extensions/expiresIn 600 30 1
-shadowdroid --target tv net rule list
+olef --target tv net rule add set-json --host api.example.com --path /graphql --method POST --operation-name SwitchProfile /extensions/expiresIn 600 30 1
+olef --target tv net rule list
 ```
 
 GraphQL response rules match the **request's** operation name. Missing pointers,

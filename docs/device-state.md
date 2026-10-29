@@ -45,8 +45,8 @@ failure to apply it is a typed error even if the bytes were transferred.
 Private debuggable-app files are available without raw shell redirection:
 
 ```bash
-shadowdroid files pull --run-as --app com.example.app files/state.json local.json
-shadowdroid files push --run-as --app com.example.app --mode 600 local.json files/state.json
+olef files pull --run-as --app com.example.app files/state.json local.json
+olef files push --run-as --app com.example.app --mode 600 local.json files/state.json
 ```
 
 Contents are byte-preserving and never printed.
@@ -58,14 +58,14 @@ directories while the app is force-stopped, then restore them under the app
 UID:
 
 ```bash
-shadowdroid app state snapshot --app com.example.app \
+olef app state snapshot --app com.example.app \
   --out /tmp/example-state \
   --include shared_prefs \
   --include files/session-state.json \
   --include databases/app.db
 
-shadowdroid app state restore --from /tmp/example-state
-shadowdroid app state cleanup --from /tmp/example-state
+olef app state restore --from /tmp/example-state
+olef app state cleanup --from /tmp/example-state
 ```
 
 The protected snapshot directory is `0700`; files and `manifest.json` are
@@ -93,18 +93,18 @@ storage loss without filesystem durability guarantees.
 Use `video record` for a bounded foreground capture:
 
 ```bash
-shadowdroid video record -o /tmp/checkout-repro --duration 30s
+olef video record -o /tmp/checkout-repro --duration 30s
 ```
 
 For an interactive run, start a detached recorder and add human-readable
 timeline boundaries while driving the app:
 
 ```bash
-shadowdroid video start -o /tmp/checkout-repro
-shadowdroid video mark "before checkout"
-shadowdroid video status
-shadowdroid video mark "payment failed"
-shadowdroid video stop
+olef video start -o /tmp/checkout-repro
+olef video mark "before checkout"
+olef video status
+olef video mark "payment failed"
+olef video stop
 ```
 
 Both capture paths write a private-mode bundle on Unix (`0700` directories and
@@ -134,5 +134,5 @@ Per-segment `sample_count` and `media_duration_ms` report encoded coverage.
 Marker offsets and rollover gaps are host-observed approximations, explicitly
 labelled as such in the manifest; use them to navigate evidence, not as
 frame-accurate media timestamps. A static or very short capture can contain only
-one frame: ShadowDroid preserves that segment, reports `playable: false`, marks
+one frame: Olef preserves that segment, reports `playable: false`, marks
 the session `partial`, and does not publish a misleading `video.mp4`.

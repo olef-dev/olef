@@ -34,9 +34,9 @@ A version 1 plan retains the original task and requirement text. Each requiremen
 The example declares a test invocation; validation does not execute it or establish that the named test actually covers rotation. An independent reviewer must still compare requirements against the original task. Explicit input paths will delimit freshness checks; a Git revision alone cannot identify a dirty source tree or an installed APK.
 
 ```bash
-shadowdroid verify plan validate verification.json
-shadowdroid verify junit --report TEST-example.ProfileTest.xml --selection ':app:testDebugUnitTest' --out baseline.json
-shadowdroid verify compare --baseline baseline.json --candidate candidate.json
+olef verify plan validate verification.json
+olef verify junit --report TEST-example.ProfileTest.xml --selection ':app:testDebugUnitTest' --out baseline.json
+olef verify compare --baseline baseline.json --candidate candidate.json
 ```
 
 ## Test evidence
@@ -52,10 +52,10 @@ These host-only commands remain available with malformed project configuration, 
 ## Executable runs
 
 ```bash
-shadowdroid verify run verification.json --host-only --out /tmp/verification-attempt-1
-shadowdroid verify report /tmp/verification-attempt-1
+olef verify run verification.json --host-only --out /tmp/verification-attempt-1
+olef verify report /tmp/verification-attempt-1
 # For instrumentation, select the dedicated device and set instrumentation: true in its check:
-shadowdroid -d emulator-5556 verify run verification.json --out /tmp/verification-attempt-2
+olef -d emulator-5556 verify run verification.json --out /tmp/verification-attempt-2
 ```
 
 `source_root` defaults to the plan's directory. Run output must be a new directory outside that source root. Git inputs include tracked, dirty and untracked files; ignored build outputs are excluded. Explicit `inputs` add fixtures and references, or define the entire input scope outside Git. Missing inputs and symlinks are refused. Input snapshots are limited to 30,000 entries / 512 MiB. Include external references explicitly; no tool can infer every external build input.
@@ -67,12 +67,12 @@ The output directory contains the original plan, atomic manifest, append-only ev
 A timeout or interruption retains partial evidence and marks the outcome unknown. The process group is terminated where supported, but arbitrary external Gradle daemons/services can outlive a child. Ownership therefore remains quarantined. After inspecting and stopping external workers, use:
 
 ```bash
-shadowdroid verify recover /tmp/verification-attempt-1 --external-workers-stopped
+olef verify recover /tmp/verification-attempt-1 --external-workers-stopped
 ```
 
 This releases source/build ownership without changing the old results or replaying actions. Device recovery remains a separate `session recover` operation requiring a changed boot identity. A known failure permits a new run; an unknown execution does not. Failures are known unless the check was interrupted, timed out, left an external worker holding its output, or dispatched a device mutation that never answered: a command that cannot launch, a missing working directory, a rejected install, an unreadable report or a configuration readback mismatch is a known, blocked result. Evidence failure or incomplete cleanup never becomes a passing result.
 
-External commands run with the user's permissions; this is coordination, not a sandbox. They receive `ANDROID_SERIAL` and `SHADOWDROID_DEVICE` but must themselves honor that selection. Isolate source roots, Gradle output directories, ports, app accounts and backend data when running independent agents. The authority cannot stop an IDE or direct ADB client from changing inputs. Artifacts are private local files and may contain application data. `--redact` applies configured output/log redaction, but the plan and source identity are retained for reproducibility; avoid secrets in task text and argv.
+External commands run with the user's permissions; this is coordination, not a sandbox. They receive `ANDROID_SERIAL` and `OLEF_DEVICE` but must themselves honor that selection. Isolate source roots, Gradle output directories, ports, app accounts and backend data when running independent agents. The authority cannot stop an IDE or direct ADB client from changing inputs. Artifacts are private local files and may contain application data. `--redact` applies configured output/log redaction, but the plan and source identity are retained for reproducibility; avoid secrets in task text and argv.
 
 ## UI journeys, lifecycle and configuration
 

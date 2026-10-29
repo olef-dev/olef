@@ -2,7 +2,7 @@
 
 [← README](../README.md)
 
-ShadowDroid reads real screens, logs, files, and network traffic from a real
+Olef reads real screens, logs, files, and network traffic from a real
 device. Everything below exists to keep that evidence from leaking secrets or
 personal data by accident — and to be explicit where redaction *cannot* help.
 
@@ -12,10 +12,10 @@ Pass global `--redact` before or after any subcommand to filter JSON and text at
 the shared output boundary:
 
 ```bash
-shadowdroid --redact ui dump
-shadowdroid log --last 2m --redact
-shadowdroid --redact collect --app com.example.app --redact-screenshots
-shadowdroid net start --redact
+olef --redact ui dump
+olef log --last 2m --redact
+olef --redact collect --app com.example.app --redact-screenshots
+olef net start --redact
 ```
 
 Built-ins cover password/secret/token/cookie fields, JWTs, bearer values,
@@ -50,7 +50,7 @@ still reports that Android may not expose every rendered glyph. `collect`
 marks screenshots potentially sensitive unless `--redact-screenshots`
 explicitly blacks out matching bounds. The device viewer's annotation
 overviews and crops are full-screen pixels too: they are captured with
-`--redact-pixels` whenever the redaction policy is on (`SHADOWDROID_REDACT`
+`--redact-pixels` whenever the redaction policy is on (`OLEF_REDACT`
 or `redaction.enabled`), and report `pixels_redacted` per screen.
 
 Video is a stricter boundary: global `--redact` does not alter MP4 pixels.
@@ -88,11 +88,11 @@ fail with a typed `invalid_*` error. See
 
 - On first `connect`, the CLI auto-installs a **version-matched APK pair**
   downloaded from the matching GitHub Release, **SHA-256 verified**, and cached
-  under `~/.shadowdroid/apks/<version>/`. When working inside the ShadowDroid
+  under `~/.olef/apks/<version>/`. When working inside the Olef
   repository it prefers local Gradle build outputs.
 - The wire protocol is loopback HTTP/JSON over an adb forward; the supported
   public interface for agents is the CLI surface and
-  `shadowdroid commands --json`.
+  `olef commands --json`.
 - The `net` MITM proxy installs its CA into the device's **user** trust store
   (`net trust`); apps that opt out of user CAs, pin certificates, or bypass the
   system store reject it, reported as `tls_error`. Forwarded bytes are never
@@ -104,18 +104,18 @@ fail with a typed `invalid_*` error. See
 - On the host, the runtime and debug daemons take CLI requests over a `0600`
   unix socket, or on Windows over a loopback port that answers only
   connections presenting the daemon's secret, kept in an owner-only file under
-  `~/.shadowdroid`.
+  `~/.olef`.
 
 ## The optional local usage log
 
-Opt in to a **local usage log** with `shadowdroid usage enable`. Schema
+Opt in to a **local usage log** with `olef usage enable`. Schema
 version 2 records only the command path, duration, CLI version, outcome, and
 typed error code/stage/retry posture — never argument values — and never
 uploads anything:
 
 ```bash
-shadowdroid usage enable
-shadowdroid usage report --days 30 | jq \
+olef usage enable
+olef usage report --days 30 | jq \
   '{verbs, error_codes, error_stages, versions, recommendations, feedback_loop}'
 ```
 
@@ -137,7 +137,7 @@ forward. Its manifest records privacy status per artifact.
 
 With `--redact`, device-scoped recovery commands use local `@sd-…` handles
 accepted by `--device`, or the selected project `--target`. Handle mappings
-live under `~/.shadowdroid/device-refs` (0600 files in a 0700 directory on
+live under `~/.olef/device-refs` (0600 files in a 0700 directory on
 Unix). They work only on that host; deleting a mapping invalidates its handle.
 They are not credentials. Device details and application session identifiers
 remain redacted, and suggested follow-ups retain `--redact`.

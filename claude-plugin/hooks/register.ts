@@ -1,7 +1,7 @@
 import type { Register } from 'claude-code'
 
-// The ShadowDroid plugin's MCP tools: mcp__plugin_shadowdroid_shadowdroid__<tool>.
-const PREFIX = 'mcp__plugin_shadowdroid_shadowdroid__'
+// The Olef plugin's MCP tools: mcp__plugin_olef_olef__<tool>.
+const PREFIX = 'mcp__plugin_olef_olef__'
 
 type Device = { serial: string; avd?: string; viewerUrl?: string }
 type Timer = { cancel: () => void }
@@ -10,7 +10,7 @@ type Session = {
   poll?: Timer
   /** The device part of the status line, as last set. */
   deviceStatus?: string
-  /** The cloud part of the status line, absent outside ShadowDroid Cloud. */
+  /** The cloud part of the status line, absent outside Olef Cloud. */
   cloudStatus?: string
   cloud?: CloudView
   cloudDirs?: string[]
@@ -36,7 +36,7 @@ function parse(text: string | undefined): Json | undefined {
   return undefined
 }
 
-/** The `app_apply` result in a Bash run of `shadowdroid app apply` (its last JSON line). */
+/** The `app_apply` result in a Bash run of `olef app apply` (its last JSON line). */
 export function applyResult(text: string | undefined): Json | undefined {
   if (!text) return undefined
   const lines = text.split('\n').reverse()
@@ -53,18 +53,18 @@ export function applyResult(text: string | undefined): Json | undefined {
   return undefined
 }
 
-/** A shell command that runs `shadowdroid … app apply`. */
+/** A shell command that runs `olef … app apply`. */
 export function runsApply(command: unknown): boolean {
-  return typeof command === 'string' && /\bshadowdroid\b[^|;&\n]*\bapp\s+apply\b/.test(command)
+  return typeof command === 'string' && /\bolef\b[^|;&\n]*\bapp\s+apply\b/.test(command)
 }
 
-/** A shell command that runs the `shadowdroid` CLI at all. */
-export function runsShadowdroid(command: unknown): boolean {
-  return typeof command === 'string' && /\bshadowdroid\b/.test(command)
+/** A shell command that runs the `olef` CLI at all. */
+export function runsOlef(command: unknown): boolean {
+  return typeof command === 'string' && /\bolef\b/.test(command)
 }
 
-// ShadowDroid Cloud, from the CLI's files under `~/.shadowdroid/cloud/`
-// (SHADOWDROID_HOME moves them), all optional:
+// Olef Cloud, from the CLI's files under `~/.olef/cloud/`
+// (OLEF_HOME moves them), all optional:
 //   links.json          { links: [{ root, workspace_id, name, enabled, state, approval_url?, zone? }] }
 //   login-pending.json  { user_code, verification_uri, verification_uri_complete?, expires_at }
 //   <workspace>/state.json, written by the workspace's daemon:
@@ -173,13 +173,13 @@ function cloudLive(view: CloudView, line: string | undefined): boolean {
   return what === 'starting' || what === 'ready' || what === 'stopping'
 }
 
-/** Where the CLI keeps its cloud files: `$SHADOWDROID_HOME/cloud`, else `~/.shadowdroid/cloud`. */
+/** Where the CLI keeps its cloud files: `$OLEF_HOME/cloud`, else `~/.olef/cloud`. */
 // biome-ignore lint: `$` is the engine's
 async function cloudDir($: any): Promise<string | undefined> {
-  const custom = await $.env.get('SHADOWDROID_HOME')
+  const custom = await $.env.get('OLEF_HOME')
   if (custom) return `${custom}/cloud`
   const home = (await $.env.get('HOME')) || (await $.env.get('USERPROFILE'))
-  return home ? `${home}/.shadowdroid/cloud` : undefined
+  return home ? `${home}/.olef/cloud` : undefined
 }
 
 // biome-ignore lint: `$` is the engine's
@@ -210,7 +210,7 @@ async function sessionDirs($: any): Promise<string[]> {
   return [here]
 }
 
-/** What the CLI's files say about ShadowDroid Cloud for this session's project. */
+/** What the CLI's files say about Olef Cloud for this session's project. */
 // biome-ignore lint: `$` is the engine's
 async function readCloud($: any, dirs: string[]): Promise<CloudView | undefined> {
   const dir = await cloudDir($)
@@ -277,20 +277,20 @@ async function refreshCloud($: any, session: Session): Promise<void> {
   const login = view?.login
   if (login) {
     const url = login.verification_uri_complete ?? login.verification_uri
-    toastOnce($, session, `login:${login.user_code}`, `ShadowDroid Cloud sign-in: open ${url} and approve the code ${login.user_code}`)
+    toastOnce($, session, `login:${login.user_code}`, `Olef Cloud sign-in: open ${url} and approve the code ${login.user_code}`)
   }
   if (view?.link?.state === 'pending' && typeof view.link.approval_url === 'string') {
-    toastOnce($, session, `link:${view.link.approval_url}`, `ShadowDroid Cloud: approve uploading this project at ${view.link.approval_url}`)
+    toastOnce($, session, `link:${view.link.approval_url}`, `Olef Cloud: approve uploading this project at ${view.link.approval_url}`)
   }
   const after = sessionOf(view?.state)
-  if (before === 'starting' && after.state === 'ready') $.ui.toast('ShadowDroid Cloud: the cloud device is ready')
+  if (before === 'starting' && after.state === 'ready') $.ui.toast('Olef Cloud: the cloud device is ready')
   const end = epochMs(after.expires_at)
   if (after.state === 'ready' && end !== undefined && end > now && end - now <= COUNTDOWN_MS) {
     toastOnce(
       $,
       session,
       `end:${String(after.session ?? after.id ?? '')}`,
-      `ShadowDroid Cloud: this session reaches its maximum length ${minutesLeft(end, now)}; the next command starts a new one if you have hours left`,
+      `Olef Cloud: this session reaches its maximum length ${minutesLeft(end, now)}; the next command starts a new one if you have hours left`,
     )
   }
   if (line !== session.cloudStatus) {
@@ -331,7 +331,7 @@ function buildOutcome(value: Json): string {
   }
 }
 
-/** Update the status line and raise toasts for one finished ShadowDroid call. */
+/** Update the status line and raise toasts for one finished Olef call. */
 // biome-ignore lint: `$` and the result are the engine's, typed by the engine
 function react($: any, session: Session, tool: string, action: string | undefined, ran: any): void {
   if (!ran || ran.deny) return
@@ -390,15 +390,15 @@ function react($: any, session: Session, tool: string, action: string | undefine
   // viewer's Builds tab says why.
 }
 
-/** A toast for the ShadowDroid Cloud errors only the person can resolve; true when one was raised. */
+/** A toast for the Olef Cloud errors only the person can resolve; true when one was raised. */
 // biome-ignore lint: `$` is the engine's
 function cloudErrorToast($: any, text: string): boolean {
   if (text.includes('cloud_quota_exceeded')) {
-    $.ui.toast('ShadowDroid Cloud: a usage limit was reached; `shadowdroid cloud usage` shows your limits and when they reset')
+    $.ui.toast('Olef Cloud: a usage limit was reached; `olef cloud usage` shows your limits and when they reset')
     return true
   }
   if (text.includes('cloud_invite_required')) {
-    $.ui.toast('ShadowDroid Cloud needs an invite during the alpha; accept yours on shadowdroid.dev')
+    $.ui.toast('Olef Cloud needs an invite during the alpha; accept yours on olef.dev')
     return true
   }
   return false
@@ -551,9 +551,9 @@ export const register: Register = on => {
 
   on('tool.call', async ($, e, next) => {
     const command = (e as unknown as Json).command
-    // Any other `shadowdroid` command: it may sign in, link, start or stop a
+    // Any other `olef` command: it may sign in, link, start or stop a
     // cloud session, and a cloud limit is worth a toast.
-    if (e.tool === 'Bash' && runsShadowdroid(command) && !runsApply(command)) {
+    if (e.tool === 'Bash' && runsOlef(command) && !runsApply(command)) {
       const ran = await next(e)
       try {
         if (typeof ran?.text === 'string') cloudErrorToast($, ran.text)
@@ -563,7 +563,7 @@ export const register: Register = on => {
       }
       return ran
     }
-    // Working through the CLI: `shadowdroid app apply` still updates the status line.
+    // Working through the CLI: `olef app apply` still updates the status line.
     if (e.tool === 'Bash' && runsApply(command)) {
       setStatus($, session, `${label(session.device)} · building…`)
       const ran = await next(e)

@@ -1,35 +1,35 @@
 ---
-name: shadowdroid
-description: "Drive Android devices and apps via the `shadowdroid` CLI with structured JSON: deploy, UI automation, logs/crashes, debugger and layout inspection, network/OkHttp capture and intercept, permissions, files. Use for Android development, testing, and debugging."
+name: olef
+description: "Drive Android devices and apps via the `olef` CLI with structured JSON: deploy, UI automation, logs/crashes, debugger and layout inspection, network/OkHttp capture and intercept, permissions, files. Use for Android development, testing, and debugging."
 ---
 
-# ShadowDroid
+# Olef
 
-`shadowdroid` deploys, controls, and debugs Android apps. Gradle or `android`
-builds; ShadowDroid verifies on devices.
+`olef` deploys, controls, and debugs Android apps. Gradle or `android`
+builds; Olef verifies on devices.
 
 ## Core loop
 
 These commands cover most work. Don't browse the catalog first; for one
-unfamiliar verb run `shadowdroid <verb> --help` (or
-`shadowdroid commands --describe '<verb>' --json`).
+unfamiliar verb run `olef <verb> --help` (or
+`olef commands --describe '<verb>' --json`).
 
 ```bash
-shadowdroid devices                          # pick a serial; pass -d <serial>
-shadowdroid app start <pkg>                  # also: app stop|clear|current|info
-shadowdroid ui dump                          # compact elements: rid/text/desc/tap[x,y]
-shadowdroid ui find --rid <id>               # or --text "<label>" [--exact]
-shadowdroid ui tap --rid <id> --expect-text "<next screen text>"
-shadowdroid ui text "<value>" --rid <id> --clear
-shadowdroid ui hide-keyboard
-shadowdroid ui wait --text "<expected>" --timeout-ms 5000
-shadowdroid ui wait --stable                 # until animations/loading settle
-shadowdroid ui scroll-to --rid <id> [--tap]
-shadowdroid ui set-progress --rid <slider> --value <n>
-shadowdroid ui long-tap --rid <id> --duration-ms 800
-shadowdroid ui key back|home|enter|dpad_center
-shadowdroid why --app <pkg>                  # crash / ANR / network / not-foreground verdict
-shadowdroid log --app <pkg> --last 2m        # app logcat, crash blocks parsed
+olef devices                          # pick a serial; pass -d <serial>
+olef app start <pkg>                  # also: app stop|clear|current|info
+olef ui dump                          # compact elements: rid/text/desc/tap[x,y]
+olef ui find --rid <id>               # or --text "<label>" [--exact]
+olef ui tap --rid <id> --expect-text "<next screen text>"
+olef ui text "<value>" --rid <id> --clear
+olef ui hide-keyboard
+olef ui wait --text "<expected>" --timeout-ms 5000
+olef ui wait --stable                 # until animations/loading settle
+olef ui scroll-to --rid <id> [--tap]
+olef ui set-progress --rid <slider> --value <n>
+olef ui long-tap --rid <id> --duration-ms 800
+olef ui key back|home|enter|dpad_center
+olef why --app <pkg>                  # crash / ANR / network / not-foreground verdict
+olef log --app <pkg> --last 2m        # app logcat, crash blocks parsed
 ```
 
 Selectors, best first: stable `--rid`, Compose test tag, `--desc`, exact
@@ -54,10 +54,10 @@ Prefer a named target (`--target mobile`); otherwise `devices` and `-d`.
 Never guess devices or boot an AVD unless its target allows `start:if-needed`.
 The first device command installs and starts the on-device server. It holds
 Android's single `UiAutomation` slot, so `uiautomator dump`, `android layout`
-and Espresso fail while connected: wrap them in `shadowdroid test -- <command>`,
+and Espresso fail while connected: wrap them in `olef test -- <command>`,
 or `disconnect` first. `doctor --json` diagnoses the host-device pipe.
 `config init --project` and `config validate --json` manage project config.
-No Android SDK or adb? Ask whether to set up locally or use ShadowDroid
+No Android SDK or adb? Ask whether to set up locally or use Olef
 Cloud; `--guide cloud` covers sign-in, linking, usage and `cloud_*` errors.
 
 ## Output contract
@@ -73,11 +73,11 @@ reserve multi-step shared work with a driver session (`--guide verification`).
 ## Network
 
 ```bash
-shadowdroid net trust --auto      # once per device (rootable emulator: system CA)
-shadowdroid net start             # proxy the device; upstream TLS is verified
-shadowdroid net log               # flows: id, url, status
-shadowdroid net show <id> --body  # one flow's headers and bodies
-shadowdroid net stop              # always stop when done
+olef net trust --auto      # once per device (rootable emulator: system CA)
+olef net start             # proxy the device; upstream TLS is verified
+olef net log               # flows: id, url, status
+olef net show <id> --body  # one flow's headers and bodies
+olef net stop              # always stop when done
 ```
 
 A `tls_error` event means the app rejected the CA: run `net trust --auto`
@@ -85,13 +85,13 @@ A `tls_error` event means the app rejected the CA: run `net trust --auto`
 
 ## Guides, read before first use of a domain
 
-`shadowdroid commands --guide <topic>`: `--guide workflow` (selectors, hashes,
+`olef commands --guide <topic>`: `--guide workflow` (selectors, hashes,
 recovery), `--guide net` (proxy, rules, intercept), `--guide debugger`
 (debugger, layout, runtime), `--guide state` (app/device/permission/files
 state), `--guide evidence` (checkpoints, video), `--guide faults` (failure
 injection), `--guide verification` (coding-task checks, concurrent agents),
 `--guide test` (test scripts, session settings, `test run`), `--guide feedback`
-(report a ShadowDroid bug: errors with `fault: "shadowdroid"`).
+(report an Olef bug: errors with `fault: "olef"`).
 
 Prefer typed verbs (`app install --grant-all`, `perm grant`, `appops set`,
 `files pull --run-as`) over `device shell`. `debug auto <pkg>` starts a
@@ -105,7 +105,7 @@ debugging workflow; expression evaluation can have side effects.
 
 ## Command reference
 
-Core groups below. For an unfamiliar command run `shadowdroid <group> <sub> --help`; `commands --depth 1` lists every member.
+Core groups below. For an unfamiliar command run `olef <group> <sub> --help`; `commands --depth 1` lists every member.
 
 - **`devices`** — List attached devices / emulators, or reserve billed remote ones
 - **`connect`** — Install the server APK, start it, and verify
@@ -123,5 +123,5 @@ Core groups below. For an unfamiliar command run `shadowdroid <group> <sub> --he
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`shadowdroid <command> --help` for details): session, verify, evidence, cloud, lab, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, lab, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 

@@ -5,9 +5,9 @@ checkpoint, a video marker and selected app/HTTP fields. It reuses existing
 sessions; it does not start a device, UI server, proxy or recorder.
 
 ```sh
-shadowdroid --target tv evidence checkpoint 'after refresh' --out investigation --spec probes.json
-shadowdroid evidence timeline investigation
-shadowdroid video coverage recording-bundle
+olef --target tv evidence checkpoint 'after refresh' --out investigation --spec probes.json
+olef evidence timeline investigation
+olef video coverage recording-bundle
 ```
 
 The output directory must be new or an existing evidence bundle. Checkpoints

@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in ShadowDroid doesn't work as documented.
+description: Something in Olef doesn't work as documented.
 labels: ["bug", "triage"]
 body:
   - type: markdown
@@ -10,9 +10,9 @@ body:
   - type: input
     id: version
     attributes:
-      label: ShadowDroid version
-      description: Output of `shadowdroid --version`.
-      placeholder: shadowdroid 1.3.0
+      label: Olef version
+      description: Output of `olef --version`.
+      placeholder: olef 1.3.0
     validations:
       required: true
   - type: textarea
@@ -21,7 +21,7 @@ body:
       label: What happened?
       description: The command you ran, what you expected, and what you got instead.
       placeholder: |
-        I ran `shadowdroid ui tap --text "Sign in"` and expected ..., but got ...
+        I ran `olef ui tap --text "Sign in"` and expected ..., but got ...
     validations:
       required: true
   - type: textarea
@@ -29,7 +29,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. shadowdroid connect
+        1. olef connect
         2. ...
     validations:
       required: true
@@ -43,7 +43,7 @@ body:
     id: doctor
     attributes:
       label: Doctor output
-      description: Output of `shadowdroid doctor --json` (add `--app <package>` if the problem is app-specific).
+      description: Output of `olef doctor --json` (add `--app <package>` if the problem is app-specific).
       render: json
     validations:
       required: true
@@ -69,10 +69,10 @@ body:
   - type: input
     id: agent
     attributes:
-      label: Agent or tool driving ShadowDroid
+      label: Agent or tool driving Olef
       description: For example Claude Code, Codex, Cursor, a script, or by hand.
   - type: textarea
     id: extra
     attributes:
       label: Anything else?
-      description: Screenshots, logs from `shadowdroid log --last 5m`, or a `shadowdroid collect` bundle.
+      description: Screenshots, logs from `olef log --last 5m`, or a `olef collect` bundle.

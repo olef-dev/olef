@@ -1,8 +1,8 @@
-# Labels issues drafted by `shadowdroid feedback draft` and flags duplicates.
+# Labels issues drafted by `olef feedback draft` and flags duplicates.
 #
 # A report carries two hidden markers:
-#   <!-- shadowdroid-fingerprint: fp1-… -->
-#   <!-- shadowdroid-report: kind=bug code=… fault=… id=fb-… -->
+#   <!-- olef-fingerprint: fp1-… -->
+#   <!-- olef-report: kind=bug code=… fault=… id=fb-… -->
 # This labels it `agent-report`, `kind:*`, `code:*` and `fault:*`, and when an
 # open agent report already has the same fingerprint, comments with a link and
 # labels it `duplicate` for a maintainer to close. The release pipeline builds
@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   triage:
-    if: contains(github.event.issue.body, 'shadowdroid-fingerprint:')
+    if: contains(github.event.issue.body, 'olef-fingerprint:')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v7
@@ -26,10 +26,10 @@ jobs:
           script: |
             const issue = context.payload.issue;
             const body = issue.body || '';
-            const fp = (body.match(/<!--\s*shadowdroid-fingerprint:\s*(fp1-[A-Za-z0-9_.\-]+)\s*-->/) || [])[1];
+            const fp = (body.match(/<!--\s*olef-fingerprint:\s*(fp1-[A-Za-z0-9_.\-]+)\s*-->/) || [])[1];
             if (!fp) return;
             const meta = {};
-            const report = (body.match(/<!--\s*shadowdroid-report:([^>]*)-->/) || [])[1] || '';
+            const report = (body.match(/<!--\s*olef-report:([^>]*)-->/) || [])[1] || '';
             for (const pair of report.trim().split(/\s+/)) {
               const [key, value] = pair.split('=');
               if (key && value && /^[a-z0-9_.\-]+$/.test(value)) meta[key] = value;
@@ -46,7 +46,7 @@ jobs:
             });
             const original = open
               .filter(other => other.number !== issue.number && !other.pull_request)
-              .filter(other => (other.body || '').includes(`shadowdroid-fingerprint: ${fp} `))
+              .filter(other => (other.body || '').includes(`olef-fingerprint: ${fp} `))
               .sort((a, b) => a.number - b.number)[0];
             if (!original) return;
             await github.rest.issues.createComment({

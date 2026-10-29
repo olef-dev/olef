@@ -7,9 +7,9 @@
 Three verbs, in the order you'll usually reach for them:
 
 ```bash
-shadowdroid why                       # verdict + evidence + next steps, in one read
-shadowdroid log --last 5m --level e   # structured, app-scoped logcat behind it
-shadowdroid collect                   # full offline bundle to hand off
+olef why                       # verdict + evidence + next steps, in one read
+olef log --last 5m --level e   # structured, app-scoped logcat behind it
+olef collect                   # full offline bundle to hand off
 ```
 
 **`why`** fuses the last crash/ANR (with stack frames mapped into your source
@@ -44,7 +44,7 @@ matching the active policy.
 ## The agent debugger
 
 Driving a UI tells an agent *what* happened on screen; debugging tells it
-*why*. ShadowDroid hands a coding agent a live debugger as plain JSON, so when
+*why*. Olef hands a coding agent a live debugger as plain JSON, so when
 a tap doesn't do what the agent expected, it can set a breakpoint and read the
 actual program state instead of guessing from screenshots. Reads are bounded,
 while attach, pause/resume/step, breakpoint/watch changes, and evaluation have
@@ -54,7 +54,7 @@ shell.
 Two standalone engines sit behind the `debug` verbs, with no IDE involved:
 
 - the [Java/Kotlin engine](#javakotlin-debugger-jdwp), which speaks JDWP to
-  the app through the adb connection ShadowDroid already owns;
+  the app through the adb connection Olef already owns;
 - the [native engine](#native-and-mixed-debugging), which drives the NDK's
   LLDB for C and C++ code.
 
@@ -94,16 +94,16 @@ verbs:
   `runtime attach --startup --restart --coroutine-probes` tracks from process
   start.)
 - **`layout`** — UI-tree snapshots and diffs, enriched with Compose source
-  locations, semantics, and recomposition counters from the ShadowDroid runtime
+  locations, semantics, and recomposition counters from the Olef runtime
   (debuggable apps; attached on demand). Pass `--project-root` so nodes
   resolve to files.
 
-Each engine runs in a small per-process daemon (`~/.shadowdroid/debug/<serial>/`
-for JDWP, `~/.shadowdroid/native/<serial>/` for LLDB) that holds the session,
+Each engine runs in a small per-process daemon (`~/.olef/debug/<serial>/`
+for JDWP, `~/.olef/native/<serial>/` for LLDB) that holds the session,
 so verbs in later commands find it again; `debug detach` ends it and resumes
 the app. The daemons run on macOS, Linux and Windows hosts. A daemon takes CLI
 requests over a `0600` unix socket, or on Windows over a loopback port whose
-per-daemon secret is kept in an owner-only file under `~/.shadowdroid`.
+per-daemon secret is kept in an owner-only file under `~/.olef`.
 
 Sessions follow the same device ownership as every other driver command (see
 [sessions](sessions.md)): attach and verbs that change the process (pause,
@@ -119,7 +119,7 @@ confirmed: after about 4–5 s `ui tap` returns `tap_unconfirmed`, with
 and may still run once the app resumes, so do not repeat it blindly; check
 `debug status` first.
 
-`shadowdroid doctor --json` (add `--app <pkg>` or configure an app) has two
+`olef doctor --json` (add `--app <pkg>` or configure an app) has two
 advisory checks. `debugger`: whether this host can run the daemon, whether the
 device's adb `jdwp` service answers, the API level, whether the app is
 debuggable and who holds it. `native`: whether an NDK with LLDB is found and
@@ -131,9 +131,9 @@ whether it has an `lldb-server` for the app's ABI. Neither attaches anything.
 
 `debug attach` (default `--mode java`) debugs the app directly over JDWP
 through adb: no IDE, no plugin, no port forwards. JDWP allows one debugger per
-process, so ShadowDroid's debugger and another debugger, such as Android
+process, so Olef's debugger and another debugger, such as Android
 Studio's, cannot attach to the same process at once. Android Studio is still
-a fine IDE to use alongside; it is just not a ShadowDroid backend.
+a fine IDE to use alongside; it is just not an Olef backend.
 
 What works:
 
@@ -157,7 +157,7 @@ What works:
   with no setter (a private property, a Java field) is watched at the
   instructions that write it (`--access`: read it), found in the app's dex
   files: the daemon pulls the APK once (`pm path`, cached by hash under
-  `~/.shadowdroid/debug/<serial>/apk-cache/`) and sets a line breakpoint at
+  `~/.olef/debug/<serial>/apk-cache/`) and sets a line breakpoint at
   each write in every class as it loads, with no slowdown; the breakpoint
   reports `strategy: write_sites` and its `sites` (class, method, line).
   `break field --accept-slowdown` sets a real field watch for a bounded
@@ -236,7 +236,7 @@ same process. The examples below use the Native Lab in the sample app
 
 ### Requirements
 
-- An Android NDK on the host. ShadowDroid looks in `SHADOWDROID_NDK`,
+- An Android NDK on the host. Olef looks in `OLEF_NDK`,
   `ANDROID_NDK_HOME`, `ANDROID_NDK_ROOT`, `ANDROID_NDK`, then the newest
   `<sdk>/ndk/<version>`. Install one with
   `sdkmanager "ndk;29.0.14206865"`. It provides LLDB and the `lldb-server`
@@ -251,7 +251,7 @@ found, and tombstones on the device. `doctor --app <pkg>` has the same
 advisory `native` check.
 
 ```bash
-shadowdroid debug native status --package io.github.andriyo.shadowdroid.sample
+olef debug native status --package io.github.andriyo.shadowdroid.sample
 ```
 
 ### Attaching
@@ -259,7 +259,7 @@ shadowdroid debug native status --package io.github.andriyo.shadowdroid.sample
 Attach to the running app:
 
 ```bash
-shadowdroid debug attach --mode native --package io.github.andriyo.shadowdroid.sample
+olef debug attach --mode native --package io.github.andriyo.shadowdroid.sample
 ```
 
 Or start it under the debugger, so breakpoints are in place before its code
@@ -272,7 +272,7 @@ repeatable and goes to the engine its file belongs to: `.c`, `.cc`, `.cpp`,
 breakpoint; `--break-exception CLASS` stays Java.
 
 ```bash
-shadowdroid debug attach --mode mixed --wait-for-launch \
+olef debug attach --mode mixed --wait-for-launch \
   --package io.github.andriyo.shadowdroid.sample \
   --launch-activity .NativeLabActivity \
   --break field_lab_native.cpp:109 --break NativeLab.kt:32
@@ -298,11 +298,11 @@ a running session.
 ### Breakpoints and logpoints
 
 ```bash
-shadowdroid debug break line --file packet.cpp --line 26
-shadowdroid debug break function --name fieldlab::fib --condition 'n == 0'
-shadowdroid debug break address --address 0x7a3c41b2f0
-shadowdroid debug break data --expression g_native_counter --access write
-shadowdroid debug logpoint add --file packet.cpp --line 26 --expression sample
+olef debug break line --file packet.cpp --line 26
+olef debug break function --name fieldlab::fib --condition 'n == 0'
+olef debug break address --address 0x7a3c41b2f0
+olef debug break data --expression g_native_counter --access write
+olef debug logpoint add --file packet.cpp --line 26 --expression sample
 ```
 
 - `break line` takes C/C++ files in a native or mixed session, with
@@ -336,13 +336,13 @@ LLDB; an expression that must run code in the app, such as
 `--invoke`.
 
 ```bash
-shadowdroid debug stack --limit 4
-shadowdroid debug variables --depth 0
-shadowdroid debug eval packet.origin.station
-shadowdroid debug native registers                  # --set floating for others
-shadowdroid debug native memory --expression packet --count 16
-shadowdroid debug native disassemble --count 8      # or --function / --address
-shadowdroid debug native step-instruction           # --over steps over calls
+olef debug stack --limit 4
+olef debug variables --depth 0
+olef debug eval packet.origin.station
+olef debug native registers                  # --set floating for others
+olef debug native memory --expression packet --count 16
+olef debug native disassemble --count 8      # or --function / --address
+olef debug native step-instruction           # --over steps over calls
 ```
 
 `native memory` reads at most 4096 bytes (`--count`, default 64) from an
@@ -388,10 +388,10 @@ While LLDB holds the process stopped, Java verbs fail fast with
 gives a mixed stack:
 
 ```bash
-shadowdroid debug stack --engine java     # native_engine_stopped
-shadowdroid debug resume --engine native  # runs on to NativeLab.kt:32
-shadowdroid debug eval value --engine java
-shadowdroid debug resume --engine java
+olef debug stack --engine java     # native_engine_stopped
+olef debug resume --engine native  # runs on to NativeLab.kt:32
+olef debug eval value --engine java
+olef debug resume --engine java
 ```
 
 A failed Java attach in mixed mode rolls back the native attach.
@@ -407,10 +407,10 @@ under the debugger raises no ANR.
 
 ### Troubleshooting
 
-- `SHADOWDROID_LLDB_TRACE=1` prints LLDB process events into the daemon log,
-  `~/.shadowdroid/native/<serial>/<pid>.log`.
-- `SHADOWDROID_LLDB_LOG=1` also writes LLDB's own gdb-remote packet log to
-  `~/.shadowdroid/native/lldb-<pid>.log`. It is slow.
+- `OLEF_LLDB_TRACE=1` prints LLDB process events into the daemon log,
+  `~/.olef/native/<serial>/<pid>.log`.
+- `OLEF_LLDB_LOG=1` also writes LLDB's own gdb-remote packet log to
+  `~/.olef/native/lldb-<pid>.log`. It is slow.
 
 ## Non-suspending logpoints
 
@@ -427,8 +427,8 @@ overhead. "Non-suspending" is not the same as free or side-effect-free.
 | `debug logpoint list` | List configured logpoints, optionally filtered by session, id, or owner. |
 | `debug logpoint events` | Read one bounded page of structured hit events, optionally strictly after a paired `--after <cursor> --stream-id <stream_id>`. |
 | `debug logpoint follow` | Follow new hits as JSONL; it starts at the live tail unless paired `--after` / `--stream-id` values or `--replay-existing` are supplied, and can stop by duration or event count. |
-| `debug logpoint remove` | Remove one ShadowDroid-owned logpoint when its id and owner match. |
-| `debug logpoint clear` | Remove only ShadowDroid-owned logpoints in the requested owner scope. |
+| `debug logpoint remove` | Remove one Olef-owned logpoint when its id and owner match. |
+| `debug logpoint clear` | Remove only Olef-owned logpoints in the requested owner scope. |
 
 On the Java engine, `debug logpoint add` validates the condition and
 expression before the logpoint is armed. A validation or configuration
@@ -464,7 +464,7 @@ marks oversized events with `message_truncated:true` and retains
 `--redact` scrubs supported JSON/JSONL output, including snapshots and
 recordings, but it cannot stop the expression from being evaluated.
 
-Ownership is the cleanup boundary. The default is `shadowdroid`; concurrent
+Ownership is the cleanup boundary. The default is `olef`; concurrent
 agents should use distinct `--owner` labels and pass the same label to `remove`
 or `clear`. These lifecycle commands neither repurpose nor delete ordinary
 breakpoints or logpoints owned by somebody else (`logpoint_not_owned`,
@@ -486,5 +486,5 @@ Everything degrades gracefully: with no debugger attached, the device and UI
 commands still work. Without an NDK only native debugging is unavailable, and
 `debug native status` and `doctor` say what is missing. Layout enrichment
 needs a debuggable app, not a debugger.
-Run `shadowdroid debug --help` and `shadowdroid layout --help` for the live
+Run `olef debug --help` and `olef layout --help` for the live
 command surface.

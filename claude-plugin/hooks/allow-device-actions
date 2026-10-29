@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# PreToolUse hook for ShadowDroid's `control`, `boot`, `recording` and
+# PreToolUse hook for Olef's `control`, `boot`, `recording` and
 # `annotations` tools.
 #
 # Claude Desktop's iOS Simulator asks once per device, then lets Claude tap,
-# type, launch and take screenshots without further prompts. ShadowDroid can
+# type, launch and take screenshots without further prompts. Olef can
 # do the same: the MCP server refuses every device action until the user
 # clicks "Let Claude use it" in the viewer, so this hook pre-approves those
 # calls, but only when the user turned on the plugin's "Skip prompts for
@@ -14,8 +14,8 @@
 #   - plan mode,
 #   - `control` with action `open_url` (a URL can carry data off the device),
 #   - `control` with an `app_path` (installs an arbitrary APK),
-#   - SHADOWDROID_DISABLE_AGENT_CONTROL / SHADOWDROID_PLUGIN_ASK_EVERY_ACTION.
-# `build`, `open_url` and the `shadowdroid` CLI tool are never matched.
+#   - OLEF_DISABLE_AGENT_CONTROL / OLEF_PLUGIN_ASK_EVERY_ACTION.
+# `build`, `open_url` and the `olef` CLI tool are never matched.
 
 input="$(cat)"
 
@@ -28,7 +28,7 @@ truthy() {
 if ! truthy "${CLAUDE_PLUGIN_OPTION_AUTO_APPROVE_DEVICE_ACTIONS:-}"; then
   exit 0
 fi
-if truthy "${SHADOWDROID_DISABLE_AGENT_CONTROL:-}" || truthy "${SHADOWDROID_PLUGIN_ASK_EVERY_ACTION:-}"; then
+if truthy "${OLEF_DISABLE_AGENT_CONTROL:-}" || truthy "${OLEF_PLUGIN_ASK_EVERY_ACTION:-}"; then
   exit 0
 fi
 
@@ -45,5 +45,5 @@ if printf '%s' "$input" | grep -Eq '"app_path"[[:space:]]*:'; then
 fi
 
 cat <<'EOF'
-{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"ShadowDroid device action: covered by the per-device consent given in the device viewer"}}
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"Olef device action: covered by the per-device consent given in the device viewer"}}
 EOF

@@ -1,31 +1,31 @@
 ---
 name: android-device
-description: Run, test, debug and visually verify the user's Android app on an emulator or device with ShadowDroid, through the `shadowdroid` CLI, and with a live device viewer in Claude Desktop when the user wants to see or use the device themselves. Use whenever the user wants to run, try, test, or see their Android app ("run the app", "does this screen look right?", "tap through onboarding", "show me", "test on Pixel 9"), boot an emulator, or check a change on a device, including on a machine with no Android SDK (ShadowDroid Cloud).
+description: Run, test, debug and visually verify the user's Android app on an emulator or device with Olef, through the `olef` CLI, and with a live device viewer in Claude Desktop when the user wants to see or use the device themselves. Use whenever the user wants to run, try, test, or see their Android app ("run the app", "does this screen look right?", "tap through onboarding", "show me", "test on Pixel 9"), boot an emulator, or check a change on a device, including on a machine with no Android SDK (Olef Cloud).
 ---
 
 # Android device
 
-Work through the `shadowdroid` CLI (Bash). Open the device viewer only
+Work through the `olef` CLI (Bash). Open the device viewer only
 when the user wants to see or use the device.
 
-## No Android SDK here: local or ShadowDroid Cloud
+## No Android SDK here: local or Olef Cloud
 
-When `shadowdroid doctor --json` (or the session's ShadowDroid note) finds no
-Android SDK, adb or device and the project isn't linked to ShadowDroid Cloud,
+When `olef doctor --json` (or the session's Olef note) finds no
+Android SDK, adb or device and the project isn't linked to Olef Cloud,
 ask the user which they want before installing anything:
 
 - **Set up Android locally:** Android Studio, or the SDK and platform-tools.
-- **ShadowDroid Cloud:** nothing else to install. The project is uploaded to
+- **Olef Cloud:** nothing else to install. The project is uploaded to
   their cloud workspace and builds and runs on a cloud emulator (an
   invite-only alpha).
 
 For Cloud, with the user's yes for each step:
 
-1. `shadowdroid cloud login --no-wait --json` returns a code and a page on
+1. `olef cloud login --no-wait --json` returns a code and a page on
    app.shadowdroid.dev: give both to the user to sign in and approve (the
-   status line shows the code too), then run `shadowdroid cloud login`, which
+   status line shows the code too), then run `olef cloud login`, which
    returns once they have.
-2. `shadowdroid cloud link` in the project's root (or an empty folder made for
+2. `olef cloud link` in the project's root (or an empty folder made for
    a new project), never any other folder. The user approves the upload in
    the terminal or on the page it links.
 3. Everything below then works unchanged against the cloud emulator: `app
@@ -33,24 +33,24 @@ For Cloud, with the user's yes for each step:
    command starts the session (up to about 2 minutes; on
    `cloud_session_starting`, wait and run it again), and after 15 idle minutes
    it stops until the next command.
-4. `shadowdroid cloud usage` shows hours and limits, and `shadowdroid cloud
+4. `olef cloud usage` shows hours and limits, and `olef cloud
    stop` ends the session when the user is done. On `cloud_quota_exceeded`,
    tell the user which limit and when it resets, and don't retry.
-   `shadowdroid commands --guide cloud` has every `cloud_*` error and Gradle
+   `olef commands --guide cloud` has every `cloud_*` error and Gradle
    tasks without a local JDK (`cloud run`).
 
-With no `shadowdroid` CLI but the ShadowDroid Cloud MCP tools
+With no `olef` CLI but the Olef Cloud MCP tools
 (`create_workspace`, `write_files`, `build_and_run`, `screenshot`,
 `open_viewer`), work through those instead: the project then lives in a
 hosted cloud workspace, and `export_project` returns it as a zip.
 
 ## Working through the CLI (the default)
 
-1. **Find a device.** `shadowdroid devices` lists running ones. With none,
-   `shadowdroid emulator list` lists the AVDs and `shadowdroid emulator boot
+1. **Find a device.** `olef devices` lists running ones. With none,
+   `olef emulator list` lists the AVDs and `olef emulator boot
    <avd>` boots one with its own window (`--no-window` runs it headless) and
    waits until Android has started.
-2. **Build and apply after every edit.** Run `shadowdroid app apply` from the
+2. **Build and apply after every edit.** Run `olef app apply` from the
    Gradle root, adding `--module` and `--variant` if they aren't `app` and
    `debug`. It puts the current source on the device the cheapest correct way
    and says what it did:
@@ -81,10 +81,10 @@ hosted cloud workspace, and `export_project` returns it as a zip.
    keeps ViewModels). It returns once the app has drawn its first frame
    after a reinstall or restart.
 3. **Check with the UI structure first; look at pixels when it matters.**
-   `shadowdroid ui wait --text Welcome`, `ui find --text "Sign in"`, `ui tap
+   `olef ui wait --text Welcome`, `ui find --text "Sign in"`, `ui tap
    --text "Sign in"` and `ui dump` (every element, with tap points) cost a
    few dozen tokens each. `ui wait --stable` waits out animations and
-   loading; `ui audit --a11y` checks labels, touch targets and contrast. Take a screenshot (`shadowdroid ui screenshot
+   loading; `ui audit --a11y` checks labels, touch targets and contrast. Take a screenshot (`olef ui screenshot
    /tmp/screen.png`, then read the file) when:
    - the question is how it looks: layout, spacing, colors, images,
      clipping, a visual regression;
@@ -97,11 +97,11 @@ hosted cloud workspace, and `export_project` returns it as a zip.
    drag` move one finger in a line; `ui path` follows timed points (curves,
    long-press-then-drag) and, with `--fingers 2`, pinches, rotates or pans
    with two fingers on emulators. To check a layout in landscape, run
-   `shadowdroid device orientation left` (`natural` is portrait); if its
+   `olef device orientation left` (`natural` is portrait); if its
    `effective` value differs from what you asked for, the app fixes its
    orientation.
-4. **Explain failures** with `shadowdroid log crashes`, `shadowdroid why` and
-   `shadowdroid net start` / `net log`. `shadowdroid commands --guide` lists the
+4. **Explain failures** with `olef log crashes`, `olef why` and
+   `olef net start` / `net log`. `olef commands --guide` lists the
    rest (debugger, faults, app state).
 
 ## Showing the device to the user
@@ -117,7 +117,7 @@ your own checks: the CLI is cheaper.
    terminal session, give the user the URL to open in Chrome. The viewer
    streams the screen live, and the user can tap, type, rotate, take
    screenshots and record there.
-2. Keep working as before. Bash `shadowdroid` commands now share the
+2. Keep working as before. Bash `olef` commands now share the
    attached device's reservation. While the viewer is open, prefer the `build`
    tool to `app apply`: it is the same apply and also lists the build in the
    viewer's Builds tab. `control` `screenshot` returns the screen as an
@@ -127,7 +127,7 @@ your own checks: the CLI is cheaper.
    the user clicks an element or drags around an area and writes what should
    change; "Send to Claude" submits them. When they say they've annotated
    something, or a prompt's context lists pending annotations, call the
-   `annotations` tool (or run `shadowdroid pane annotations`, which saves the
+   `annotations` tool (or run `olef pane annotations`, which saves the
    images as PNG files). Each has the user's comment, the element and its
    selector, and `source`; an image of each screen shows every note outlined
    in red with its number. `source` lists the
@@ -136,11 +136,11 @@ your own checks: the CLI is cheaper.
    number `n`, apply the change, then check the result.
 4. **Turn what the user did into a test.** The viewer's Record steps button
    (Cmd+T) records the user's own taps, swipes, typing and keys. When they
-   ask for a test from it, call `recording` (or run `shadowdroid pane
+   ask for a test from it, call `recording` (or run `olef pane
    steps`). Each tap carries a selector (`text`, `desc`, `rid`, or
    `text_inside` for a container) and the dp point. Write the test in the
    project's style (Compose `onNodeWithText(…).performClick()`, Espresso, or
-   `shadowdroid ui` commands), prefer selectors over coordinates, and run it.
+   `olef ui` commands), prefer selectors over coordinates, and run it.
 5. When the user is done looking, call `control` `detach`. Emulators the
    `boot` tool started shut down 10 minutes after detach, or when the session
    ends.
@@ -151,7 +151,7 @@ whenever you run the app.
 
 ## Viewer or emulator window
 
-The user picks how they see the device; it's ShadowDroid's `show_device`
+The user picks how they see the device; it's Olef's `show_device`
 setting:
 
 - `viewer` (the default): the live viewer in the Claude Desktop browser pane.
@@ -161,24 +161,24 @@ setting:
 
 When they ask to change it for good ("use the emulator window from now on",
 "show me the viewer by default"), run
-`shadowdroid config init --user --show-device window` (or `viewer`) and tell
+`olef config init --user --show-device window` (or `viewer`) and tell
 them it fully applies in a new session. For a one-off ("open the emulator
 window this time"), just do it: `boot` with `window: true`, or
-`shadowdroid emulator boot <avd>`. An emulator already running without a
-window can't show one; offer to restart it (`shadowdroid emulator kill`,
+`olef emulator boot <avd>`. An emulator already running without a
+window can't show one; offer to restart it (`olef emulator kill`,
 then boot), and say the app's in-memory state is lost.
 
-## With the `shadowdroid` skill
+## With the `olef` skill
 
-This plugin's `shadowdroid` skill is the full CLI reference; this skill adds
+This plugin's `olef` skill is the full CLI reference; this skill adds
 the device viewer. Use that skill's recipes through Bash as written; after
 `attach` they target the attached device under this session's reservation.
-You don't need to run `shadowdroid connect` yourself.
+You don't need to run `olef connect` yourself.
 
 ## Rules
 
 - **Consent.** The MCP tools that act on the device (`control`, `build`,
-  `open_url` and the `shadowdroid` tool) return `consent_required` until the
+  `open_url` and the `olef` tool) return `consent_required` until the
   user clicks **Let Claude use it** in the viewer. Tell them that, with the
   viewer link, and wait. Never try to grant it yourself or work around it.
   After that, `control` and `boot` run without a permission prompt per
@@ -189,7 +189,7 @@ You don't need to run `shadowdroid connect` yourself.
   what you saw earlier. While you act, the viewer shows "Claude is using this
   device".
 - **Reservation.** `attach` reserves the device for this Claude session, so
-  other sessions can't drive it. Your own Bash `shadowdroid` commands share
+  other sessions can't drive it. Your own Bash `olef` commands share
   it automatically; don't add `--session`. After a few idle minutes the
   reservation is released and quietly taken back on your next action. If that
   fails with `device_reserved`, another session or tool is driving the
@@ -197,5 +197,5 @@ You don't need to run `shadowdroid connect` yourself.
 - **Privacy.** Screenshots are sent to Anthropic, so don't sign in to real
   accounts on a device you use. Treat physical phones with extra care. Ask
   before opening URLs that carry user data. In a project linked to
-  ShadowDroid Cloud, its files, builds and screen also go to ShadowDroid
+  Olef Cloud, its files, builds and screen also go to Olef
   Cloud.

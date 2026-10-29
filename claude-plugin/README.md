@@ -1,7 +1,7 @@
-# ShadowDroid plugin for Claude Code
+# Olef plugin for Claude Code
 
 Run, test and debug Android apps from Claude Code. Claude works through the
-`shadowdroid` CLI: it builds and applies each change, drives the UI by
+`olef` CLI: it builds and applies each change, drives the UI by
 selectors and reads logs and network traffic. When you want to see or use the
 app yourself, it opens a live, interactive device viewer next to the
 conversation, the way Claude Code Desktop does it for the iOS Simulator.
@@ -32,10 +32,10 @@ settings, then start a new session. (With `show_device` set to `window`,
 below, `always` is ignored.)
 
 To use the emulator's own window instead of the viewer, run
-`shadowdroid config init --user --show-device window` (back with `viewer`),
+`olef config init --user --show-device window` (back with `viewer`),
 or just tell Claude "use the emulator window from now on". Claude then boots
 emulators with their window and opens the viewer only when you ask. This
-setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
+setting is Olef's own, so it applies in Claude Code and Codex alike.
 
 ## What you get
 
@@ -52,7 +52,7 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
     console. Option-drag pinches or rotates, and Option+Shift-drag pans with
     two fingers.
 - **Activity panel** (Cmd+J). The foreground app's warnings and errors, and
-  its network requests when `shadowdroid net start` is capturing. "Problems
+  its network requests when `olef net start` is capturing. "Problems
   only" filters to errors and failed requests.
 - **Annotate** (Cmd+E). Click an element or drag around an area on the
   device and write what should change; numbered markers stay on screen.
@@ -68,7 +68,7 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
   `attach`, `launch`, `screenshot` (an image whose pixels are dp), `tap`,
   `swipe`, `touch_path`, `touch2_path` (two fingers, emulators), `text`,
   `button`, `open_url` and `detach`.
-- **`build`** (or `shadowdroid app apply` through Bash). Applies code changes
+- **`build`** (or `olef app apply` through Bash). Applies code changes
   the cheapest correct way: in place
   (redefine + recompose, keeping app state), by restarting the activity, or
   by reinstalling. On API 30+, new methods and classes apply in place too.
@@ -83,23 +83,23 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
   them in.
 - **`boot`.** Lists and boots AVDs without a window, since the viewer replaces
   it. Emulators Claude boots this way shut down when the session ends, or 10
-  minutes after `detach`. (`shadowdroid emulator boot` boots one with its
+  minutes after `detach`. (`olef emulator boot` boots one with its
   own window that stays up.)
-- **`shadowdroid` tool.** Runs any ShadowDroid CLI command on the attached
+- **`olef` tool.** Runs any Olef CLI command on the attached
   device: selector-based UI, logs, crashes, network capture, debugger.
 - **Consent.** Claude can't control a device until you click **Let Claude use
   it** in the viewer. Consent is kept per device for 12 hours in
-  `~/.shadowdroid/pane-consent.json` (owner-only); after that the viewer asks
+  `~/.olef/pane-consent.json` (owner-only); after that the viewer asks
   again.
 - **Optional: no prompt per tap.** By default Claude Code asks before each
   device action, as for any tool. Turn on the plugin's **Skip prompts for
   device actions** option (`auto_approve_device_actions`; `/config`, or
-  `shadowdroid init` asks) and, once you've allowed a device in the viewer,
+  `olef init` asks) and, once you've allowed a device in the viewer,
   the plugin's `PreToolUse` hook (`hooks/allow-device-actions`) pre-approves
   `control`, `boot`, `recording` and `annotations` calls, as Claude Desktop
   does for the iOS Simulator. The MCP server still refuses every device
   action until you've allowed that device. `build`, `open_url`, `launch` with
-  an `app_path` (it installs an APK) and the `shadowdroid` CLI tool keep
+  an `app_path` (it installs an APK) and the `olef` CLI tool keep
   following your permission mode, and so does everything in plan mode.
 - **Ownership.** Each Claude session reserves the devices it attaches, so
   parallel sessions never share one. An idle session releases its reservation
@@ -112,29 +112,29 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
 
 ## Install
 
-1. Install the `shadowdroid` CLI, version 2.0.4 or newer. You can also skip
+1. Install the `olef` CLI, version 2.0.4 or newer. You can also skip
    this step: when a session starts without it (or with an older one), the
    plugin tells Claude, which offers the right install command for your OS and
-   runs it once you approve. After that, run `/mcp` and reconnect `shadowdroid`
+   runs it once you approve. After that, run `/mcp` and reconnect `olef`
    (or start a new session) to enable the plugin's tools.
 
    ```bash
-   brew install shadowdroid-dev/tap/shadowdroid
+   brew install olef-dev/tap/olef
    ```
 
-   On Windows, `scoop bucket add shadowdroid https://github.com/shadowdroid-dev/scoop-bucket`
-   and `scoop install shadowdroid`, or use the installer from the
-   [latest release](https://github.com/shadowdroid-dev/shadowdroid/releases/latest).
+   On Windows, `scoop bucket add olef https://github.com/olef-dev/scoop-bucket`
+   and `scoop install olef`, or use the installer from the
+   [latest release](https://github.com/olef-dev/olef/releases/latest).
    You also need Android platform-tools (`adb`).
 
 2. In Claude Code, add the marketplace and install the plugin:
 
    ```
-   /plugin marketplace add shadowdroid-dev/shadowdroid
-   /plugin install shadowdroid@shadowdroid
+   /plugin marketplace add olef-dev/olef
+   /plugin install olef@olef
    ```
 
-   Or run `shadowdroid init` in a terminal: it installs the plugin (and the
+   Or run `olef init` in a terminal: it installs the plugin (and the
    Codex one, if you use Codex) after asking, and asks whether to skip
    prompts for device actions.
 
@@ -146,23 +146,23 @@ setting is ShadowDroid's own, so it applies in Claude Code and Codex alike.
 ## Updating
 
 The plugin and the CLI are released together. Update the CLI with the command
-`shadowdroid update` prints, then run `shadowdroid init`, which updates the
+`olef update` prints, then run `olef init`, which updates the
 plugin to the CLI's version, or refresh it yourself:
 
 ```
-/plugin marketplace update shadowdroid
+/plugin marketplace update olef
 ```
 
 and start a new session. The device service and runtime agent follow the CLI
-on their own. See [updating](https://github.com/shadowdroid-dev/shadowdroid/blob/main/docs/updating.md).
+on their own. See [updating](https://github.com/olef-dev/olef/blob/main/docs/updating.md).
 
 ## Using a development build
 
-`SHADOWDROID_BIN` points the plugin at a specific binary. A binary inside a
-ShadowDroid development checkout (`cli/target/{release,debug}/shadowdroid`)
+`OLEF_BIN` points the plugin at a specific binary. A binary inside a
+Olef development checkout (`cli/target/{release,debug}/olef`)
 uses that checkout's server APK and runtime agent; elsewhere, set
-`SHADOWDROID_SERVER_APK` (`SHADOWDROID_APK` before 2.0.6) and
-`SHADOWDROID_RUNTIME_DIR` in Claude Code's `env`
+`OLEF_SERVER_APK` (`OLEF_APK` before 2.0.6) and
+`OLEF_RUNTIME_DIR` in Claude Code's `env`
 settings. To load the plugin from a folder without installing it, use
 `claude --plugin-dir /path/to/claude-plugin`.
 
@@ -171,7 +171,7 @@ settings. To load the plugin from a folder without installing it, use
 The plugin's hooks module (`hooks/register.ts`) adds:
 - **Status line:** the device and what the last build did
   (`📱 Pixel_9 · applied in place 1.4 s`), whether Claude used the `build`
-  tool or `shadowdroid app apply`.
+  tool or `olef app apply`.
 - **Toasts:** a crash, a composition error or a failed request after a build,
   a device another session is using, and when Claude is waiting for you to
   click **Let Claude use it**.
@@ -188,21 +188,21 @@ else: the tools, the viewer and the skill.
 
 The plugin ships two skills:
 
-- **`shadowdroid`** (`shadowdroid:shadowdroid`): the CLI reference, the same
-  skill `shadowdroid skill claude-code` writes, generated from the CLI.
-- **`android-device`** (`shadowdroid:android-device`): the device, the viewer,
+- **`olef`** (`olef:olef`): the CLI reference, the same
+  skill `olef skill claude-code` writes, generated from the CLI.
+- **`android-device`** (`olef:android-device`): the device, the viewer,
   build and screenshots.
 
-With the plugin installed for your user, `shadowdroid init`, `skill --sync`
+With the plugin installed for your user, `olef init`, `skill --sync`
 and `connect` stop installing and refreshing the personal skill in
-`~/.claude/skills/shadowdroid`, and set an unedited copy aside as
+`~/.claude/skills/olef`, and set an unedited copy aside as
 `SKILL.md.retired` so Claude doesn't list the skill twice. A copy you edited is
 left for you to review.
 
-After `attach`, the Bash `shadowdroid` commands of that same Claude session use
+After `attach`, the Bash `olef` commands of that same Claude session use
 the session's device reservation automatically, so the skill's recipes work
 unchanged. Other sessions and tools still get `device_reserved`. Set
-`SHADOWDROID_NO_INHERIT_SESSION=1` to turn this off.
+`OLEF_NO_INHERIT_SESSION=1` to turn this off.
 
 ## The CLI does it too
 
@@ -211,15 +211,15 @@ without the MCP server:
 
 | MCP | CLI |
 |---|---|
-| `build` | `shadowdroid app apply` (same result, including `screen`, `logged_errors`, `failed_requests`) |
-| `boot` | `shadowdroid emulator list` / `emulator boot <avd>` / `emulator kill <avd>` |
-| `control` `touch_path` / `touch2_path` | `shadowdroid ui path x,y … [--fingers 2]` (pixels) |
-| `annotations` | `shadowdroid pane annotations` (screen overviews saved as PNG files) |
-| `recording` | `shadowdroid pane steps` |
-| the viewer | `shadowdroid pane` |
+| `build` | `olef app apply` (same result, including `screen`, `logged_errors`, `failed_requests`) |
+| `boot` | `olef emulator list` / `emulator boot <avd>` / `emulator kill <avd>` |
+| `control` `touch_path` / `touch2_path` | `olef ui path x,y … [--fingers 2]` (pixels) |
+| `annotations` | `olef pane annotations` (screen overviews saved as PNG files) |
+| `recording` | `olef pane steps` |
+| the viewer | `olef pane` |
 
 The `pane` commands read a viewer that's running, whether the plugin's MCP
-server or `shadowdroid pane` serves it. Only the MCP tools need your consent
+server or `olef pane` serves it. Only the MCP tools need your consent
 in the viewer; Bash commands follow your permission mode.
 
 ## Requirements and limits
@@ -234,16 +234,16 @@ in the viewer; Bash commands follow your permission mode.
   should avoid signing in to real accounts, because screenshots are sent to
   Anthropic.
 - Local sessions only. Cloud and SSH sessions can't reach your devices.
-- Set `SHADOWDROID_DISABLE_AGENT_CONTROL=1` to turn off Claude's device tools.
+- Set `OLEF_DISABLE_AGENT_CONTROL=1` to turn off Claude's device tools.
   The viewer stays usable for you.
 
 Report problems at
-[shadowdroid-dev/shadowdroid issues](https://github.com/shadowdroid-dev/shadowdroid/issues/new/choose).
+[olef-dev/olef issues](https://github.com/olef-dev/olef/issues/new/choose).
 
 ## What the plugin runs, sends and fetches
 
-- **Runs on your computer:** the `shadowdroid` CLI from your PATH (the MCP
-  server is `shadowdroid mcp`, started by `bin/shadowdroid-mcp`), `adb` and
+- **Runs on your computer:** the `olef` CLI from your PATH (the MCP
+  server is `olef mcp`, started by `bin/olef-mcp`), `adb` and
   the Android Emulator, and your project's Gradle build when Claude builds
   the app. Builds run your project's build scripts, as they would in a
   terminal.
@@ -252,27 +252,27 @@ Report problems at
   which install command fits your OS. It never installs anything; Claude
   runs that command only after you approve it, and it downloads the CLI from
   Homebrew, Scoop or the
-  [ShadowDroid releases](https://github.com/shadowdroid-dev/shadowdroid/releases).
+  [Olef releases](https://github.com/olef-dev/olef/releases).
   `hooks/allow-device-actions` approves device actions only when you turn
   that option on (above). `hooks/register.ts` updates the status line and
   toasts and talks only to the local viewer.
 - **The viewer** is served on `127.0.0.1`, so only your computer can reach
   it, and opens only with a token in its URL. Your consent per device is
-  kept in `~/.shadowdroid/pane-consent.json`.
-- **Network:** the plugin sends nothing to ShadowDroid and has no
+  kept in `~/.olef/pane-consent.json`.
+- **Network:** the plugin sends nothing to Olef and has no
   telemetry. The CLI downloads its on-device service and runtime agent from
   the GitHub release matching its version the first time they're needed,
   the Compose inspector from Google Maven when you inspect a layout, and
-  checks GitHub for a newer release only when you run `shadowdroid update`.
+  checks GitHub for a newer release only when you run `olef update`.
 - **What Claude sees:** screenshots, UI text, logs, crashes and captured
   network traffic that Claude reads go to Anthropic as part of your
   conversation, like anything else Claude reads.
 
-See the [privacy policy](https://shadowdroid.dev/privacy).
+See the [privacy policy](https://olef.dev/privacy).
 
 ## License
 
 This plugin is licensed under the Apache License, Version 2.0 (see
-[LICENSE](LICENSE)). The `shadowdroid` CLI it runs is licensed separately under
-the [ShadowDroid License](https://github.com/shadowdroid-dev/shadowdroid/blob/main/LICENSE.md):
+[LICENSE](LICENSE)). The `olef` CLI it runs is licensed separately under
+the [Olef License](https://github.com/olef-dev/olef/blob/main/LICENSE.md):
 free for everyone, including commercial use.
