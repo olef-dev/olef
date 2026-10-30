@@ -48,6 +48,12 @@ remove it.
 `brew upgrade` on its own uses Homebrew's cached formula and can miss a release
 published minutes ago; `brew update` first refreshes the tap.
 
+**Coming from ShadowDroid (v2) with Homebrew:** run
+`brew update && brew upgrade olef-dev/tap/olef` once. Homebrew 7 loads
+formulae only from taps you trust, and naming the formula in full trusts it;
+a bare `brew upgrade` stops with "Refusing to load formula … from untrusted
+tap". After that, `brew upgrade olef` works as above.
+
 ### The update notice
 
 You don't have to remember to check. Once a day, after an ordinary command,

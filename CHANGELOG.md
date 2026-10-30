@@ -56,7 +56,9 @@ working.
 
 ### Update
 
-- **Homebrew:** `brew update && brew upgrade` moves you to the `olef` formula.
+- **Homebrew:** `brew update && brew upgrade olef-dev/tap/olef` moves you to
+  the `olef` formula. Name it in full: Homebrew 7 refuses a bare
+  `brew upgrade` for a tap you haven't trusted.
 - **macOS and Linux installer:**
   `curl --proto '=https' --tlsv1.2 -LsSf https://github.com/olef-dev/olef/releases/latest/download/olef-installer.sh | sh`
 - **Scoop:** `scoop update shadowdroid` keeps working; to switch names,
