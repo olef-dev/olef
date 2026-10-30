@@ -1,6 +1,6 @@
 {
   "name": "olef",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Run, test and debug Android apps from Codex: through the Olef CLI on your own emulators and devices, or on an Olef Cloud emulator with nothing installed locally. Deploy and apply changes, drive the UI, read crashes and logs, inspect network traffic.",
   "author": {
     "name": "Andrii",
@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "Olef",
     "shortDescription": "Run, test and debug Android apps on emulators and devices",
-    "longDescription": "Teaches Codex the olef CLI and opens a live, interactive emulator/device viewer in the Codex in-app browser when you want to see or use the device: build and apply each edit to the device in place, drive and wait on the UI by selector, explain failures from crashes, logs and network traffic, intercept and modify HTTP(S), inject faults, and debug without Android Studio. Locally it needs the olef CLI on PATH (brew install olef-dev/tap/olef, or scoop install olef on Windows) and adb. Without them, the Olef Cloud server (mcp.shadowdroid.dev, sign-in with your Olef account; invite-only alpha) keeps the project in a cloud workspace, builds it there and runs it on a cloud emulator.",
+    "longDescription": "Teaches Codex the olef CLI and opens a live, interactive emulator/device viewer in the Codex in-app browser when you want to see or use the device: build and apply each edit to the device in place, drive and wait on the UI by selector, explain failures from crashes, logs and network traffic, intercept and modify HTTP(S), inject faults, and debug without Android Studio. Locally it needs the olef CLI on PATH (brew install olef-dev/tap/olef, or scoop install olef on Windows) and adb. Without them, the Olef Cloud server (mcp.olef.dev, sign-in with your Olef account; invite-only alpha) keeps the project in a cloud workspace, builds it there and runs it on a cloud emulator.",
     "developerName": "Andrii",
     "category": "Developer Tools",
     "capabilities": [

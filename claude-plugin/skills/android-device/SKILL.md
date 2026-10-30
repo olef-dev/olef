@@ -22,7 +22,7 @@ ask the user which they want before installing anything:
 For Cloud, with the user's yes for each step:
 
 1. `olef cloud login --no-wait --json` returns a code and a page on
-   app.shadowdroid.dev: give both to the user to sign in and approve (the
+   app.olef.dev: give both to the user to sign in and approve (the
    status line shows the code too), then run `olef cloud login`, which
    returns once they have.
 2. `olef cloud link` in the project's root (or an empty folder made for

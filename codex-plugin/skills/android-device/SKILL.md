@@ -51,7 +51,7 @@ work the same, forwarded to this machine, and `boot` isn't needed. Setting
 Cloud up, when there is no Android SDK and the user chooses it over a local
 install, is in `olef commands --guide cloud`; ask before signing in or
 uploading anything. With no `olef` CLI but the Olef Cloud MCP
-tools, `open_viewer` returns a live viewer link (view.shadowdroid.dev) to open
+tools, `open_viewer` returns a live viewer link to open
 in the in-app browser.
 
 ## Viewer or emulator window

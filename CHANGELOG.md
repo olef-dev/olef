@@ -4,6 +4,56 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.0.1
+
+- **`olef init` replaces the old ShadowDroid plugin:** after it installs
+  the Olef plugin for Claude Code or Codex, it removes the `shadowdroid`
+  plugin from v2 (and, in Claude Code, its `shadowdroid` marketplace), with
+  the same consent as the install: `--plugins`, or a yes in a terminal. An
+  unattended `init` only reports it, with the command that removes it. If
+  the Olef install fails, the old plugin stays.
+- **Old ShadowDroid skills are set aside:** a skill v2 installed as
+  `…/skills/shadowdroid/SKILL.md` (Claude Code, Codex, Cursor, Gemini,
+  Antigravity) sat next to the Olef skill with outdated commands. `init`,
+  `skill --sync` and `connect` now rename an unedited one to
+  `SKILL.md.retired` and install the Olef skill in its place, unless the
+  agent's Olef plugin already provides it. A copy you edited is left alone
+  and reported, so you can move your changes over.
+- **Olef Cloud on olef.dev:** a new `olef cloud login` signs in through
+  `api.olef.dev` and the approval page is `app.olef.dev/activate`. If you're
+  already signed in, nothing changes: your login keeps working against
+  `api.shadowdroid.dev`, which is the same service. The Codex plugin's
+  cloud MCP server is now `https://mcp.olef.dev/mcp`, so Codex asks you to
+  sign in to it once more.
+- **Tests recorded with v2 run unchanged:** a 2.2 recording exports
+  `SHADOWDROID_SESSION_FILE` and `SHADOWDROID_STEP` itself, and 3.0.0
+  ignored them, so its first step failed with `device_reserved`. Each
+  `SHADOWDROID_*` variable is now read when its `OLEF_*` name isn't set (the
+  `shadowdroid` command prefers the old name, as v2 did). `olef doctor` still
+  lists them so you can rename them.
+- **A folder linked to a workspace that moved to the cloud is refused:**
+  `olef cloud start` and the commands that start a session answer
+  `cloud_workspace_moved` instead of starting a session on the cloud copy.
+- **Leased lab TVs in the viewer:** the menu says "Release this TV", and
+  Release, Extend and Keep work from a Cloud viewer of a lab device. When a
+  lease ends, the viewer stops showing its remaining time.
+- **A remote command's error output is complete:** in a cloud-linked
+  project, the last lines a remote command wrote to stderr could go missing
+  when it failed; they're now always printed before the exit code is.
+- **Native watchpoints on x86_64 emulators:** LLDB can report a write
+  watchpoint's stop without its reason there, so `debug status` showed a
+  pause. When the watched value changed, the stop is now reported as that
+  watchpoint's, with a note saying so.
+- **The lab service survives a Homebrew upgrade:** `olef lab service
+  install` used to point the service at the CLI's versioned Homebrew
+  folder, which the next upgrade deletes. It now copies the CLI into
+  `~/.olef/lab/cli/<version>/` and runs that copy.
+
+Update with `olef update`, run the command it prints, then `olef init
+--plugins` to replace the old plugin. On a lab host, run `olef lab service
+install` with the new CLI, then `olef lab service stop` and `olef lab service
+start`.
+
 ## v3.0.0
 
 **ShadowDroid is now Olef.** Same CLI, device service, runtime, plugins and

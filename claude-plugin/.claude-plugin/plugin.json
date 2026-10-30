@@ -1,7 +1,7 @@
 {
   "name": "olef",
   "displayName": "Olef",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Run, test and debug Android apps from Claude Code: works through the Olef CLI, and opens a live, interactive emulator/device viewer in the Claude Desktop browser pane when you want to see the app, with Apply Changes builds, annotations you leave on the device, recorded steps for tests, and a status line with the device and what each build did.",
   "author": {
     "name": "Olef",

@@ -183,10 +183,11 @@ if [ "$toolchain" = missing ] && [ "$cli" = ok ] && command -v olef >/dev/null 2
   if [ -n "$cloud_tmp" ]; then
     olef cloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
     cloud_pid=$!
-    waited=0
-    while kill -0 "$cloud_pid" 2>/dev/null && [ "$waited" -lt 40 ]; do
+    # A deadline, not a count of sleeps: each `sleep` is a process, slow to
+    # start on a busy machine.
+    deadline=$((SECONDS + 4))
+    while kill -0 "$cloud_pid" 2>/dev/null && [ "$SECONDS" -lt "$deadline" ]; do
       sleep 0.1
-      waited=$((waited + 1))
     done
     kill "$cloud_pid" 2>/dev/null
     wait "$cloud_pid" 2>/dev/null
@@ -203,7 +204,7 @@ fi
 # A plugin whose MCP config names the remote Olef Cloud server works
 # without the CLI too, in a cloud-hosted workspace.
 remote_mcp=""
-if grep -qF 'mcp.shadowdroid.dev' "${CLAUDE_PLUGIN_ROOT}/.mcp.json" 2>/dev/null; then
+if grep -qE 'mcp\.(olef|shadowdroid)\.dev' "${CLAUDE_PLUGIN_ROOT}/.mcp.json" 2>/dev/null; then
   remote_mcp=1
 fi
 
@@ -252,7 +253,7 @@ elif [ "$toolchain" = missing ]; then
   fi
 fi
 if [ "$cli" != ok ] && [ -n "$remote_mcp" ]; then
-  context+=" This plugin also has the Olef Cloud MCP tools (mcp.shadowdroid.dev), which work without the CLI: the project then lives in a cloud-hosted workspace (create_workspace, write_files, build_and_run, screenshot, open_viewer, export_project), and the first call asks the user to sign in. Offer that or installing the CLI, which keeps the project in this folder, and let the user choose."
+  context+=" This plugin also has the Olef Cloud MCP tools (mcp.olef.dev), which work without the CLI: the project then lives in a cloud-hosted workspace (create_workspace, write_files, build_and_run, screenshot, open_viewer, export_project), and the first call asks the user to sign in. Offer that or installing the CLI, which keeps the project in this folder, and let the user choose."
 fi
 
 [ -n "$context" ] || exit 0
