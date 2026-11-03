@@ -263,7 +263,12 @@ Report problems at
   telemetry. The CLI downloads its on-device service and runtime agent from
   the GitHub release matching its version the first time they're needed,
   the Compose inspector from Google Maven when you inspect a layout, and
-  checks GitHub for a newer release only when you run `olef update`.
+  automatically checks GitHub for newer releases and the published known-issue
+  catalog at most once a day. Set `OLEF_NO_UPDATE_CHECK=1` to disable those
+  background checks. `olef update` explicitly checks for and installs updates.
+  If you turn on Olef Cloud (`olef cloud login`), devices run on Olef's
+  servers: the CLI then forwards device commands, the viewer and the cloud
+  status the status line shows between your computer and Olef Cloud.
 - **What Claude sees:** screenshots, UI text, logs, crashes and captured
   network traffic that Claude reads go to Anthropic as part of your
   conversation, like anything else Claude reads.

@@ -14,7 +14,9 @@ The output directory must be new or an existing evidence bundle. Checkpoints
 are serialized with a local lock, saved atomically as separate JSON files,
 and never overwrite earlier evidence. A missing probe returns nonzero
 `evidence_partial` **after saving available evidence**. Inspect its `errors`
-and saved path. Each checkpoint has capture start/end times and explicitly
+and saved path. A proxy or video recording that isn't running is not a
+missing probe: it is saved as `{"available": false, "reason": "not_active"}`.
+Each checkpoint has capture start/end times and explicitly
 states that the reads are not atomic.
 
 A projection spec selects fields instead of copying whole private files or

@@ -63,9 +63,9 @@ The command you ran never waits for it. Everything below reads only that file:
 
 - **In a terminal**, when a newer release is known, the next command ends with
   a short notice on stderr: the new version, the update command for your
-  install and the release notes link. It's shown at most once a day, never with
-  `--quiet`, and never when stderr isn't a terminal, so scripts and agents that
-  parse the output don't see it.
+  install and the release notes link. It's never shown with `--quiet`, and
+  never when stderr isn't a terminal, so scripts and agents that parse the
+  output don't see it.
 - **In JSON**, `doctor` and `connect` results carry `update_available` with
   `current_version`, `latest_version`, `release_url`, `command` (the update
   command), `then` (`olef init`) and `hint`. It never changes
@@ -73,6 +73,12 @@ The command you ran never waits for it. Everything below reads only that file:
 - **In Claude Code and Codex**, the plugin's SessionStart hook reads the same
   file and shows a one-line note when a newer release is known, so the agent
   can offer the update. The hook makes no network request itself.
+
+You're reminded at most once a day. The terminal notice, `connect`'s
+`update_available` and the plugin note share one clock (`notified_at` in the
+same file): whichever reaches you first counts as the day's reminder, and the
+others stay quiet until the next day. `doctor` always reports a newer release,
+since you run it to see the whole picture.
 
 The same daily check also fetches the release's list of known issues, which
 lets agents tell a problem that is already fixed from a new one (see

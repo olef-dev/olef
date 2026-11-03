@@ -70,7 +70,7 @@ export function runsOlef(command: unknown): boolean {
 //   <workspace>/state.json, written by the workspace's daemon:
 //     { workspace, session, state, stage?, region?, idle_stop_at?, expires_at?,
 //       updated_at?, error?: { code, message? } }
-// `state` is starting | ready | stopping | idle | stopped | error. Times are
+// `state` is off | starting | connecting | reconnecting | ready | stopping | stopped | error. Times are
 // RFC 3339 strings, epoch milliseconds or epoch seconds. A file older than
 // 3 minutes, with no idle stop still ahead, is a daemon that's gone.
 
@@ -141,6 +141,12 @@ export function cloudLine(view: CloudView | undefined, now: number): string | un
       const stage = typeof s.stage === 'string' && s.stage ? ` (${s.stage})` : ''
       return `☁ Cloud: starting${stage}…`
     }
+    case 'connecting':
+      return '☁ Cloud: connecting…'
+    case 'reconnecting':
+      return '☁ Cloud: reconnecting…'
+    case 'off':
+      return '☁ Cloud'
     case 'ready': {
       if (end !== undefined && end > now && end - now <= COUNTDOWN_MS) {
         return `☁ Cloud: ready · session ends ${minutesLeft(end, now)}`
@@ -170,7 +176,7 @@ function cloudLive(view: CloudView, line: string | undefined): boolean {
   if (!line || line === '☁ Cloud') return false
   if (view.login || view.link?.state === 'pending') return true
   const what = sessionOf(view.state).state
-  return what === 'starting' || what === 'ready' || what === 'stopping'
+  return ['starting', 'connecting', 'reconnecting', 'ready', 'stopping'].includes(String(what))
 }
 
 /** Where the CLI keeps its cloud files: `$OLEF_HOME/cloud`, else `~/.olef/cloud`. */
@@ -283,7 +289,7 @@ async function refreshCloud($: any, session: Session): Promise<void> {
     toastOnce($, session, `link:${view.link.approval_url}`, `Olef Cloud: approve uploading this project at ${view.link.approval_url}`)
   }
   const after = sessionOf(view?.state)
-  if (before === 'starting' && after.state === 'ready') $.ui.toast('Olef Cloud: the cloud device is ready')
+  if (['starting', 'connecting', 'reconnecting'].includes(String(before)) && after.state === 'ready') $.ui.toast('Olef Cloud: the cloud device is ready')
   const end = epochMs(after.expires_at)
   if (after.state === 'ready' && end !== undefined && end > now && end - now <= COUNTDOWN_MS) {
     toastOnce(
@@ -420,7 +426,7 @@ async function viewerCall($: any, device: Device, path: string, op: string): Pro
   if (!v) return undefined
   const res = await $.http.fetch(`${v.base}${path}`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-pane-token': v.token },
+    headers: { 'content-type': 'application/json', 'x-pane-token': v.token, ...(['list', 'peek'].includes(op) ? { 'x-olef-passive': '1' } : {}) },
     body: JSON.stringify({ serial: device.serial, op }),
   })
   if (!res.ok) return undefined
@@ -445,11 +451,24 @@ async function sendAsUser($: any, text: string) {
 // biome-ignore lint: `$` is the engine's
 const stepsCall = ($: any, device: Device, op: string) => viewerCall($, device, '/api/steps', op)
 
+/**
+ * Text from the device's UI (or typed into it) as one quoted, escaped token:
+ * a label can't break out of its line in a prompt submitted as the user's.
+ */
+function quoted(value: unknown): string {
+  const text = String(value)
+  return JSON.stringify(text.length > MAX_QUOTED ? `${text.slice(0, MAX_QUOTED)}…` : text)
+}
+const MAX_QUOTED = 200
+
+/** A note's comment on one line. */
+const oneLine = (text: string) => text.replace(/\s+/g, ' ').trim()
+
 /** What it points at: the selector's text, else "area" / "element". */
 function target(n: Json): string {
   const sel = (n.selector ?? {}) as Json
   const text = sel.text ?? sel.text_inside ?? sel.desc ?? sel.rid ?? (n.texts_inside as Json[] | undefined)?.[0]
-  return typeof text === 'string' ? `"${text}"` : String(n.kind ?? 'element')
+  return typeof text === 'string' ? quoted(text) : String(n.kind ?? 'element')
 }
 
 /** Pending annotations, one line each: what, where in the code, the ask. */
@@ -459,7 +478,7 @@ export function notesContext(items: Json[]): string {
     const at = src ? ` (${src.name}, ${src.file}${src.line ? `:${src.line}` : ''})` : ''
     // A View-based screen's file is its layout; this is the code using it.
     const code = (n.used_in as Json[] | undefined)?.[0]
-    return `${n.n}. ${target(n)}${at}${code ? `, used in ${code}` : ''}: ${n.comment || '(no comment)'}`
+    return `${n.n}. ${target(n)}${at}${code ? `, used in ${code}` : ''}: ${oneLine(String(n.comment ?? '')) || '(no comment)'}`
   })
   return ['Device annotations (screens with numbered notes, selectors and source: `annotations` tool):', ...lines].join('\n')
 }
@@ -472,15 +491,15 @@ export function stepsPrompt(steps: Json[]): string {
     switch (s.action) {
       case 'tap':
       case 'long_press':
-        return `${i + 1}. ${s.action === 'tap' ? 'tap' : 'long-press'} ${what ? `"${what}"` : `${s.x_dp},${s.y_dp} dp`}`
+        return `${i + 1}. ${s.action === 'tap' ? 'tap' : 'long-press'} ${what ? quoted(what) : `${Number(s.x_dp)},${Number(s.y_dp)} dp`}`
       case 'type':
-        return `${i + 1}. type "${s.text}"`
+        return `${i + 1}. type ${quoted(s.text)}`
       case 'key':
-        return `${i + 1}. press ${s.name}`
+        return `${i + 1}. press ${String(s.name).replace(/[^A-Za-z0-9_]/g, '')}`
       case 'swipe':
         return `${i + 1}. swipe ${JSON.stringify(s.from_dp)} → ${JSON.stringify(s.to_dp)} dp`
       default:
-        return `${i + 1}. ${s.action}`
+        return `${i + 1}. ${String(s.action).replace(/[^A-Za-z0-9_-]/g, '')}`
     }
   })
   return ['Make a UI test from my recorded steps (details: `recording` tool):', ...lines].join('\n')
@@ -594,7 +613,10 @@ export const register: Register = on => {
     } catch {
       // ignore
     }
-    // While a device is attached, "Send to Claude" in the viewer submits a prompt.
+    // While a device is attached, "Send to Claude" in the viewer submits a
+    // prompt. The hub sets `send_requested` only for the person's click on
+    // Send (a one-time ticket the page gets from that click), never for a
+    // call with the viewer token alone, which Claude has too.
     if (session.device?.viewerUrl && !session.poll) {
       try {
         session.poll = $.clock.every(1500, async () => {
@@ -608,10 +630,13 @@ export const register: Register = on => {
               await sendAsUser($, 'Address my device annotations.')
               return
             }
-            const steps = await stepsCall($, device, 'list')
-            if (steps?.send_requested === true && Array.isArray(steps.steps)) {
-              await stepsCall($, device, 'ack_send')
-              await sendAsUser($, stepsPrompt(steps.steps as Json[]))
+            const pending = await stepsCall($, device, 'peek')
+            if (pending?.send_requested === true) {
+              const steps = await stepsCall($, device, 'list')
+              if (Array.isArray(steps?.steps)) {
+                await stepsCall($, device, 'ack_send')
+                await sendAsUser($, stepsPrompt(steps.steps as Json[]))
+              }
             }
           } catch {
             // the viewer is gone or busy; try again next period

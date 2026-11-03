@@ -7,6 +7,39 @@ external mitmproxy. `net start` spawns the proxy, wires the device through
 `adb reverse` and proxy settings, and decrypted HTTP(S) transactions then stream
 as `http` events on the same timeline as `screen` when `watch` is running.
 
+Proxy requests cannot target adb's default or configured server port, or this
+proxy daemon's forwarding/control ports, even through hostname aliases or URL
+rewrite rules. Other loopback ports remain available for development backends.
+
+### Blocking destinations
+
+Apps behind the proxy can otherwise reach the host's loopback and LAN
+addresses, so a dev server on `localhost` keeps working. To lock that down,
+start the proxy with a block list:
+
+```bash
+olef net start --block-local                          # loopback, link-local, RFC 1918, IPv6 ULA, localhost names
+olef net start --block-host 10.0.0.0/8 --block-host '*.corp.example'
+```
+
+`--block-host` (repeatable) takes a host (`example.com` and `*.example.com`
+match the domain and its subdomains; a bare fragment matches substrings), an
+IP address, or a CIDR range. `--block-local` refuses `127.0.0.0/8`,
+`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.0.0/16`,
+`0.0.0.0/8`, `::1`, `::`, `fe80::/10`, `fc00::/7`, and `localhost`/`*.localhost`.
+When ranges are listed, a hostname is resolved before forwarding and refused if
+any of its addresses is blocked; the upstream client re-checks at connect time,
+so a name cannot rebind into a blocked range. The check applies to CONNECT
+tunnels (including blind and passthrough ones), plain HTTP, WebSocket upgrades,
+and every URL a rule or `net resume --set-url` produces.
+
+A refused connection gets `403` and a `blocked` event on `watch` and in
+`net log` (`host`, `port`, `blocked_by`, the matched `address`, `reason`),
+deduplicated per destination for 30 s. `net status` reports the active list and
+a refusal count under `daemon.config.block`. The list is fixed for the daemon's
+lifetime: a repeated `net start` with a different list warns, and `net stop`
+then `net start` applies it.
+
 The pre-existing device proxy setting is persisted before wiring; a repeated
 `net start` repairs wiring to an already-running daemon, while `net stop`
 attempts to restore that exact setting without overwriting unowned wiring.
@@ -136,9 +169,12 @@ unique URL, and the exact decrypted flow is captured.
 ## Protocol coverage
 
 The decrypted leg negotiates **HTTP/2 or HTTP/1.1** (h2 apps aren't
-downgraded), streams **SSE / large bodies** through instead of buffering them —
+downgraded). gRPC uses HTTP/2 upstream, forwards request data immediately,
+and preserves request and response trailers, including `grpc-status` and
+`grpc-message`, for bidirectional RPCs. Long-lived **SSE / NDJSON / large bodies** stream through —
 both response and request (a big upload streams chunked; marked
-`streamed`/`req_streamed` in the flow) — decodes `gzip`/`deflate`/`br`/`zstd`
+`streamed`/`req_streamed` in the flow). Other bodies spill to streaming after
+100 ms or 8 MiB, whichever comes first. Buffered responses decode `gzip`/`deflate`/`br`/`zstd`
 for capture, rules and the app (`upstream_content_encoding` and
 `upstream_resp_len` in the flow keep what the server actually sent),
 and **captures WebSocket (WS/WSS) frames**. The proxy validates the real server
@@ -147,6 +183,14 @@ Olef CA; `net start --insecure-upstream` (or `proxy.verify_upstream: false`
 in config) accepts a self-signed dev backend you trust.
 
 ## WebSocket capture and drive
+
+HTTP rules, replay, HTTP faults, and HTTP interception are currently incompatible
+with WebSocket upgrades. While any of those policies are active, an upgrade to
+an in-scope host fails with HTTP 501 and
+`websocket_http_policy_unsupported`, also recorded in the capture. Clear the HTTP
+policies before opening the socket. Dedicated WebSocket frame rules and
+interception remain supported. TLS handshake faults still apply to WSS CONNECTs.
+
 
 Once an in-scope connection upgrades, the proxy forwards every byte unchanged
 and decodes a copy of the frame stream. Inspect it hierarchically so an agent
@@ -224,6 +268,36 @@ entirely. For a debug build, trust the Olef CA in the network security
 config (`net ca info`) or disable pinning in debug. In-process capture for such
 traffic is planned for the Olef runtime; the former OkHttp AAR companion
 has been removed.
+
+### TLS passthrough for pinned hosts
+
+A host that pins its certificate fails under MITM. Pass it through so the app
+keeps working while every other host is still decrypted:
+
+```bash
+olef net start --passthrough-host pinned.example.com   # at start (repeatable)
+olef net passthrough add --host '*.bank.example'      # or at runtime
+olef net passthrough list
+olef net passthrough remove --host '*.bank.example'
+```
+
+Patterns take the same forms as `--host`. A passthrough host's CONNECT tunnels
+are relayed still encrypted: no decryption, rules, intercepts, HTTP faults,
+or bodies. Each tunnel is recorded when it closes as one
+connection-level flow in `watch`, `net log`, and `net show`: `passthrough:true`,
+`method:"CONNECT"`, `scheme` `https` (or `tcp` for a non-TLS tunnel), `host`,
+`port`, `req_len`/`resp_len` (encrypted bytes app→server / server→app),
+`dur_ms`, and `error` when the connect or relay failed. HAR, curl, and fixture
+exports leave these out. Runtime changes apply to new connections; tunnels that
+are already open keep their handling. `net status` lists the hosts under
+`daemon.config.passthrough_hosts`. A repeated `net start --passthrough-host`
+against a running daemon does not change its list; the warning names the
+`net passthrough add` command that does.
+
+When the app rejects the proxy's certificate with a TLS alert, or closes right
+after the handshake without sending HTTP (both typical of pinning), the
+`tls_error` reason mentions passthrough and its `next_actions` end with the
+exact `net passthrough add --host <host>` command for that host.
 
 ### Guarded JSON response edits
 

@@ -66,6 +66,8 @@ if [ "$cli" = missing ]; then
       /usr/local/bin/olef
       /home/linuxbrew/.linuxbrew/bin/olef
       "$HOME/.local/bin/olef"
+      "${OLEF_INSTALL_DIR:-/nonexistent}/olef.exe"
+      "${LOCALAPPDATA:-/nonexistent}/Olef/bin/olef.exe"
       "${LOCALAPPDATA:-/nonexistent}/Programs/olef/olef.exe"
       "$HOME/scoop/shims/olef.exe"
     )
@@ -120,7 +122,7 @@ if [ "$cli" != ok ]; then
 fi
 
 # A newer release of the CLI on PATH, from the cache the CLI refreshes once a
-# day (update-check.json). Never the network here; off with
+# day (update-check.json), at most once a day. Never the network here; off with
 # OLEF_NO_UPDATE_CHECK, like the CLI's own notice.
 update=""
 no_update_check="$(printf '%s' "${OLEF_NO_UPDATE_CHECK:-}" | tr '[:upper:]' '[:lower:]')"
@@ -136,6 +138,31 @@ if [ "$cli" = ok ] && [ -n "${version:-}" ] && [ -z "$no_update_check" ] && [ -f
   esac
   if [ -n "$latest" ] && ! sd_version_at_least "$version" "$latest"; then
     update="$latest"
+  fi
+fi
+# Once a day: the CLI's terminal notice, `connect` and this hook share the
+# cache's notified_at. Showing it here counts as the day's reminder; a clock
+# set back past it reminds again.
+if [ -n "$update" ]; then
+  now="$(date +%s)"
+  notified_at="$(sed -n 's/^ *"notified_at": *\([0-9]*\).*/\1/p' "$update_cache" | head -n 1)"
+  case "$notified_at" in
+    "" | *[!0-9]*) notified_at=0 ;;
+  esac
+  case "$now" in
+    "" | *[!0-9]*) now="" ;;
+  esac
+  if [ -n "$now" ] && [ "$notified_at" -le "$now" ] && [ $((now - notified_at)) -lt 86400 ]; then
+    update=""
+  elif [ -n "$now" ]; then
+    stamp_tmp="$(mktemp "${update_cache}.XXXXXX" 2>/dev/null || true)"
+    if [ -n "$stamp_tmp" ]; then
+      if sed "s/^\( *\"notified_at\": *\)[0-9]*/\1${now}/" "$update_cache" >"$stamp_tmp"; then
+        mv -f "$stamp_tmp" "$update_cache"
+      else
+        rm -f "$stamp_tmp"
+      fi
+    fi
   fi
 fi
 # Issues this user reported that a newer release fixes, written by the CLI's
@@ -197,8 +224,8 @@ if [ "$toolchain" = missing ] && [ "$cli" = ok ] && command -v olef >/dev/null 2
   case "$cloud_out" in
     *'"linked":true'*'"enabled":false'* | *'"enabled":false'*'"linked":true'*) cloud=off ;;
     *'"linked":true'*) cloud=linked ;;
-    *'"signed_in":true'*) cloud=signed_in ;;
-    *'"cmd":"cloud_status"'* | *'"signed_in":'* | *'"code":"cloud_'*) cloud=available ;;
+    *'"signed_in":true'* | *'"account":{'*) cloud=signed_in ;;
+    *'"cmd":"cloud_status"'* | *'"account":'* | *'"signed_in":'* | *'"code":"cloud_'*) cloud=available ;;
   esac
 fi
 # A plugin whose MCP config names the remote Olef Cloud server works

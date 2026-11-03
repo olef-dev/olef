@@ -21,7 +21,7 @@ jobs:
     if: contains(github.event.issue.body, 'olef-fingerprint:')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const issue = context.payload.issue;
@@ -46,6 +46,10 @@ jobs:
             });
             const original = open
               .filter(other => other.number !== issue.number && !other.pull_request)
+              // A first reporter can predict a fingerprint. Only maintainers'
+              // reports or explicitly validated reports may become canonical.
+              .filter(other => ['OWNER', 'MEMBER', 'COLLABORATOR'].includes(other.author_association) ||
+                (other.labels || []).some(label => label.name === 'validated'))
               .filter(other => (other.body || '').includes(`olef-fingerprint: ${fp} `))
               .sort((a, b) => a.number - b.number)[0];
             if (!original) return;

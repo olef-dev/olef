@@ -84,6 +84,11 @@ sessions reserve the device, nested under yours when you hold one. Device
 selection (`-d`, `--target`), `--authority-dir` and your session token are
 passed to the scripts.
 
+On Windows, install Git for Windows to provide native Bash. Olef finds it
+through PATH or the usual Git installation directories; the Windows WSL
+`bash.exe` launcher is not used. You can run `olef test run` from PowerShell,
+including when the test or report directory contains spaces.
+
 | Flag | Effect |
 | --- | --- |
 | `--repeat N` | Run every test N times; tests and steps are classified `stable_pass`, `stable_fail` or `flaky` |
@@ -95,10 +100,12 @@ passed to the scripts.
 | `--junit-out FILE` | JUnit XML (default `<artifacts-dir>/junit.xml`) |
 | `--artifacts-dir DIR` | Run folders and reports (default `.olef/test-runs/run-<ms>/`) |
 | `--fail-fast` | Stop after the first test that fails (after its retries) |
+| `--timeout-ms MS` | Stop a script and the commands it started after MS (default 15 min); the attempt fails with `test_timeout` |
 
 The run writes `junit.xml`, `report.json` and an index `report.html` linking
-each run's own report. It exits non-zero with `code: test_failed` when a test
-failed, naming the first failure in plain words, its `fault`, and the
+each run's own report. It exits non-zero with `code: test_failed` when any
+repetition of a test still failed after its retries (also when other
+repetitions passed), naming the first failure in plain words, its `fault`, and the
 `test heal` command for it.
 
 ### JUnit

@@ -29,10 +29,37 @@ copied from device/app output. If a required value is not yet known, the CLI
 emits an exact `commands --json --describe '<path>'` discovery action rather
 than a command that would immediately fail.
 
+## What to change: `hints`
+
+Every error envelope carries `hints`, an array of short prose strings that
+say what to change before trying again ("pass --pid <pid> to choose the
+process", "set `ddp.project` in .olef/config.json"). It is often empty. The
+two recovery fields split the work:
+
+- `next_actions` are the commands to run next, rewritten for the selected
+  device and shell-quoted.
+- `hints` is advice that isn't a command to run as-is: which flag to add,
+  which setting to change, what to ask the person.
+
+Read advice from `hints`, not from `msg`. Some messages still repeat the
+same advice in prose (`…; pass --pid`). That copy stays for this release
+only; the next release removes it, and `msg` will just say what failed.
+
+`hints` replaces the older single `hint` string. Cloud errors put it in
+`detail.hint`, and usage errors put clap's tip in a top-level `hint`. Both are
+already copied into `hints`. Both old fields stay for this release and are
+removed with the prose advice in the next one.
+
 Inside a running `watch` stream, `{"type":"error","stage":…,"code":…,"msg":…,
 "input":…,"retryable":…,"detail":…,"next_actions":[…],"ts":…}` is a
 timeline event, not the terminal one-shot error envelope above. Keep consuming
 unless the stream ends or the task says to stop.
+
+`watch` also writes `{"type":"heartbeat","device":…,"idle_ms":…,"ts":…}` after
+`--heartbeat-ms` (default 15000; 0 turns it off) with no other line, so a
+reader can tell an idle stream from a dead one: no line for well over that
+interval means the stream is gone. A heartbeat carries no app state; skip it
+everywhere else, and treat any other unknown `type` the same way.
 
 ## Whose fault a failure is
 
@@ -81,7 +108,8 @@ Read `detail` before re-dumping.
 - **The update notice is for people.** The once-a-day "new release" notice
   prints to stderr only when stderr is a terminal and `--quiet` is off, so a
   piped or captured run never sees it. Agents get the same fact as
-  `update_available` in `doctor` and `connect` results (see
+  `update_available` in `doctor` results, and in `connect` results when no
+  reminder went out that day (see
   [Updating](updating.md#the-update-notice)).
 - **Selector actions are strict.** Several matches and no exact hit is an
   `ambiguous_match` error listing candidates, never a silent guess.
@@ -119,6 +147,12 @@ any other argument is never rewritten. The root catalog's `remote_model`
 defines these values and classifies each `OLEF_*` variable as
 `forward`, `translate` (a host path, rewritten like an `in` argument) or
 `drop`.
+
+`devices` is `both`: in a linked project it lists this host's devices as usual
+and adds `cloud` (`workspace`, `workspace_id`, `state`, `count`, `devices[]`)
+with the worker's devices while the session is running. It never starts a
+session. A cloud failure sets `cloud.error` (`code`, `message`) and adds a
+`warnings[]` entry; the command still succeeds with the local list.
 
 Failures in shell pipelines/batches need explicit propagation: `pipefail`,
 `&&`, or a checked subprocess runner. Preserve the original envelope and

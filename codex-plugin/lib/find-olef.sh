@@ -74,8 +74,11 @@ sd_find() {
     "$HOME/.local/bin/olef"
     "$HOME/.cargo/bin/olef"
   )
+  # olef-installer.ps1 installs to $OLEF_INSTALL_DIR, else %LOCALAPPDATA%\Olef\bin,
+  # and only updates the registry PATH, which a running app never sees.
+  [ -n "${OLEF_INSTALL_DIR:-}" ] && candidates+=("$OLEF_INSTALL_DIR/olef.exe")
   if [ -n "${LOCALAPPDATA:-}" ]; then
-    candidates+=("$LOCALAPPDATA/Programs/olef/olef.exe" "$HOME/scoop/shims/olef.exe")
+    candidates+=("$LOCALAPPDATA/Olef/bin/olef.exe" "$LOCALAPPDATA/Programs/olef/olef.exe" "$HOME/scoop/shims/olef.exe")
   fi
   local candidate version
   for candidate in "${candidates[@]}"; do

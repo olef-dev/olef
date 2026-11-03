@@ -1,7 +1,10 @@
 {
   "mcpServers": {
     "olef": {
-      "command": "./bin/olef-mcp",
+      "command": "bash",
+      "args": [
+        "./bin/olef-mcp"
+      ],
       "cwd": ".",
       "env_vars": [
         "PATH",

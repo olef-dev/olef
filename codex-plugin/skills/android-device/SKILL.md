@@ -28,7 +28,8 @@ reservation, annotations and recorded steps.
 3. **Act on the user's annotations.** In Annotate mode (the pen, or ⌥E) the
    user clicks an element or drags around an area and writes what should
    change; "Send to Codex" opens this thread with an "Address my device
-   annotations" prompt in the composer, and they press Enter. Then call
+   annotations" prompt in the composer, and they press Enter (only their
+   click on Send can). Then call
    `annotations`: each note has the comment, the element and its selector,
    `source` (the composables that drew it, innermost first, with file and
    line); an image of each screen shows every note outlined in red with its

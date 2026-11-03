@@ -288,6 +288,8 @@ intentionally absent. `watch` holds the device
 while it runs, so inject faults through its stdin
 (`{"cmd":"fault","args":["inject","airplane-mode","--duration-ms","5000"]}`);
 it also clears faults whose `--duration-ms` elapses while it watches.
+When nothing else happens for `--heartbeat-ms` (15 s by default, 0 off) it
+writes a `heartbeat` line; ignore it, except as proof the stream is alive.
 
 ## Faults on purpose
 

@@ -4,6 +4,62 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.0.2
+
+A reliability and security release from a full code audit: no workflow
+changes, a few new options, and several hundred fixes.
+
+- **Errors say what to change in `hints`:** every JSON error now carries a
+  `hints` list with the advice in words (for example, which flag to pass).
+  `next_actions` is still the list of commands to run next. The same advice
+  stays in `msg` for this release; read `hints` instead, because the prose
+  in `msg` and the single `detail.hint` will go away in the next one.
+- **`olef watch` says it's still alive:** after 15 s with nothing else to
+  report, `watch` prints a `{"type":"heartbeat"}` line, so an agent can tell
+  an idle stream from a dead one. Ignore lines of that type; `--heartbeat-ms`
+  changes the interval and `0` turns it off.
+- **Lock the proxy away from local services, or step around pinning:**
+  `olef net start --block-host <host|ip|cidr>` and `--block-local` refuse
+  connections from the app to your machine's loopback or local network
+  (allowed by default, so dev servers keep working). Hosts that pin their
+  certificate can be relayed untouched with `--passthrough-host <glob>` or,
+  while the proxy runs, `olef net passthrough add --host <glob>`; a TLS
+  failure that looks like pinning now suggests that command.
+- **The device viewer's Send needs your click:** sending your notes or
+  recorded steps to the agent now works only from a real click in the
+  viewer, never from a tool the agent can call.
+- **`olef devices` in a linked project lists this machine first:** your
+  emulators and USB phones, with the linked Olef Cloud workspace's devices
+  in their own `cloud` section. Listing never starts a cloud session.
+- **The debugger stops leaving apps frozen:** two stops close together
+  (two breakpoint hits, or a pause racing a hit) could leave the app
+  suspended after `resume`. Kotlin `listOf()` and `Arrays.asList` values
+  now show their items, and breakpoints inside Java lambdas bind.
+- **Leased phones and labs:**
+  - A release that times out keeps the lease as `pending_release` instead
+    of forgetting a lease that's still billed.
+  - A status error no longer cancels a live or starting lease.
+  - Spend isn't counted past a lease's end after the computer sleeps.
+  - On a lab host, the agent only forwards the adb services a lessee needs,
+    and removing a device ends its open streams.
+- **The on-device server refuses web pages:** requests whose `Host` or
+  `Origin` isn't a loopback address are refused, which stops a page in the
+  device's browser from reaching it.
+- **Olef Cloud sync and remote commands:** a file the worker refuses no
+  longer stalls sync forever, paths a worker sends can't escape their
+  folder on Windows, and large inputs are streamed instead of held in
+  memory.
+- **Many smaller fixes** across the proxy (gRPC and HTTP/2 trailers, a
+  response body forwarded byte for byte when nothing edits it), record and
+  replay (typed passwords are kept as secrets, swipes compile to
+  `ui swipe`), test runs (`test run --timeout-ms`, killed scripts reported
+  as such), fault injection (`fault run --step-timeout-ms`, clean-up after
+  Ctrl-C), `app apply`, `why`, `doctor` and the plugins.
+
+Update with `olef update` and run the command it prints. The first
+`olef connect` after updating installs the matching on-device server, and
+the first `olef app apply` may reinstall the app once.
+
 ## v3.0.1
 
 - **`olef init` replaces the old ShadowDroid plugin:** after it installs

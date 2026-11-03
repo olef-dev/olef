@@ -76,9 +76,10 @@ verbs:
 - **`debug snapshot`** — one shot: device + build, foreground app, screen tree,
   screenshot, recent logcat, the live debugger stack / variables / breakpoints,
   and a bounded page of recent logpoint events in a single JSON object.
-- **`debug record` / `debug replay`** — JSONL timelines of screen changes,
-  lifecycle, logcat, debugger state, structured logpoint hits, and replayable
-  actions (taps, text, keys, swipes, drags).
+- **`debug record` / `debug replay`** — `record` writes a JSONL timeline of
+  screen changes, lifecycle, logcat, debugger state and structured logpoint
+  hits; `replay` runs a JSONL file of `action` events (taps, text, keys,
+  swipes, drags). Record timelines hold no actions, so they don't replay.
 - **`debug run-until-crash` / `step-until-screen-change` / `step-until-log`** —
   let the app run until something interesting happens, then return a full
   snapshot; crash waits emit parsed Java/native/ANR events and can write local

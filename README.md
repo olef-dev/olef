@@ -174,6 +174,8 @@ Details: [Claude Code plugin](claude-plugin/README.md),
 ## Documentation
 
 - [The agent loop](docs/agent-loop.md): how agents read, act and verify
+- [Apply Changes](docs/apply.md): `olef app apply`, from an edit to the
+  device in place, and how to read its result
 - [Output contract](docs/output-contract.md): the JSON every command returns
 - [Debugging](docs/debugging.md): logs, `why`, crashes and the debugger
 - [Recording tests](docs/recording.md) and [test runs](docs/test-runs.md):

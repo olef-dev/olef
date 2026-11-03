@@ -46,12 +46,20 @@ forwarded to the app or upstream are never changed. The session log is written
 
 `ui screenshot` reports raw pixels as potentially sensitive. Explicit
 `--redact-pixels` (PNG only) blacks out matching accessibility bounds, but
-still reports that Android may not expose every rendered glyph. `collect`
+requires matching, consistent accessibility snapshots before and after capture
+and a matching image/viewport aspect ratio. It refuses to save the image if
+those checks fail. It still reports that Android may not expose every rendered glyph. `collect`
 marks screenshots potentially sensitive unless `--redact-screenshots`
 explicitly blacks out matching bounds. The device viewer's annotation
 overviews and crops are full-screen pixels too: they are captured with
 `--redact-pixels` whenever the redaction policy is on (`OLEF_REDACT`
 or `redaction.enabled`), and report `pixels_redacted` per screen.
+
+Cloud artifact mirrors under `~/.olef/cloud/artifacts/<workspace>/` are a
+disposable cache: idle cleanup keeps at most 2 GiB and 10,000 files per
+workspace, and removes files older than seven days. Copy evidence you need
+to retain elsewhere or request an explicit local output path. Interrupted
+sync-back staging is removed on every exec exit and on daemon startup.
 
 Video is a stricter boundary: global `--redact` does not alter MP4 pixels.
 Every `video` bundle is marked as containing sensitive, unencrypted data;
@@ -93,9 +101,14 @@ fail with a typed `invalid_*` error. See
 - The wire protocol is loopback HTTP/JSON over an adb forward; the supported
   public interface for agents is the CLI surface and
   `olef commands --json`.
-- The `net` MITM proxy installs its CA into the device's **user** trust store
-  (`net trust`); apps that opt out of user CAs, pin certificates, or bypass the
-  system store reject it, reported as `tls_error`. Forwarded bytes are never
+- The `net` MITM proxy's CA goes in with `net trust`. The default (`--auto`)
+  installs it into the device's **system** trust store, so every app on the
+  device trusts the proxy; on a debuggable build such as an emulator image it
+  first restarts adbd as root (`adb root`) to do so. Only when that is not
+  possible does it fall back to the **user** store; `--push` stages a user
+  install you finish in Settings. `net stop --revoke-ca` removes the CA again.
+  Apps that opt out of user CAs (when it is in the user store), pin
+  certificates, or bypass the system store reject it, reported as `tls_error`. Forwarded bytes are never
   modified unless you explicitly intercept, rule, or replay.
 - The runtime attaches only to apps the OS marks **debuggable** (it goes
   through `run-as`), never through an app dependency. Its channel is an

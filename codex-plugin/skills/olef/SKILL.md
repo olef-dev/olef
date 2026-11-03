@@ -64,9 +64,10 @@ Cloud; `--guide cloud` covers sign-in, linking, usage and `cloud_*` errors.
 
 Stdout is data; the exit code is authoritative. Actions return one object with
 `ok`, `cmd` and `next_actions`; raw reads (`ui dump`) return the payload. A
-failure has `ok:false`, `code`, `msg`, `retryable`, `detail` and
-`next_actions`: branch on `code`, never parse `msg`. `watch`, `log` and
-`net log` stream JSONL. Operational logs go to stderr (`--quiet` silences).
+failure has `ok:false`, `code`, `msg`, `retryable`, `detail`, `hints` (what
+to change, in prose) and `next_actions`: branch on `code`, read advice from
+`hints`, never parse `msg`. `watch`, `log` and
+`net log` stream JSONL; skip `watch`'s idle `heartbeat` lines. Operational logs go to stderr (`--quiet` silences).
 In batches keep every exit status (`pipefail`); serialize device mutations;
 reserve multi-step shared work with a driver session (`--guide verification`).
 

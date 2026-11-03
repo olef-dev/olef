@@ -100,8 +100,8 @@ hosted cloud workspace, and `export_project` returns it as a zip.
    `olef device orientation left` (`natural` is portrait); if its
    `effective` value differs from what you asked for, the app fixes its
    orientation.
-4. **Explain failures** with `olef log crashes`, `olef why` and
-   `olef net start` / `net log`. `olef commands --guide` lists the
+4. **Explain failures** with `olef log --last 2m`, `olef why` and
+   `olef net start` / `net log`. `olef commands` lists the
    rest (debugger, faults, app state).
 
 ## Showing the device to the user
@@ -125,8 +125,9 @@ your own checks: the CLI is cheaper.
    `touch2_path` take dp, so you can act on what you see.
 3. **Act on the user's annotations.** In the viewer's Annotate mode (Cmd+E)
    the user clicks an element or drags around an area and writes what should
-   change; "Send to Claude" submits them. When they say they've annotated
-   something, or a prompt's context lists pending annotations, call the
+   change; "Send to Claude" submits them (only their click can). When they
+   say they've annotated something, or a prompt's context lists pending
+   annotations, call the
    `annotations` tool (or run `olef pane annotations`, which saves the
    images as PNG files). Each has the user's comment, the element and its
    selector, and `source`; an image of each screen shows every note outlined
