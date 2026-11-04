@@ -4,6 +4,32 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.0.3
+
+Fixes for the device viewer, Codex plugin, and Olef Cloud builds.
+
+- **Codex finds your project's Cloud workspace:** plugin tools accept
+  `project_dir` and remember it for the current chat. Cloud-linked projects
+  route to their Cloud session even when the plugin starts outside the
+  project directory. The plugin instructions pass the project on the first call.
+- **Viewer logs render correctly:** Logs, Network, and Builds rows display
+  their content instead of appearing as device buttons.
+- **Relay disconnects no longer crash the server:** closing a connection
+  while its relay threads start is handled as a normal disconnect.
+- **Public certificates upload with your project:** certificate-only PEM
+  files are allowed through Cloud sync. Private keys, encrypted PEMs, and
+  other secret files remain held back. When a failed build mentions a
+  held-back file, Olef identifies it and shows the explicit allow command.
+- **A clearer plugin startup message:** the installation check is named
+  "Checking Olef CLI and adb setup".
+
+The accompanying Cloud worker update gives builds a persistent, writable
+Android SDK for additional platforms and build tools, and includes Android
+platform 37.0. Worker tools continue to use the protected system SDK.
+
+Update with `olef update` and run the command it prints. Update the Olef
+plugin in your agent as well to receive the project-routing instructions.
+
 ## v3.0.2
 
 A reliability and security release from a full code audit: no workflow
