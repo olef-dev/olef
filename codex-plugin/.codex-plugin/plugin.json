@@ -1,6 +1,6 @@
 {
   "name": "olef",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Run, test and debug Android apps from Codex: through the Olef CLI on your own emulators and devices, or on an Olef Cloud emulator with nothing installed locally. Deploy and apply changes, drive the UI, read crashes and logs, inspect network traffic.",
   "author": {
     "name": "Andrii",

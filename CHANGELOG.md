@@ -4,6 +4,38 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.1.0
+
+Olef Cloud agents now work through inboxes. Every agent, person and team has
+an inbox, and work is a message: send a request to an agent and it opens a
+draft pull request. Questions, approvals and results arrive as messages in
+your own inbox.
+
+- **Inbox verbs:** `olef cloud inbox ls|show|create|send|messages|watch`
+  find inboxes, send messages and follow changes as JSON lines.
+  `olef cloud inbox send agents/<name> --text "…" --repo-id <id>` starts
+  agent work; `--parent <message>` continues a thread.
+- **Message verbs:** `olef cloud msg show|cancel|retry|claim|renew|complete|fail|answer`
+  inspect, cancel or retry a request, answer an agent's question, or take a
+  request and finish it by hand.
+- **Threads and runs:** `olef cloud thread show|timeline` shows a whole
+  conversation with its runs. `olef cloud agent ls|create|show|run|events|stop`
+  manages agents and their runs.
+- **Hosted MCP:** six generic tools (`inbox_submit`, `inbox_poll`,
+  `message_claim`, `message_complete`, `answer`, `inspect`) replace the
+  alpha task tools.
+- **Restart-safe work:** requests are claimed with a lease and retried up to
+  three times, so a restarted scheduler or worker loses nothing and never
+  starts a duplicate run.
+- **Audit log:** org owners and admins can read `GET /v1/orgs/{org}/audit`,
+  and every agent action records who, what, and for which thread.
+
+The alpha tasks API is removed. Older CLIs and apps that call it get
+`426 client_too_old` with an update hint instead of failing silently.
+
+Update with `olef update` and run the command it prints. Update the Olef
+Android app to 3.1.0 to keep working with your agents.
+
 ## v3.0.3
 
 Fixes for the device viewer, Codex plugin, and Olef Cloud builds.
