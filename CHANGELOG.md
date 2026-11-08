@@ -4,6 +4,44 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.2.0
+
+Questions no longer wait on one person. When an agent's question goes
+unanswered, Olef escalates it step by step: from the person who asked, to
+the agent inbox's administrators, the team's responder, each parent team's
+responder, and finally the org owner. Anyone it reaches can answer, and the
+first answer stops it and clears everyone else's notification.
+
+- **Escalation verbs:** `olef cloud escalation preview <inbox>` shows the
+  path a question would take; `show <question>` shows who was told and
+  what's next; `ack <question>` says you're on it and pauses escalation
+  without answering; `replan <question>` moves an open question to the
+  current policy.
+- **Policies:** `olef cloud escalation policy show|set|rm` for the org, a
+  `--team` or an `--inbox`, with `--steps` (JSON) or `--every-s <seconds>`.
+  The default path (an hour per step) is on every plan; custom paths come
+  with plans that include them.
+- **Team roles:** `olef cloud team ls` and `olef cloud team set <team>
+  --parent <team> --responder <user> --owner <user>` nest teams and name
+  who answers for each.
+- **Typed services:** `olef cloud inbox publish <inbox> <name>
+  --request-schema @req.json --response-schema @resp.json` publishes a
+  versioned contract; requests naming `name@version` and their responses
+  are checked (`422 schema_violation` with JSON pointers).
+  `olef cloud inbox services <inbox>` lists them.
+- **Validators:** `olef cloud validator upload <file.wasm>` stores a
+  WebAssembly validator by checksum to pin in a service. Validators run
+  sandboxed (no network, files or clock; 100 ms; 64 MiB); one that fails
+  holds the message rather than letting it through.
+- **Admission:** messages from outside the org to a public inbox wait for an
+  administrator: `olef cloud inbox admissions <inbox>` and
+  `olef cloud msg admit <id>` (or `--reject`).
+- **Hosted MCP:** `inspect` with `escalation: true` shows a question's
+  escalation or an inbox's escalation path.
+
+Update with `olef update` and run the command it prints. The Olef Android
+app adds "I'm on it" on questions and marks the ones escalated to you.
+
 ## v3.1.0
 
 Olef Cloud agents now work through inboxes. Every agent, person and team has
