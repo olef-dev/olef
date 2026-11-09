@@ -4,6 +4,42 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.3.1
+
+One way to connect event sources, and one way to share things. Commands
+and API routes that did the same job in different ways are gone (Olef is
+in alpha, so there are no compatibility aliases).
+
+- **Event sources:** `olef cloud connect <github|jira|webhook>` connects a
+  source to the org in use. Jira prints a code for Apps → Olef; a webhook
+  prints its ingest URL and signing secret once; GitHub links an App
+  installation (`--installation-id`) or prints the install link.
+  `olef cloud connection ls|show|rm|rotate-secret` manages connections.
+  GitHub App installations are connections too.
+- **Routes:** `olef cloud route add <connection> --inbox <address>` sends
+  a connection's events to an inbox. Filter with `--project`, `--event`,
+  `--jql` (Jira) or `--match /pointer=value`; `--service name@version`
+  makes each event a typed request checked against the inbox service's
+  schema. Also `route ls` and `route rm`.
+- **Signed webhooks:** any system can POST JSON to a webhook connection,
+  signed with `X-Olef-Signature: sha256=<HMAC>`. The same event twice is a
+  duplicate.
+- **The event log:** `olef cloud events ls <connection>` shows what arrived
+  and what it led to (submitted, duplicate, unlinked, no_route, rejected
+  and why). `events show` and `events replay` inspect one event or run it
+  again.
+- **Linked accounts:** `olef cloud account ls|link|unlink`. `account link
+  <code>` takes the code Jira shows; `account link --github` prints
+  GitHub's sign-in link.
+- **Repositories:** `olef cloud repos [--org-wide | --connection <id>]`.
+- **Sharing:** `olef cloud grant <inbox|project|workspace> <id> <principal>
+  [--role | --perms | --secrets] [--rm]` and `olef cloud grants <resource>
+  <id>` replace `olef cloud share` and `olef cloud project grant`. An
+  agent's project secrets are a grant too: `grant project <p> agent:<a>
+  --secrets A,B`.
+- **Removed:** `olef cloud jira`, `olef cloud share`, `olef cloud project
+  grant`.
+
 ## v3.3.0
 
 Agents can now be started on a schedule and from Jira.
