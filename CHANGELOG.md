@@ -4,6 +4,33 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.3.0
+
+Agents can now be started on a schedule and from Jira.
+
+- **Schedules:** `olef cloud schedule create --inbox <team/agent> --text
+  "…" --rrule "FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0" --tz
+  America/Los_Angeles` sends a request on a schedule. Use `--at
+  2026-11-09T09:00` for a one-off. Schedules follow local time across
+  daylight-saving changes and are at least 15 minutes apart. `--overlap`
+  sets what happens when the previous run is still going: `queue`,
+  `skip_while_pending` (the default) or `concurrent`. Also available:
+  `ls`, `show`, `preview` (the next occurrences), `occurrences` (what ran,
+  what was skipped and why), `pause`, `resume` and `rm`.
+- **Jira:** install Olef for Jira, then `olef cloud jira connect --site
+  https://acme.atlassian.net` gives a one-time code to enter in Jira under
+  Apps → Olef. `olef cloud jira route <connection> --inbox <team/agent>
+  --repo-id <id> [--project KEY] [--jql "…"]` lets people send issues to
+  an agent from the issue's "Send to Olef agent" action, and can also
+  send every JQL match automatically. Each person links their Jira
+  account once (`olef cloud jira link <code>`, or the link Jira shows).
+  An issue is sent once per version: re-sending, or adding a comment, is
+  a duplicate; editing the issue is a new request. `connections` and
+  `disconnect` manage the site.
+- **Safer outside text:** a run started from Jira text can't message
+  another team's inbox without approval. The approval request goes to the
+  person who sent the issue.
+
 ## v3.2.0
 
 Questions no longer wait on one person. When an agent's question goes
