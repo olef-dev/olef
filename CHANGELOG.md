@@ -4,6 +4,23 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.3.2
+
+A cleanup release.
+
+- **Cloud guide:** `olef commands --guide cloud` now covers inboxes, agents,
+  schedules and event sources: connecting GitHub, Jira and signed webhooks,
+  routing their events to an agent, the event log and replay, and linked
+  accounts.
+- **Clearer errors:** hints no longer point at removed API routes. Connecting
+  GitHub says `olef cloud account link --github`. A webhook with a bad
+  signature gets `invalid_signature` instead of a "sign in again" hint.
+- **Safer pushes:** an agent run that a newer attempt has replaced can no
+  longer get a token to read or push the repository.
+- **API reference:** the escalation, admission, typed service, validator,
+  schedule and owner-transfer endpoints are now documented. Keys are
+  published only at `/.well-known/jwks.json`.
+
 ## v3.3.1
 
 One way to connect event sources, and one way to share things. Commands
