@@ -4,6 +4,24 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.8.0
+
+Olef Cloud on networks that allow only HTTPS.
+
+- **`olef cloud doctor`** has a `network` check: it tries each Olef host on
+  port 443 and says whether it went direct or through your proxy, how long
+  it took, and for a host it couldn't reach what's in the way (no route,
+  the proxy refused, or TLS rewritten by an inspecting proxy) and what to ask
+  your network admin for.
+- **Proxies:** `HTTPS_PROXY` (HTTP CONNECT, optional Basic auth) and
+  `NO_PROXY` are honored by every cloud command, the tunnel included.
+- **The hosts to allow** are published in
+  [Olef Cloud on restricted networks](docs/cloud-network.md): only outbound
+  TCP 443, no UDP.
+- The cloud guide and the skill now cover general and web workspaces,
+  browser previews, hibernation and restricted networks.
+- A malformed preview link now says it isn't valid (not "expired").
+
 ## v3.7.0
 
 Hibernation, and a clear lifecycle for cloud workspaces.

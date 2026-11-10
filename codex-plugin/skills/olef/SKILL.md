@@ -58,7 +58,8 @@ and Espresso fail while connected: wrap them in `olef test -- <command>`,
 or `disconnect` first. `doctor --json` diagnoses the host-device pipe.
 `config init --project` and `config validate --json` manage project config.
 No Android SDK or adb? Ask whether to set up locally or use Olef
-Cloud; `--guide cloud` covers sign-in, linking, usage and `cloud_*` errors.
+Cloud; `--guide cloud` covers sign-in, linking, usage, SSH, browser previews
+(`cloud preview open <port>`), general/web workspaces and `cloud_*` errors.
 
 ## Output contract
 
