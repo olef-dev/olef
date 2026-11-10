@@ -4,6 +4,29 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.4.0
+
+The first part of Olef 3.4: cloud workspaces that aren't Android.
+
+- **Workspace templates:** `olef cloud link --template general` or
+  `--template web` links any project folder (not only a Gradle project) to a
+  workspace without Android. General workspaces have Node 22 with pnpm,
+  Python 3.12 with uv, git and build tools; web workspaces add a Vite
+  starter. They start faster and cost about half as much as Android ones.
+  `--template android` (the default) keeps the SDK and emulator.
+  `olef cloud project workspace --template` does the same for project
+  workspaces.
+- **Clear answers without an emulator:** on a general or web workspace,
+  device commands answer `capability_missing` with a hint; plain commands
+  (`olef cloud run -- python3 report.py`) run as usual.
+- **Corporate proxies:** the cloud connection now goes through an HTTP
+  proxy set in `HTTPS_PROXY` (with `user:password@` if it needs one), and
+  honors `NO_PROXY`. Only port 443 is needed.
+- **Idle stop** now defaults to 30 minutes (it was 15). Workspace settings
+  can still set 5–60 minutes.
+- **One connection host:** the cloud connection uses `connect.olef.dev`
+  only; `connect.shadowdroid.dev` is gone.
+
 ## v3.3.2
 
 A cleanup release.
