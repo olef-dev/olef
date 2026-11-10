@@ -4,6 +4,31 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.6.0
+
+Previews: a web app running in a cloud workspace, in your browser.
+
+- **`olef cloud preview open 5173`:** opens the workspace's port 5173 in
+  the browser at the preview's own private address on olef.site. It
+  creates the preview when it's new and starts the workspace when it isn't
+  running; the page waits until it's ready. Hot reload works.
+- **Private by default:** each link opens once, within five minutes, and
+  the browser trades it for a short cookie, so the address alone shows
+  nothing. Only the workspace's owner and its collaborators can open a
+  preview. Every preview has its own origin, away from olef.dev, so an app
+  never sees Olef's cookies or another preview's.
+- **`olef cloud preview ls` and `preview rm <port>`:** list and remove
+  previews. Removing one cuts open pages and their sockets off within a
+  minute. A preview lasts 12 hours; after the workspace restarts, open it
+  again.
+- **`--no-browser`** prints the single-use link instead, and **`--workspace
+  <name|id>`** previews a workspace that isn't linked here, such as one
+  shared with you.
+- **The hosted MCP** has `open_preview {port}`, which gives Claude a link
+  to hand you.
+- Page loads and form posts count as use of the workspace. A page polling
+  in the background or an open hot-reload socket doesn't keep it running.
+
 ## v3.5.0
 
 SSH and port forwarding for cloud workspaces.
