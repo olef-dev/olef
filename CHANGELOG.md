@@ -4,6 +4,32 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.5.0
+
+SSH and port forwarding for cloud workspaces.
+
+- **`olef cloud ssh`:** a shell in the workspace with your system's
+  OpenSSH, landing in the project's folder. It starts the session when
+  needed. `olef cloud ssh -- npm test` runs one command; ssh options such as
+  `-L 9229:localhost:9229` go before it. Olef makes a key under
+  `~/.olef/ssh/` on first use and gets an hour-long certificate for each
+  connection, so there are no passwords or host-key prompts.
+- **`olef cloud ssh-config`:** a `Host olef-<name>` entry per workspace, so
+  `ssh`, `scp`, `rsync` and IDE Remote-SSH reach workspaces too. It offers
+  to add one `Include` line to `~/.ssh/config`.
+- **`olef cloud forward 5173`:** a workspace port on `127.0.0.1` here.
+  `forward 8080:18080` picks the local port; `--background` keeps it
+  running in a linked project, and `forward ls` and `forward stop` manage
+  those.
+- **`olef cloud ssh-key ls|add|rm`:** the keys that can get certificates.
+  Removing a key cuts its connections within a minute.
+- **Shared workspaces:** `--workspace <name|id>` reaches a workspace that
+  isn't linked on this machine. Collaborators may SSH and forward, also
+  into a linked workspace.
+- Everything goes through the existing cloud connection on port 443;
+  nothing listens except on 127.0.0.1. Open SSH connections, keepalives and
+  idle forwards don't keep a session running; typing and traffic do.
+
 ## v3.4.0
 
 The first part of Olef 3.4: cloud workspaces that aren't Android.
