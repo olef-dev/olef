@@ -4,6 +4,30 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.7.0
+
+Hibernation, and a clear lifecycle for cloud workspaces.
+
+- **Idle workspaces hibernate instead of stopping.** General and web
+  workspaces suspend their VM after 30 minutes idle, with memory and
+  processes kept: dev servers, shells and caches are still there. The next
+  command, SSH connection or preview resumes it in seconds, and you aren't
+  billed for session hours while it's hibernated. Android workspaces
+  hibernate only when their settings say `"hibernate": true`.
+- **`olef cloud hibernate`** does it now (`--workspace <name|id>` for
+  another workspace).
+- **`olef cloud status`** shows the workspace's `lifecycle`: running,
+  hibernated, stopped or data deleted, what's kept, and the deadlines.
+- **Only real use keeps a workspace up:** typing, transfers, page loads,
+  commands. Keepalives, polling and open sockets don't.
+- **Lifecycle:** hibernated for 3 days, a workspace stops (files kept). A
+  stopped workspace's files are deleted 90 days after its last use, with
+  emailed notices 7 days and 1 day before; starting it once keeps it.
+- **Org policy:** owners and admins can turn hibernation off, opt Android
+  in, and shorten or lengthen these within limits (`workspace_lifecycle`).
+- After a resume, connections from before are refused and the CLI fetches
+  new ones on its own.
+
 ## v3.6.0
 
 Previews: a web app running in a cloud workspace, in your browser.
