@@ -1,0 +1,56 @@
+/* Olef brand tokens. Dark is the brand's own look (the waitlist page's
+   palette, 2026-10-29); light is derived from it for surfaces that follow the
+   viewer's theme. Copy these into each surface rather than importing. */
+
+:root {
+  /* The bird: navy body on light, ice body on dark, amber beak in both. Use them only in the logo. */
+  --olef-navy: #074496;
+  --olef-ice: #e8f1ff;
+  --olef-amber: #ffbf00;
+
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --radius: 14px;
+}
+
+/* Dark: deep navy. */
+:root,
+[data-theme="dark"] {
+  --bg: #08121f;
+  --surface: #0f1c31;
+  --tint: #12223b;
+  --text: #e6edfa;
+  --muted: #9eacc8;
+  --label: #8593b2;
+  --line: #1f3050;
+  --field: #2b3e60;
+  --accent: #3d9bff;
+  --accent-ink: #6db3ff;
+  --primary-top: #1a8cff;
+  --primary-bottom: #0070f3;
+  --primary-border: #0063db;
+  --on-primary: #ffffff;
+  --success: #34c46a;
+  --danger: #ff7a66;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 18px 40px -18px rgba(0, 0, 0, .7);
+}
+
+/* Light: navy ink on white. */
+[data-theme="light"] {
+  --bg: #f6f8fc;
+  --surface: #ffffff;
+  --tint: #eef3fb;
+  --text: #0b1f3b;
+  --muted: #4a5a78;
+  --label: #5f6c87;
+  --line: #dbe3f0;
+  --field: #c5d1e5;
+  --accent: #0070f3;
+  --accent-ink: #0063db;
+  --primary-top: #1a8cff;
+  --primary-bottom: #0070f3;
+  --primary-border: #0063db;
+  --on-primary: #ffffff;
+  --success: #1f9d55;
+  --danger: #d93a26;
+  --shadow: 0 1px 2px rgba(10, 30, 70, .08), 0 12px 30px -16px rgba(10, 40, 100, .25);
+}

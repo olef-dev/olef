@@ -37,7 +37,7 @@
       "Why did the app just crash? Check the device",
       "Build me a notes app and show it running"
     ],
-    "brandColor": "#3DDC84",
+    "brandColor": "#074496",
     "logo": "./assets/icon.png",
     "composerIcon": "./assets/icon.png"
   }
