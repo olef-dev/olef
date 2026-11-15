@@ -92,7 +92,8 @@ recovery), `--guide net` (proxy, rules, intercept), `--guide debugger`
 (debugger, layout, runtime), `--guide state` (app/device/permission/files
 state), `--guide evidence` (checkpoints, video), `--guide faults` (failure
 injection), `--guide verification` (coding-task checks, concurrent agents),
-`--guide test` (test scripts, session settings, `test run`), `--guide feedback`
+`--guide test` (test scripts, session settings, `test run`), `--guide review`
+(cloud reviews), `--guide events`, `--guide feedback`
 (report an Olef bug: errors with `fault: "olef"`).
 
 Prefer typed verbs (`app install --grant-all`, `perm grant`, `appops set`,
@@ -125,5 +126,5 @@ Core groups below. For an unfamiliar command run `olef <group> <sub> --help`; `c
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, lab, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, secret, file, events, lab, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 
