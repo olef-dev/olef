@@ -58,7 +58,7 @@ and Espresso fail while connected: wrap them in `olef test -- <command>`,
 or `disconnect` first. `doctor --json` diagnoses the host-device pipe.
 `config init --project` and `config validate --json` manage project config.
 No Android SDK or adb? Ask whether to set up locally or use Olef
-Cloud; `--guide cloud` covers sign-in, linking, usage, SSH, browser previews
+Cloud; `--guide cloud` covers sign-in, linking, usage, SSH, previews
 (`cloud preview open <port>`), general/web workspaces and `cloud_*` errors.
 
 ## Output contract
@@ -126,5 +126,5 @@ Core groups below. For an unfamiliar command run `olef <group> <sub> --help`; `c
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, secret, file, events, lab, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, secret, file, events, builds, testers, lab, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 

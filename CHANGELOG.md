@@ -4,6 +4,19 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.10.0
+
+Share your app with testers: they install it, and get new versions, from
+the Olef Android app.
+
+- `olef builds push` builds your app (or takes the APK you name) and stores
+  it in your Olef Cloud project; `--share Testers` sends it to testers.
+- `olef testers add EMAIL…` invites people by email, including people
+  outside your org.
+- `olef builds list` and `olef builds share` show and share stored builds.
+- The project's module and variant can be set in `.olef/config.json`
+  (`"distribution"`) or on the project page.
+
 ## v3.9.2
 
 - `ui text --value-env NAME` on a cloud device types the workspace's stored
