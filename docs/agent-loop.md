@@ -222,12 +222,13 @@ anything is typed.
 
 With Olef Cloud the variable is read on the machine that ran `olef` and sent
 to the worker as a secret for that one command: it is in the command's
-environment there and in no log, and a variable that isn't set fails on this
-machine. `test run` does the same for the variables its scripts name with
+environment there and in no log. When it isn't set on this machine, the
+workspace's stored secret of that name (`olef secret set NAME`) is typed
+instead, and the result says `value_source: "workspace_secret"`; with neither,
+it fails with `value_env_missing`. A value set here wins over a stored one.
+`test run` does the same for the variables its scripts name with
 `--value-env`. A plain `ui text <value>` is sent as it is, and the worker
-leaves the value out of its logs. To type a secret stored in Olef Cloud
-(`olef secret set NAME`) instead, run the command there:
-`olef cloud run -- olef ui text --value-env NAME`.
+leaves the value out of its logs.
 
 `perm dialog allow-foreground|allow-once|deny` answers the runtime-permission
 dialog on screen by meaning, whatever its button ids on this Android version:

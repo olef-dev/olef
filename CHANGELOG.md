@@ -4,6 +4,13 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.9.2
+
+- `ui text --value-env NAME` on a cloud device types the workspace's stored
+  secret (`olef secret set NAME`) when NAME isn't set on your machine, and
+  says so with `value_source: "workspace_secret"`. A value set on your
+  machine still wins.
+
 ## v3.9.1
 
 Fixes for cloud workspaces and agents, and a cloud emulator you can use as a
