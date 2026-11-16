@@ -32,12 +32,17 @@ For Cloud, with the user's yes for each step:
    apply`, `ui …`, screenshots, the viewer. Don't boot an emulator. The first
    command starts the session (up to about 2 minutes; on
    `cloud_session_starting`, wait and run it again), and after 15 idle minutes
-   it stops until the next command.
+   it stops until the next command. On `cloud_session_stopped` someone stopped
+   it on purpose: say who, and run `olef cloud start` only if the user wants
+   it back.
 4. `olef cloud usage` shows hours and limits, and `olef cloud
    stop` ends the session when the user is done. On `cloud_quota_exceeded`,
    tell the user which limit and when it resets, and don't retry.
    `olef commands --guide cloud` has every `cloud_*` error and Gradle
    tasks without a local JDK (`cloud run`).
+5. When the user wants their own adb, Android Studio or scrcpy on the cloud
+   emulator, `olef cloud attach` makes it a local adb device
+   (`127.0.0.1:<port>`), and `olef cloud detach` removes it.
 
 With no `olef` CLI but the Olef Cloud MCP tools
 (`create_workspace`, `write_files`, `build_and_run`, `screenshot`,

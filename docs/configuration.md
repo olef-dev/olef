@@ -18,7 +18,7 @@ olef config schema --json
 olef config init --project --app Livd --package com.livd --app-target mobile \
   --default-target mobile --target-name mobile --target-avd Livd_Pixel_9_API_36 \
   --target-start if-needed --target-form-factor mobile \
-  --project-path /Users/you/Work/Livd --json
+  --project-path . --module mobile --variant freeDebug --json
 olef config validate --json
 ```
 
@@ -26,7 +26,9 @@ olef config validate --json
 {
   "default_target": "mobile",
   "app": "Livd",
-  "project": "/Users/you/Work/Livd",
+  "project": ".",
+  "module": "mobile",
+  "variant": "freeDebug",
   "redaction": {
     "enabled": true,
     "json_keys": ["customerId"],
@@ -58,6 +60,17 @@ olef config validate --json
   }
 }
 ```
+
+`project` in a project config is relative to the folder that holds `.olef/`
+(`.` is that folder), so the same file works in every checkout and in an Olef
+Cloud workspace; `config init --project-path` stores a path inside the project
+this way. An absolute path is still read. One that doesn't exist on this
+machine (written on another one) means the folder the config is in. `module`
+and `variant` are what `app apply` builds when not told. Its result has
+`build`: the `project`, and for `module` and `variant` the `value` and where it
+came from (`from`: `flag`, `config` with the `config` file, or `fallback` for
+the defaults `app` and `debug`). A module that isn't in the project fails with
+`apply_module_not_found`, which lists the project's modules.
 
 ## Named targets
 

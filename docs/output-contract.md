@@ -148,6 +148,12 @@ defines these values and classifies each `OLEF_*` variable as
 `forward`, `translate` (a host path, rewritten like an `in` argument) or
 `drop`.
 
+An argument can also have `private`: `env_name` (it names an environment
+variable on this host, as `ui text --value-env` does: the client reads the
+value here and sends it to the worker as a secret variable for that one
+command) or `value` (it may hold a secret, as `ui text <value>` does: the
+worker leaves it out of its logs).
+
 `devices` is `both`: in a linked project it lists this host's devices as usual
 and adds `cloud` (`workspace`, `workspace_id`, `state`, `count`, `devices[]`)
 with the worker's devices while the session is running. It never starts a

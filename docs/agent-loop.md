@@ -220,6 +220,15 @@ and every JSON string the command prints has the value replaced by
 `[secret:NAME]`. A missing variable fails with `value_env_missing` before
 anything is typed.
 
+With Olef Cloud the variable is read on the machine that ran `olef` and sent
+to the worker as a secret for that one command: it is in the command's
+environment there and in no log, and a variable that isn't set fails on this
+machine. `test run` does the same for the variables its scripts name with
+`--value-env`. A plain `ui text <value>` is sent as it is, and the worker
+leaves the value out of its logs. To type a secret stored in Olef Cloud
+(`olef secret set NAME`) instead, run the command there:
+`olef cloud run -- olef ui text --value-env NAME`.
+
 `perm dialog allow-foreground|allow-once|deny` answers the runtime-permission
 dialog on screen by meaning, whatever its button ids on this Android version:
 it waits for the dialog (`--wait-ms`, default 5000), taps the answer, and waits

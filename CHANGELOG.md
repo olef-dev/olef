@@ -4,6 +4,27 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.9.1
+
+Fixes for cloud workspaces and agents, and a cloud emulator you can use as a
+local adb device.
+
+- `olef cloud attach` makes the cloud emulator a local adb device for Android
+  Studio, scrcpy and your own scripts; `olef cloud detach` removes it.
+- `ui text --value-env` and the new `olef cloud run --env NAME` send values
+  from this machine as secrets that never show up in logs.
+- Cloud sync skips files over 16 MiB and lists them all, with lines to add
+  to `.olefignore`.
+- Fewer false alarms from the secret guard on `gradle.properties` and debug
+  keystores; a failed build names the files it held back.
+- `app apply` in the cloud uses the module and variant from
+  `.olef/config.json`, and says where they came from.
+- A session someone stopped stays stopped, and commands say so clearly; an
+  outdated CLI is told to update.
+- Agents: a follow-up no longer loses its work when the branch moved; at the
+  agent-slot limit a request fails right away and says how to free a slot;
+  queued requests can be cancelled.
+
 ## v3.9.0
 
 Cloud agents that review pull requests, and a Linux desktop in every

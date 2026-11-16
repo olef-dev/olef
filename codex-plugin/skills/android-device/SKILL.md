@@ -51,7 +51,9 @@ the device is the cloud session's emulator: `control` `attach` and the viewer
 work the same, forwarded to this machine, and `boot` isn't needed. Setting
 Cloud up, when there is no Android SDK and the user chooses it over a local
 install, is in `olef commands --guide cloud`; ask before signing in or
-uploading anything. With no `olef` CLI but the Olef Cloud MCP
+uploading anything. When the user wants their own adb, Android Studio or
+scrcpy on the cloud emulator, `olef cloud attach` makes it a local adb
+device (`127.0.0.1:<port>`), and `olef cloud detach` removes it. With no `olef` CLI but the Olef Cloud MCP
 tools, `open_viewer` returns a live viewer link to open
 in the in-app browser.
 
