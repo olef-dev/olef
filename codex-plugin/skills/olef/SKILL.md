@@ -126,5 +126,5 @@ Core groups below. For an unfamiliar command run `olef <group> <sub> --help`; `c
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, secret, file, events, builds, testers, lab, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, secret, file, events, builds, testers, host, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 

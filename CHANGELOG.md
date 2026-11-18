@@ -4,6 +4,20 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.11.0
+
+Run Olef Cloud workspaces on your own Mac or Linux machine.
+
+- `olef lab` is now `olef host`. A machine you register with
+  `olef host register` can lease its devices, run workspaces, or both.
+- `olef host set runtime native` lets the machine run workspaces; sessions
+  use its own Android SDK and emulator, and the viewer, sync and SSH work as
+  they do in the cloud.
+- `olef cloud link --on host:<name>` puts a new workspace on one of your
+  org's hosts; the web app's New workspace page has the same choice.
+- Workspaces on your own hosts don't count against your plan's workspace
+  and session limits.
+
 ## v3.10.0
 
 Share your app with testers: they install it, and get new versions, from

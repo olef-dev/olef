@@ -113,25 +113,25 @@ olef devices release ddp:tokay-36             # or it is released when idle
 `net` capture works through a relay in the Olef server. DDP is a
 Google Cloud Preview service; see [configuration](docs/configuration.md).
 
-## Your own device lab (preview)
+## Your own devices (preview)
 
 Lease devices on your own machine (a phone, a Fire TV stick, any adb device)
 from anywhere through Olef Cloud, for Cloud accounts with remote
 devices enabled:
 
 ```bash
-olef lab register --name desk --reset lease_only   # this machine becomes a lab
-olef lab add 192.168.1.20:5555 --name firetv       # the device asks once to trust the lab's key
-olef lab service install                           # keep the lab agent running (prints one sudo command)
+olef host register --name desk --reset lease_only  # this machine becomes a host
+olef host add 192.168.1.20:5555 --name firetv      # the device asks once to trust the host's key
+olef host service install                          # keep the host agent running (prints one sudo command)
 
 # from any machine signed in to the same account:
 olef devices reserve lab:desk/firetv               # attached as 127.0.0.1:<port>
 olef -d lab:desk/firetv app apply
 olef devices view lab:desk/firetv                  # a view.shadowdroid.dev link
-olef devices release lab:desk/firetv               # the lab resets the device
+olef devices release lab:desk/firetv               # the host resets the device
 ```
 
-The lab uses its own adb server and key and offers only the devices you
+The host uses its own adb server and key and offers only the devices you
 enrol. After each lease it undoes what the lease did and checks the device;
 `--reset lease_only` is for devices you also use yourself.
 
