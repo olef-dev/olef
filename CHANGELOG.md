@@ -4,6 +4,12 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.11.2
+
+Workspaces on your own Mac or Linux host now get their emulator when the host runs as a service.
+
+- A host installed with `olef host service install` finds the machine's Android SDK, so its workspaces boot an emulator. Run `olef host service install` again after upgrading, then restart the service.
+
 ## v3.11.1
 
 Steadier device resets on your own hosts, and host pools for workspaces and agents.
