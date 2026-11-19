@@ -4,6 +4,21 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.11.1
+
+Steadier device resets on your own hosts, and host pools for workspaces and agents.
+
+- Device resets no longer quarantine a Fire TV or a Galaxy phone because of
+  changes the system makes on its own, such as caches, HDMI modes and
+  settings logs.
+- A phone on wireless debugging is no longer rebooted by a reset, so it
+  stays connected.
+- `olef host unquarantine <device>` offers a quarantined device again.
+- `olef host pools` and `olef host grant` choose who may use your hosts;
+  `olef cloud agent ... --pool` runs an agent's work on them.
+- `olef host set runtime vm` now runs workspaces in VMs on a Linux host.
+- Fixes agent runs on your own hosts.
+
 ## v3.11.0
 
 Run Olef Cloud workspaces on your own Mac or Linux machine.
