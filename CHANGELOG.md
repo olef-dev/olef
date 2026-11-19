@@ -4,6 +4,15 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.12.0
+
+Agents can now run on your own Mac or Linux host.
+
+- Agent runs on a native host run as a dedicated account, never as you. `olef host service install` creates it, lets the service act as it, and keeps it away from your own adb and emulators.
+- They use the same Claude Code and Codex versions as Olef Cloud, which the host downloads for them.
+- Each agent run gets its own emulator on the host.
+- Workspaces on a host get the SDK's `adb` and `emulator` on their commands' path.
+
 ## v3.11.2
 
 Workspaces on your own Mac or Linux host now get their emulator when the host runs as a service.
