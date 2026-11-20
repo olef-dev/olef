@@ -4,6 +4,13 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.14.1
+
+Faster skill setup, and a fix for Codex setup on a slow plugin cache.
+
+- `olef init` no longer reports Codex as "too old for plugins" when Codex's plugin list is slow to load: refreshing a cold plugin cache can take about a minute, and Olef now waits for it.
+- `olef skill` and `olef init` write the agent skills faster: building the skill's command reference no longer walks the whole command catalog.
+
 ## v3.14.0
 
 Cloud sessions and cloud emulators work better for agents.
