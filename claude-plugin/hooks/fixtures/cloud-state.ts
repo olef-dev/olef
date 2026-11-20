@@ -1,6 +1,7 @@
 export default [
   {
     "build": "fixture",
+    "busy": 0,
     "error": null,
     "expires_at": null,
     "generation": 0,
@@ -16,6 +17,7 @@ export default [
   },
   {
     "build": "fixture",
+    "busy": 0,
     "error": null,
     "expires_at": null,
     "generation": 0,
@@ -31,6 +33,7 @@ export default [
   },
   {
     "build": "fixture",
+    "busy": 0,
     "error": null,
     "expires_at": null,
     "generation": 0,
@@ -46,6 +49,7 @@ export default [
   },
   {
     "build": "fixture",
+    "busy": 0,
     "error": null,
     "expires_at": null,
     "generation": 0,
@@ -61,6 +65,7 @@ export default [
   },
   {
     "build": "fixture",
+    "busy": 0,
     "error": null,
     "expires_at": null,
     "generation": 0,
@@ -76,6 +81,7 @@ export default [
   },
   {
     "build": "fixture",
+    "busy": 0,
     "error": {
       "code": "cloud_quota_exceeded",
       "hint": null,

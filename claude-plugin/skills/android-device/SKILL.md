@@ -30,8 +30,9 @@ For Cloud, with the user's yes for each step:
    the terminal or on the page it links.
 3. Everything below then works unchanged against the cloud emulator: `app
    apply`, `ui …`, screenshots, the viewer. Don't boot an emulator. The first
-   command starts the session (up to about 2 minutes; on
-   `cloud_session_starting`, wait and run it again), and after 15 idle minutes
+   command starts the session (a minute or two warm, up to about 30
+   minutes cold; on `cloud_session_starting`, don't stop it: wait once with
+   `olef cloud start`, then run it again), and after 15 idle minutes
    it stops until the next command. On `cloud_session_stopped` someone stopped
    it on purpose: say who, and run `olef cloud start` only if the user wants
    it back.
@@ -43,6 +44,12 @@ For Cloud, with the user's yes for each step:
 5. When the user wants their own adb, Android Studio or scrcpy on the cloud
    emulator, `olef cloud attach` makes it a local adb device
    (`127.0.0.1:<port>`), and `olef cloud detach` removes it.
+6. A named cloud emulator (`cloud:<name>`, apart from the workspace's)
+   needs no link: `olef emulator boot cloud:<name> --attach` gives a
+   `127.0.0.1:156xx` serial for `-d`. Ask before `emulator create` (billed)
+   or `delete`/`reset`. For Olef's hosted viewer instead of this one,
+   `olef emulator viewer cloud:<name>` returns a one-use url to open for
+   the user. Never read Olef's credentials to call its API yourself.
 
 With no `olef` CLI but the Olef Cloud MCP tools
 (`create_workspace`, `write_files`, `build_and_run`, `screenshot`,

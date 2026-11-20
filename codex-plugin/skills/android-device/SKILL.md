@@ -55,7 +55,14 @@ uploading anything. When the user wants their own adb, Android Studio or
 scrcpy on the cloud emulator, `olef cloud attach` makes it a local adb
 device (`127.0.0.1:<port>`), and `olef cloud detach` removes it. With no `olef` CLI but the Olef Cloud MCP
 tools, `open_viewer` returns a live viewer link to open
-in the in-app browser.
+in the in-app browser. A named cloud emulator (`cloud:<name>`,
+apart from the workspace's) needs no link: `olef emulator boot
+cloud:<name> --attach` gives a `127.0.0.1:156xx` serial, and `control`
+`attach` with it serves the viewer. Ask before `emulator create` (billed)
+or `delete`/`reset`. When the user asks for Olef's hosted (cloud) viewer
+instead, `olef emulator viewer cloud:<name>` returns a one-use url to open
+in the in-app browser. Never read Olef's credentials to call its API
+yourself.
 
 ## Viewer or emulator window
 

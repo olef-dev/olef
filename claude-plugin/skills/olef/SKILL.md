@@ -57,9 +57,9 @@ Android's single `UiAutomation` slot, so `uiautomator dump`, `android layout`
 and Espresso fail while connected: wrap them in `olef test -- <command>`,
 or `disconnect` first. `doctor --json` diagnoses the host-device pipe.
 `config init --project` and `config validate --json` manage project config.
-No Android SDK or adb? Ask whether to set up locally or use Olef
-Cloud; `--guide cloud` covers sign-in, linking, usage, SSH, previews
-(`cloud preview open <port>`), general/web workspaces and `cloud_*` errors.
+No Android SDK or adb? Ask: a local setup, or Olef Cloud (`--guide cloud`:
+sign-in, linking, SSH, previews, `cloud:<name>` emulators, `cloud_*`
+errors). A contract with `confirm_with_person`: ask first.
 
 ## Output contract
 

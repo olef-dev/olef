@@ -4,6 +4,21 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.14.0
+
+Cloud sessions and cloud emulators work better for agents.
+
+- `olef emulator viewer cloud:<name>` gives a link to a cloud emulator's live viewer, hosted by Olef, to open in any browser (`--view` to watch only). `olef devices view cloud:<name>` does the same.
+- A cold cloud session start is waited for up to 30 minutes: `cloud ssh`, `cloud start` and `cloud attach` no longer give up after 10. `cloud ssh` takes `--wait-ms`.
+- `cloud status` shows a starting session's stage and when it started, and `cloud doctor` reports it as on its way rather than failing. A session that is still starting says to wait for it, not to stop it.
+- Two olef versions on one machine no longer cut off each other's cloud commands: a busy cloud daemon is left alone, and a command whose daemon was replaced says it can simply be run again.
+- Commands that delete cloud data or create billed resources (`emulator create`, `emulator delete`, `emulator reset`, `cloud unlink --delete-workspace`, `devices reserve`) are marked in the command contract so agents ask before running them.
+- An unknown command or flag says when a newer olef is available, and so does `cloud doctor`.
+- `ui tap --expect-…` says when the expected screen did appear but hadn't settled yet, with the `ui wait` that confirms it.
+- On macOS, cloud credentials move from the Keychain to an owner-only file, so olef stops asking for your login password. Sign in again if asked.
+- New workspaces without an emulator of their own start faster.
+- The cloud guide and agent skills cover cloud emulators.
+
 ## v3.13.0
 
 Cloud emulators: Android emulators of your own in Olef Cloud, used just like local ones.
