@@ -4,6 +4,16 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.13.0
+
+Cloud emulators: Android emulators of your own in Olef Cloud, used just like local ones.
+
+- `olef emulator create <name> --cloud` makes a named emulator that keeps its apps and state while stopped; `olef emulator boot cloud:<name> --attach` puts it in your `adb devices`.
+- `-d cloud:phone-36` takes a disposable emulator for a command or a session, deleted once released.
+- Cloud emulators appear in the device picker and the `devices` tool, priced per minute, and open in the browser viewer.
+- New Android workspaces start without an emulator of their own and take a cloud phone when a command needs one. `olef cloud device` (or the workspace's settings page) picks another: one of your cloud emulators, or the workspace's own emulator.
+- Builds in a workspace can install SDK packages such as the NDK on demand.
+
 ## v3.12.0
 
 Agents can now run on your own Mac or Linux host.
