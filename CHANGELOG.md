@@ -4,6 +4,13 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.15.1
+
+Fixes for using your own computer as a workspace.
+
+- Workspaces on your computer use its own emulator again, never a cloud phone.
+- `olef host setup`'s sudo step no longer fails with "Bootstrap failed: 5" when the service is already installed.
+
 ## v3.15.0
 
 Use your own computer as a workspace, and reach it from your phone.
