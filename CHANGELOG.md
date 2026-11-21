@@ -4,6 +4,11 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.15.3
+
+- Updating with `olef host setup` no longer stops running workspaces: the service restarts once they stop.
+- Wi-Fi devices on a workspace host reconnect on their own when macOS blocks the host's adb server from the network.
+
 ## v3.15.2
 
 - Workspaces on your computer build and run on their own emulator when other emulators run on the same computer.
