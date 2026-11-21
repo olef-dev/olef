@@ -4,6 +4,10 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.15.5
+
+- When macOS blocks Olef from your local network (it asks again after each update), your computer's status says so, including in the Android app and ChatGPT: click Allow on that computer.
+
 ## v3.15.4
 
 - On your computer, a build or screenshot right after a workspace starts waits for its emulator instead of failing.
