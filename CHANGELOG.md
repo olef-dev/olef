@@ -4,6 +4,15 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.15.0
+
+Use your own computer as a workspace, and reach it from your phone.
+
+- `olef host setup` makes this computer a workspace host in your personal org in one step, and keeps it awake while it's plugged in. `olef host unregister` stops it being one.
+- `olef host status` warns about what could make it unreachable while you're away: battery, sleep, FileVault after a restart, a closed lid.
+- In ChatGPT and Claude, the Olef app can list your computers and create workspaces on them.
+- `olef host service install --agents` sets up the account agent runs use; it's no longer created by default.
+
 ## v3.14.1
 
 Faster skill setup, and a fix for Codex setup on a slow plugin cache.
