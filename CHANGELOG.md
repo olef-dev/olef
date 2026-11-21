@@ -4,6 +4,10 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.15.4
+
+- On your computer, a build or screenshot right after a workspace starts waits for its emulator instead of failing.
+
 ## v3.15.3
 
 - Updating with `olef host setup` no longer stops running workspaces: the service restarts once they stop.
