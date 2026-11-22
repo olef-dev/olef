@@ -4,6 +4,17 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.16.0
+
+An agent is now one Claude Code or Codex installation in its own workspace, and it keeps its setup.
+
+- An agent's home (conversations, memory, skills, plugins and settings) and its files stay from run to run and across threads.
+- `olef cloud agent create` gives the agent its workspace: `--repo owner/name` for a new one, or `--workspace` to live in one you own. `me/name` makes your own agent.
+- `olef cloud agent set`, `on`, `off` and `delete` manage it. They replace `update`; `work` and `slots` are gone.
+- On your own computer, a Claude Code agent's threads run at the same time, each in its own folder.
+- An agent's cloud machine stays up for ten minutes after a run, so follow-ups start in seconds.
+- For now, agents don't take pull requests from forks.
+
 ## v3.15.5
 
 - When macOS blocks Olef from your local network (it asks again after each update), your computer's status says so, including in the Android app and ChatGPT: click Allow on that computer.
