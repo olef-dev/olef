@@ -4,6 +4,10 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.16.5
+
+- Ask Claude Code or Codex to make or change an Olef agent and it opens a panel beside the chat, filled in from your request. Nothing happens until you press Create or Save, and the chat is told what you did.
+
 ## v3.16.4
 
 - `olef cloud agent import` copies your Claude Code or Codex setup from this computer (instructions, settings, skills, subagents, commands) into an agent.

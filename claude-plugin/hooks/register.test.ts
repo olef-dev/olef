@@ -1,5 +1,5 @@
 import { expect, mock, test } from 'claude-code/testing'
-import { cloudLine, inProject, notesContext, runsApply, runsOlef, safeName, stepsPrompt } from './register.ts'
+import { cloudLine, inProject, notesContext, panelHub, runsApply, runsOlef, safeName, stepsPrompt } from './register.ts'
 import stateSnapshots from './fixtures/cloud-state.ts'
 
 const CONTROL = 'mcp__plugin_olef_olef__control'
@@ -179,6 +179,30 @@ test('idle Send polling only peeks; compiling steps waits for a send request', a
   expect(operations.filter(op => op === 'list').length).toBe(1)
   expect(prompts.length).toBe(1)
   expect(prompts[0]).toContain('tap "Open"')
+})
+
+test('the agent panel link names its hub', () => {
+  expect(panelHub('http://127.0.0.1:4321/agent#t=abc123&d=d1')).toEqual({ base: 'http://127.0.0.1:4321', token: 'abc123' })
+  expect(panelHub('http://127.0.0.1:4321/#t=abc123')).toBe(undefined)
+  expect(panelHub(undefined)).toBe(undefined)
+})
+
+test('what the person did in the agent panel comes back as their message', async ($, on) => {
+  const clock = mock.clock(on, { now: NOW })
+  const prompts: string[] = []
+  let queued = ['I created the Olef agent me/dev in the agent panel.']
+  on('tool.call', async () => ({ result: {}, text: JSON.stringify({ panel_url: 'http://127.0.0.1:4321/agent#t=abc123&d=d1' }) }))
+  on('http.fetch', async ($, e) => {
+    expect(e.url).toBe('http://127.0.0.1:4321/api/panel/results')
+    expect(e.init?.headers?.['x-pane-token']).toBe('abc123')
+    const results = queued.map(prompt => ({ prompt }))
+    queued = []
+    return { value: { status: 200, ok: true, headers: {}, text: JSON.stringify({ ok: true, results }) } }
+  })
+  on('prompt.submit', async ($, e) => { prompts.push(e.text); return { text: e.text, context: e.context } })
+  await $.tool.call({ tool: 'mcp__plugin_olef_olef__agent_panel' })
+  await clock.advance(3000)
+  expect(prompts).toEqual(['I created the Olef agent me/dev in the agent panel.'])
 })
 
 test('other tools pass through untouched', async ($, on) => {

@@ -17,6 +17,9 @@ type Session = {
   cloudPoll?: Timer
   /** The toasts already raised (`toastOnce`). */
   toasted?: Set<string>
+  /** The agent panel's hub, from the `agent_panel` tool's `panel_url`. */
+  panel?: { base: string; token: string }
+  panelPoll?: Timer
 }
 type Json = Record<string, unknown>
 
@@ -419,6 +422,28 @@ function viewer(device: Device | undefined): { base: string; token: string } | u
   return token ? { base: base.replace(/\/$/, ''), token } : undefined
 }
 
+/** The hub's base URL and token from an agent panel link (`…/agent#t=TOKEN&d=DRAFT`). */
+export function panelHub(url: unknown): { base: string; token: string } | undefined {
+  if (typeof url !== 'string') return undefined
+  const [path, hash] = url.split('#')
+  const token = /(?:^|&)t=([0-9a-f]+)/.exec(hash ?? '')?.[1]
+  const base = path.replace(/\/agent\/?$/, '')
+  return token && base !== path ? { base, token } : undefined
+}
+
+/** What the person did in the agent panel, taken from the hub (each a prompt for the chat). */
+// biome-ignore lint: `$` is the engine's
+async function takePanelResults($: any, hub: { base: string; token: string }): Promise<string[]> {
+  const res = await $.http.fetch(`${hub.base}/api/panel/results`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-pane-token': hub.token },
+    body: JSON.stringify({ op: 'take' }),
+  })
+  if (!res.ok) return []
+  const results = (parse(res.text)?.results as Json[] | undefined) ?? []
+  return results.map(r => r.prompt).filter((p): p is string => typeof p === 'string' && p.length > 0)
+}
+
 /** One call to the viewer's local server (`/api/annotations`, `/api/steps`). */
 // biome-ignore lint: `$` is the engine's
 async function viewerCall($: any, device: Device, path: string, op: string): Promise<Json | undefined> {
@@ -605,6 +630,30 @@ export const register: Register = on => {
     const action = typeof args.action === 'string' ? args.action : undefined
     if (tool === 'build') setStatus($, session, `${label(session.device)} · building…`)
     const ran = await next(e)
+    // The agent panel: what the person creates or saves there comes back
+    // as their message (the hub queues it only for a click in the panel).
+    if (tool === 'agent_panel') {
+      try {
+        const hub = panelHub(parse(typeof ran?.text === 'string' ? ran.text : undefined)?.panel_url)
+        if (hub) {
+          session.panel = hub
+          if (!session.panelPoll) {
+            session.panelPoll = $.clock.every(1500, async () => {
+              const current = session.panel
+              if (!current) return
+              try {
+                for (const prompt of await takePanelResults($, current)) await sendAsUser($, prompt)
+              } catch {
+                // the hub is gone or busy; try again next period
+              }
+            })
+          }
+        }
+      } catch {
+        // no timers here: the panel then shows the message to copy
+      }
+      return ran
+    }
     // Display only: nothing here may change or fail the tool's result.
     try {
       react($, session, tool, action, ran)
