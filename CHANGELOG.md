@@ -4,6 +4,11 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.16.4
+
+- `olef cloud agent import` copies your Claude Code or Codex setup from this computer (instructions, settings, skills, subagents, commands) into an agent.
+- app.olef.dev has an Agents page: each agent's state, machine, threads and spend, with stop, sleep, turn off and delete.
+
 ## v3.16.2
 
 - `olef cloud thread list`, `new`, `send`, `stop` and `close`: open a thread with an agent, continue it, see what every thread is doing, stop or close one.
