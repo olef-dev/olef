@@ -4,6 +4,12 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.16.2
+
+- `olef cloud thread list`, `new`, `send`, `stop` and `close`: open a thread with an agent, continue it, see what every thread is doing, stop or close one.
+- `olef cloud agent sleep` stops an idle agent's machine right away.
+- An agent keeps its checkout between runs, so build output and git history carry over instead of starting from a fresh clone.
+
 ## v3.16.1
 
 - `olef cloud agent show`, `set`, `on`, `off` and `delete` take your own agent's address (`username/name`, or `me/name`) and any agent's inbox address, not only its id.
