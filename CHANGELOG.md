@@ -4,6 +4,11 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.16.1
+
+- `olef cloud agent show`, `set`, `on`, `off` and `delete` take your own agent's address (`username/name`, or `me/name`) and any agent's inbox address, not only its id.
+- A request that names no repository reaches the agent's repository through your own GitHub account too.
+
 ## v3.16.0
 
 An agent is now one Claude Code or Codex installation in its own workspace, and it keeps its setup.
