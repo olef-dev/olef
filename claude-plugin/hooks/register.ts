@@ -61,9 +61,9 @@ export function runsApply(command: unknown): boolean {
   return typeof command === 'string' && /\bolef\b[^|;&\n]*\bapp\s+apply\b/.test(command)
 }
 
-/** A shell command that runs the `olef` CLI at all. */
+/** A shell command that runs the `olef` or `ocloud` CLI. */
 export function runsOlef(command: unknown): boolean {
-  return typeof command === 'string' && /\bolef\b/.test(command)
+  return typeof command === 'string' && /\b(olef|ocloud)\b/.test(command)
 }
 
 // Olef Cloud, from the CLI's files under `~/.olef/cloud/`
@@ -403,7 +403,7 @@ function react($: any, session: Session, tool: string, action: string | undefine
 // biome-ignore lint: `$` is the engine's
 function cloudErrorToast($: any, text: string): boolean {
   if (text.includes('cloud_quota_exceeded')) {
-    $.ui.toast('Olef Cloud: a usage limit was reached; `olef cloud usage` shows your limits and when they reset')
+    $.ui.toast('Olef Cloud: a usage limit was reached; `ocloud plan usage` shows your limits and when they reset')
     return true
   }
   if (text.includes('cloud_invite_required')) {

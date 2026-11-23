@@ -220,15 +220,16 @@ and every JSON string the command prints has the value replaced by
 `[secret:NAME]`. A missing variable fails with `value_env_missing` before
 anything is typed.
 
-With Olef Cloud the variable is read on the machine that ran `olef` and sent
+With Olef Cloud (`ocloud run --env NAME -- olef ui text --value-env NAME ...`)
+the variable is read on the machine that ran `ocloud` and sent
 to the worker as a secret for that one command: it is in the command's
 environment there and in no log. When it isn't set on this machine, the
-workspace's stored secret of that name (`olef secret set NAME`) is typed
+workspace's stored secret of that name (`ocloud secret set NAME`) is typed
 instead, and the result says `value_source: "workspace_secret"`; with neither,
 it fails with `value_env_missing`. A value set here wins over a stored one.
 `test run` does the same for the variables its scripts name with
-`--value-env`. A plain `ui text <value>` is sent as it is, and the worker
-leaves the value out of its logs.
+`--value-env`. A plain `ocloud run -- olef ui text <value>` marks all
+non-program arguments for worker-side log redaction by default.
 
 `perm dialog allow-foreground|allow-once|deny` answers the runtime-permission
 dialog on screen by meaning, whatever its button ids on this Android version:

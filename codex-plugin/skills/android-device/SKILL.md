@@ -46,22 +46,19 @@ reservation, annotations and recorded steps.
 
 ## Olef Cloud
 
-In a project linked to Olef Cloud (`olef cloud status --json`),
-the device is the cloud session's emulator: `control` `attach` and the viewer
-work the same, forwarded to this machine, and `boot` isn't needed. Setting
-Cloud up, when there is no Android SDK and the user chooses it over a local
-install, is in `olef commands --guide cloud`; ask before signing in or
-uploading anything. When the user wants their own adb, Android Studio or
-scrcpy on the cloud emulator, `olef cloud attach` makes it a local adb
-device (`127.0.0.1:<port>`), and `olef cloud detach` removes it. With no `olef` CLI but the Olef Cloud MCP
-tools, `open_viewer` returns a live viewer link to open
-in the in-app browser. A named cloud emulator (`cloud:<name>`,
-apart from the workspace's) needs no link: `olef emulator boot
-cloud:<name> --attach` gives a `127.0.0.1:156xx` serial, and `control`
-`attach` with it serves the viewer. Ask before `emulator create` (billed)
-or `delete`/`reset`. When the user asks for Olef's hosted (cloud) viewer
-instead, `olef emulator viewer cloud:<name>` returns a one-use url to open
-in the in-app browser. Never read Olef's credentials to call its API
+In a project linked to Olef Cloud (`ocloud status --json`),
+attach the workspace emulator with `ocloud workspace attach` (and
+`ocloud workspace detach` when done), or bridge the workspace MCP server
+with `ocloud mcp --workspace`. Ask before signing in (`ocloud login`) or
+uploading anything (`ocloud link`). With no CLI installed, the Olef Cloud
+MCP tools (`open_viewer`, etc.) return a live viewer link to open in the
+in-app browser. A named cloud emulator (`cloud:<name>`, apart from the
+workspace's) needs no link: `ocloud emulator boot cloud:<name> --attach`
+gives a `127.0.0.1:156xx` serial, and `control` `attach` with it serves
+the viewer. Ask before `ocloud emulator create` (billed) or
+`delete`/`reset`. When the user asks for Olef's hosted (cloud) viewer
+instead, `ocloud emulator viewer cloud:<name>` returns a one-use url to
+open in the in-app browser. Never read Olef's credentials to call its API
 yourself.
 
 ## Viewer or emulator window

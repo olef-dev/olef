@@ -19,36 +19,34 @@ ask the user which they want before installing anything:
   their cloud workspace and builds and runs on a cloud emulator (an
   invite-only alpha).
 
-For Cloud, with the user's yes for each step:
+For Cloud (`ocloud`), with the user's yes for each step:
 
-1. `olef cloud login --no-wait --json` returns a code and a page on
-   app.olef.dev: give both to the user to sign in and approve (the
-   status line shows the code too), then run `olef cloud login`, which
-   returns once they have.
-2. `olef cloud link` in the project's root (or an empty folder made for
+1. `ocloud login --no-wait --json` returns a code and a page on
+   app.olef.dev: give both to the user to sign in and approve, then run
+   `ocloud login`, which returns once they have.
+2. `ocloud link` in the project's root (or an empty folder made for
    a new project), never any other folder. The user approves the upload in
    the terminal or on the page it links.
-3. Everything below then works unchanged against the cloud emulator: `app
-   apply`, `ui …`, screenshots, the viewer. Don't boot an emulator. The first
-   command starts the session (a minute or two warm, up to about 30
-   minutes cold; on `cloud_session_starting`, don't stop it: wait once with
-   `olef cloud start`, then run it again), and after 15 idle minutes
+3. Run commands on the cloud workspace with `ocloud run -- olef app apply`
+   (or `ocloud ssh`), or attach its emulator locally with
+   `ocloud workspace attach` (`127.0.0.1:<port>`) and drive it with
+   `olef -d <serial> ...`. On `cloud_session_starting`, don't stop it:
+   wait once with `ocloud start`, then run it again; after 15 idle minutes
    it stops until the next command. On `cloud_session_stopped` someone stopped
-   it on purpose: say who, and run `olef cloud start` only if the user wants
+   it on purpose: say who, and run `ocloud start` only if the user wants
    it back.
-4. `olef cloud usage` shows hours and limits, and `olef cloud
-   stop` ends the session when the user is done. On `cloud_quota_exceeded`,
-   tell the user which limit and when it resets, and don't retry.
-   `olef commands --guide cloud` has every `cloud_*` error and Gradle
-   tasks without a local JDK (`cloud run`).
+4. `ocloud plan usage` shows hours and limits, and `ocloud stop` ends the
+   session when the user is done. On `cloud_quota_exceeded`, tell the user
+   which limit and when it resets, and don't retry.
 5. When the user wants their own adb, Android Studio or scrcpy on the cloud
-   emulator, `olef cloud attach` makes it a local adb device
-   (`127.0.0.1:<port>`), and `olef cloud detach` removes it.
+   emulator, `ocloud workspace attach` makes it a local adb device
+   (`127.0.0.1:<port>`), and `ocloud workspace detach` removes it.
 6. A named cloud emulator (`cloud:<name>`, apart from the workspace's)
-   needs no link: `olef emulator boot cloud:<name> --attach` gives a
-   `127.0.0.1:156xx` serial for `-d`. Ask before `emulator create` (billed)
+   needs no link: `ocloud emulator boot cloud:<name> --attach` gives a
+   `127.0.0.1:156xx` serial for `olef -d` (or `ocloud emulator run <name> -- ...`
+   for crash-safe cleanup). Ask before `ocloud emulator create` (billed)
    or `delete`/`reset`. For Olef's hosted viewer instead of this one,
-   `olef emulator viewer cloud:<name>` returns a one-use url to open for
+   `ocloud emulator viewer cloud:<name>` returns a one-use url to open for
    the user. Never read Olef's credentials to call its API yourself.
 
 With no `olef` CLI but the Olef Cloud MCP tools
@@ -68,8 +66,10 @@ hosted cloud workspace, and `export_project` returns it as a zip.
    and says what it did:
    - `action: "hot"`: code was swapped into the running app and the changed
      composables recomposed, with app state kept (about 1–2 s). If
-     `on_screen` is false, navigate to the changed screen. `state_reset`
-     names composables whose own remembered state was reset.
+     `on_screen` is false, navigate to the changed screen. `screen` lists
+     the texts that appeared and went. When `state_kept` is false,
+     `state_reset` names the composables whose remembered state was rebuilt
+     (editing a lambda inside a composable rebuilds that composable).
    - `action: "restart_activity"`: code that already ran (`onCreate`,
      ViewModel setup, a started flow) changed, so the activity was
      recreated. Saved state is kept.
@@ -96,7 +96,9 @@ hosted cloud workspace, and `export_project` returns it as a zip.
    `olef ui wait --text Welcome`, `ui find --text "Sign in"`, `ui tap
    --text "Sign in"` and `ui dump` (every element, with tap points) cost a
    few dozen tokens each. `ui wait --stable` waits out animations and
-   loading; `ui audit --a11y` checks labels, touch targets and contrast. Take a screenshot (`olef ui screenshot
+   loading (add `--pixels` for fades and exit animations, which can still
+   draw an element that has left the tree); `ui text` reports a `warning`
+   and `observed_value` when a field filtered or reformatted the input; `ui audit --a11y` checks labels, touch targets and contrast. Take a screenshot (`olef ui screenshot
    /tmp/screen.png`, then read the file) when:
    - the question is how it looks: layout, spacing, colors, images,
      clipping, a visual regression;

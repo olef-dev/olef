@@ -196,37 +196,38 @@ if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
   toolchain=missing
 fi
 
-# Olef Cloud matters only without a local toolchain. The CLI answers
-# for the project in this folder: linked (cloud mode on), off (linked, cloud
-# mode off), signed_in (not linked), available (the cloud verbs exist, not
-# signed in) or unsupported (a CLI without them). Without a CLI to ask, it
-# stays unknown: the CLI the user installs has them. The CLI gets 4 s, and
-# any answer but its own JSON counts as unsupported.
+# Olef Cloud matters only without a local toolchain. When `ocloud` is
+# installed, it answers for the project in this folder: linked, signed_in
+# (not linked), available (not signed in) or unsupported. Without `ocloud`
+# (or without `olef`), it stays unknown so the cloud option can still be offered.
 cloud=unknown
-if [ "$toolchain" = missing ] && [ "$cli" = ok ] && command -v olef >/dev/null 2>&1; then
-  cloud=unsupported
-  cloud_out=""
-  cloud_tmp="$(mktemp 2>/dev/null)"
-  if [ -n "$cloud_tmp" ]; then
-    olef cloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
-    cloud_pid=$!
-    # A deadline, not a count of sleeps: each `sleep` is a process, slow to
-    # start on a busy machine.
-    deadline=$((SECONDS + 4))
-    while kill -0 "$cloud_pid" 2>/dev/null && [ "$SECONDS" -lt "$deadline" ]; do
-      sleep 0.1
-    done
-    kill "$cloud_pid" 2>/dev/null
-    wait "$cloud_pid" 2>/dev/null
-    cloud_out="$(tr -d ' \t\r\n' <"$cloud_tmp")"
-    rm -f "$cloud_tmp"
+if [ "$toolchain" = missing ] && [ "$cli" = ok ]; then
+  if command -v ocloud >/dev/null 2>&1; then
+    cloud=unsupported
+    cloud_out=""
+    cloud_tmp="$(mktemp 2>/dev/null)"
+    if [ -n "$cloud_tmp" ]; then
+      ocloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
+      cloud_pid=$!
+      # A deadline, not a count of sleeps: each `sleep` is a process, slow to
+      # start on a busy machine.
+      deadline=$((SECONDS + 4))
+      while kill -0 "$cloud_pid" 2>/dev/null && [ "$SECONDS" -lt "$deadline" ]; do
+        sleep 0.1
+      done
+      kill "$cloud_pid" 2>/dev/null
+      wait "$cloud_pid" 2>/dev/null
+      cloud_out="$(tr -d ' \t\r\n' <"$cloud_tmp")"
+      rm -f "$cloud_tmp"
+    fi
+    case "$cloud_out" in
+      *'"linked":true'*) cloud=linked ;;
+      *'"signed_in":true'* | *'"account":{'*) cloud=signed_in ;;
+      *'"cmd":"cloud_status"'* | *'"account":'* | *'"signed_in":'* | *'"code":"cloud_'*) cloud=available ;;
+    esac
+  else
+    cloud=unsupported
   fi
-  case "$cloud_out" in
-    *'"linked":true'*'"enabled":false'* | *'"enabled":false'*'"linked":true'*) cloud=off ;;
-    *'"linked":true'*) cloud=linked ;;
-    *'"signed_in":true'* | *'"account":{'*) cloud=signed_in ;;
-    *'"cmd":"cloud_status"'* | *'"account":'* | *'"signed_in":'* | *'"code":"cloud_'*) cloud=available ;;
-  esac
 fi
 # A plugin whose MCP config names the remote Olef Cloud server works
 # without the CLI too, in a cloud-hosted workspace.
@@ -239,7 +240,7 @@ if [ "$toolchain" = missing ] && [ "$cloud" = linked ]; then
   if [ -n "$context" ]; then
     context+=" "
   fi
-  context+="This project is linked to Olef Cloud with cloud mode on: olef commands build and run the app on a cloud emulator, so adb, the Android SDK and a JDK are not needed on this machine. Don't install them unless the user asks. 'olef cloud status' shows the session, and 'olef commands --guide cloud' covers usage, limits and cloud errors."
+  context+="This project is linked to Olef Cloud: run commands on the cloud workspace with 'ocloud run -- olef ...' or attach its emulator with 'ocloud workspace attach', so adb, the Android SDK and a JDK are not needed on this machine. Don't install them unless the user asks. 'ocloud status' shows the session."
 elif [ "$toolchain" = missing ]; then
   if [ -n "$context" ]; then
     context+=" "
@@ -262,20 +263,15 @@ elif [ "$toolchain" = missing ]; then
     fi
   fi
   # The install notices get the cloud option; the update notice stands alone.
-  if [ "$cloud" = off ]; then
-    context+=" This project is linked to Olef Cloud, but cloud mode is off. 'olef cloud on' runs it in the cloud again, with no Android SDK or adb here; ask the user which they want."
+  if [ "$cloud" = signed_in ]; then
+    context+=" The user is signed in to Olef Cloud, but this folder isn't linked. Before installing anything, ask whether to set up Android locally or build and run in the cloud: 'ocloud link' in the project's root uploads it once the user approves."
     if [ -z "$update" ]; then
-      notice+=" Or run it in the cloud again: olef cloud on"
-    fi
-  elif [ "$cloud" = signed_in ]; then
-    context+=" The user is signed in to Olef Cloud, but this folder isn't linked. Before installing anything, ask whether to set up Android locally or build and run in the cloud: 'olef cloud link' in the project's root uploads it once the user approves. 'olef commands --guide cloud' has the steps."
-    if [ -z "$update" ]; then
-      notice+=" Or no setup: build and run in the cloud (invite-only alpha), olef cloud link"
+      notice+=" Or no setup: build and run in the cloud (invite-only alpha), ocloud link"
     fi
   elif [ "$cloud" != unsupported ]; then
-    context+=" Or no setup: Olef Cloud builds and runs the app on a cloud emulator, with nothing else to install (an invite-only alpha). Before installing anything, ask the user which they want: set up Android locally, or Olef Cloud ('olef cloud login' signs them in through the browser, then 'olef cloud link' in the project's root uploads it once they approve). Never sign the user up, sign in or upload code without their yes. 'olef commands --guide cloud' has the steps."
+    context+=" Or no setup: Olef Cloud builds and runs the app on a cloud emulator, with nothing else to install (an invite-only alpha). Before installing anything, ask the user which they want: set up Android locally, or Olef Cloud ('ocloud login' signs them in through the browser, then 'ocloud link' in the project's root uploads it once they approve). Never sign the user up, sign in or upload code without their yes."
     if [ -z "$update" ]; then
-      notice+=" Or no setup: build and run in the cloud (invite-only alpha), olef cloud login"
+      notice+=" Or no setup: build and run in the cloud (invite-only alpha), ocloud login"
     fi
   fi
 fi

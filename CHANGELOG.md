@@ -4,6 +4,11 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.17.0
+
+- Use `olef` for Android devices and `ocloud` for Olef Cloud. Cloud users can install `olef-dev/tap/ocloud` with Homebrew or `ocloud` with Scoop. Change `olef cloud run -- …` to `ocloud run -- …` and `olef host serve` to `ocloud host serve` in existing scripts.
+- `olef layout recompositions --why` shows what triggered a recomposition in supported Compose 1.13 apps. Text entry, clearing fields, and scrolling are more reliable on current Compose versions.
+
 ## v3.16.5
 
 - Ask Claude Code or Codex to make or change an Olef agent and it opens a panel beside the chat, filled in from your request. Nothing happens until you press Create or Save, and the chat is told what you did.

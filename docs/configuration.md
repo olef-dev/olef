@@ -106,7 +106,7 @@ Google Cloud project; setting the project is the opt-in:
 
 `GOOGLE_CLOUD_PROJECT` works too. Alternatively `"billing": "olef"`
 uses real phones from Olef, billed to your Olef account (sign in
-with `olef cloud login`; limited preview, enabled per account): no
+with `ocloud login`; limited preview, enabled per account): no
 Google Cloud project or credentials needed, and the device's connection goes
 through Olef. Credentials come from your Google Cloud
 login: application default credentials (`gcloud auth application-default
@@ -115,11 +115,11 @@ login`), the GCE metadata server, or `gcloud auth print-access-token`
 `devicestreaming`, `devicerun` and `testing` APIs enabled.
 
 ```bash
-olef devices list                               # every device: local, Cloud, real phones
-olef devices catalog --physical --available     # specs like ddp:komodo-35
-olef devices reserve ddp:komodo-35              # → serial 127.0.0.1:<port>
-olef -d ddp:komodo-35 app apply                 # any verb, by spec or serial
-olef devices release ddp:komodo-35
+olef devices list                                 # local + attached remote devices
+ocloud devices catalog --physical --available     # specs like ddp:komodo-35
+ocloud devices reserve ddp:komodo-35              # → serial 127.0.0.1:<port>
+olef -d ddp:komodo-35 app apply                   # any verb, by spec or serial
+ocloud devices release ddp:komodo-35
 ```
 
 - Spending: with `ddp.budget_usd_per_day` set, agents may reserve devices

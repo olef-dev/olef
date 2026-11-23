@@ -82,9 +82,9 @@ it on a cloud emulator; every `olef` command and the device viewer work
 the same way:
 
 ```bash
-olef cloud login      # approve this machine at app.shadowdroid.dev
-olef cloud link       # upload this project to your cloud workspace
-olef app apply        # build and run it on the cloud emulator
+ocloud login                    # approve this machine at app.olef.dev
+ocloud link                     # upload this project to your cloud workspace
+ocloud run -- olef app apply    # build and run it on the cloud emulator
 ```
 
 The Codex plugin can also use the hosted MCP server at `mcp.shadowdroid.dev`
@@ -104,10 +104,10 @@ you, and your yes covers that day up to $10 (`ddp.budget_usd_per_day` sets your
 own limit):
 
 ```bash
-olef devices catalog --physical --available   # specs like ddp:tokay-36
-olef devices reserve ddp:tokay-36             # attached as 127.0.0.1:<port>
-olef -d ddp:tokay-36 app apply                # every command works on it
-olef devices release ddp:tokay-36             # or it is released when idle
+ocloud devices catalog --physical --available   # specs like ddp:tokay-36
+ocloud devices reserve ddp:tokay-36             # attached as 127.0.0.1:<port>
+olef -d ddp:tokay-36 app apply                  # every command works on it
+ocloud devices release ddp:tokay-36             # or use `ocloud devices run ddp:tokay-36 -- ...`
 ```
 
 `net` capture works through a relay in the Olef server. DDP is a
@@ -120,15 +120,15 @@ from anywhere through Olef Cloud, for Cloud accounts with remote
 devices enabled:
 
 ```bash
-olef host register --name desk --reset lease_only  # this machine becomes a host
-olef host add 192.168.1.20:5555 --name firetv      # the device asks once to trust the host's key
-olef host service install                          # keep the host agent running (prints one sudo command)
+ocloud host register --name desk --reset lease_only  # this machine becomes a host
+ocloud host add 192.168.1.20:5555 --name firetv      # the device asks once to trust the host's key
+ocloud host service install                          # keep the host agent running (prints one sudo command)
 
 # from any machine signed in to the same account:
-olef devices reserve lab:desk/firetv               # attached as 127.0.0.1:<port>
+ocloud devices reserve lab:desk/firetv               # attached as 127.0.0.1:<port>
 olef -d lab:desk/firetv app apply
-olef devices view lab:desk/firetv                  # a view.shadowdroid.dev link
-olef devices release lab:desk/firetv               # the host resets the device
+ocloud devices view lab:desk/firetv                  # a view.shadowdroid.dev link
+ocloud devices release lab:desk/firetv               # the host resets the device
 ```
 
 The host uses its own adb server and key and offers only the devices you

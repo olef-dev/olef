@@ -23,7 +23,7 @@ olef ui tap --rid <id> --expect-text "<next screen text>"
 olef ui text "<value>" --rid <id> --clear
 olef ui hide-keyboard
 olef ui wait --text "<expected>" --timeout-ms 5000
-olef ui wait --stable                 # until animations/loading settle
+olef ui wait --stable [--pixels]      # until settled; --pixels: fades too
 olef ui scroll-to --rid <id> [--tap]
 olef ui set-progress --rid <slider> --value <n>
 olef ui long-tap --rid <id> --duration-ms 800
@@ -57,9 +57,8 @@ Android's single `UiAutomation` slot, so `uiautomator dump`, `android layout`
 and Espresso fail while connected: wrap them in `olef test -- <command>`,
 or `disconnect` first. `doctor --json` diagnoses the host-device pipe.
 `config init --project` and `config validate --json` manage project config.
-No Android SDK or adb? Ask: a local setup, or Olef Cloud (`--guide cloud`:
-sign-in, linking, SSH, previews, `cloud:<name>` emulators, `cloud_*`
-errors). A contract with `confirm_with_person`: ask first.
+No Android SDK or adb? Ask: local setup, or Olef Cloud (`ocloud`).
+A contract with `confirm_with_person`: ask first.
 
 ## Output contract
 
@@ -92,9 +91,8 @@ recovery), `--guide net` (proxy, rules, intercept), `--guide debugger`
 (debugger, layout, runtime), `--guide state` (app/device/permission/files
 state), `--guide evidence` (checkpoints, video), `--guide faults` (failure
 injection), `--guide verification` (coding-task checks, concurrent agents),
-`--guide test` (test scripts, session settings, `test run`), `--guide review`
-(cloud reviews), `--guide events`, `--guide feedback`
-(report an Olef bug: errors with `fault: "olef"`).
+`--guide test` (test scripts, session settings, `test run`), `--guide feedback`
+(report an `olef` bug: `fault: "olef"`). Cloud workflows live in `ocloud`.
 
 Prefer typed verbs (`app install --grant-all`, `perm grant`, `appops set`,
 `files pull --run-as`) over `device shell`. `debug auto <pkg>` starts a
@@ -110,7 +108,7 @@ debugging workflow; expression evaluation can have side effects.
 
 Core groups below. For an unfamiliar command run `olef <group> <sub> --help`; `commands --depth 1` lists every member.
 
-- **`devices`** — List attached devices / emulators, or reserve billed remote ones
+- **`devices`** — List attached local devices, emulators, and remote devices attached via Attachment Records
 - **`connect`** — Install the server APK, start it, and verify
 - **`disconnect`** — Stop the server and remove the port forward
 - **`doctor`** — Diagnose (and optionally repair) the host↔device pipe
@@ -126,5 +124,5 @@ Core groups below. For an unfamiliar command run `olef <group> <sub> --help`; `c
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`olef <command> --help` for details): session, verify, evidence, cloud, secret, file, events, builds, testers, host, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`olef <command> --help` for details): session, verify, evidence, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 

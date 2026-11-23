@@ -266,9 +266,9 @@ Report problems at
   automatically checks GitHub for newer releases and the published known-issue
   catalog at most once a day. Set `OLEF_NO_UPDATE_CHECK=1` to disable those
   background checks. `olef update` explicitly checks for and installs updates.
-  If you turn on Olef Cloud (`olef cloud login`), devices run on Olef's
-  servers: the CLI then forwards device commands, the viewer and the cloud
-  status the status line shows between your computer and Olef Cloud.
+  If you use Olef Cloud (`ocloud login`), devices run on Olef's
+  servers: `ocloud` manages remote workspaces, cloud emulators, and remote
+  device leases, while `olef` drives local and attached devices.
 - **What Claude sees:** screenshots, UI text, logs, crashes and captured
   network traffic that Claude reads go to Anthropic as part of your
   conversation, like anything else Claude reads.

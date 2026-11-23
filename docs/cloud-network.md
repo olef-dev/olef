@@ -42,7 +42,7 @@ export NO_PROXY=localhost,.internal.example.com
 ## Checking
 
 ```bash
-olef cloud doctor
+ocloud doctor
 ```
 
 Its `network` check tries each host on 443 and reports whether it went

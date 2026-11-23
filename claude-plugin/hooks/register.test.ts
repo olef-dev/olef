@@ -290,7 +290,7 @@ test('a linked project covers its own folders only', async () => {
   expect(inProject('C:\\Work\\Notes', 'c:/work/notes/app')).toBe(true)
   expect(inProject(undefined, '/work/notes')).toBe(false)
   expect(safeName('ws:1/x')).toBe('ws_1_x')
-  expect(runsOlef('cd app && olef cloud link')).toBe(true)
+  expect(runsOlef('cd app && ocloud link')).toBe(true)
   expect(runsOlef('ls shadow')).toBe(false)
 })
 
@@ -385,13 +385,13 @@ test('onboarding: the sign-in code, the upload approval, then the session', asyn
     verification_uri_complete: 'https://app.shadowdroid.dev/activate?code=WXYZ-1234',
     expires_at: NOW / 1000 + 600,
   })
-  await $.tool.call({ tool: 'Bash', command: 'olef cloud login --no-wait --json' })
+  await $.tool.call({ tool: 'Bash', command: 'ocloud login --no-wait --json' })
   expect(statuses[statuses.length - 1]).toBe('☁ Cloud: sign in with code WXYZ-1234')
   expect(toasts[toasts.length - 1]).toBe('Olef Cloud sign-in: open https://app.shadowdroid.dev/activate?code=WXYZ-1234 and approve the code WXYZ-1234')
 
   delete files[`${CLOUD}/login-pending.json`]
   files[`${CLOUD}/links.json`] = links({ ...LINK, state: 'pending', approval_url: 'https://app.shadowdroid.dev/link/lr_1' })
-  await $.tool.call({ tool: 'Bash', command: 'olef cloud link --json' })
+  await $.tool.call({ tool: 'Bash', command: 'ocloud link --json' })
   expect(statuses[statuses.length - 1]).toBe('☁ Cloud: approve the upload in your browser')
   expect(toasts[toasts.length - 1]).toBe('Olef Cloud: approve uploading this project at https://app.shadowdroid.dev/link/lr_1')
 
@@ -402,7 +402,7 @@ test('onboarding: the sign-in code, the upload approval, then the session', asyn
 
   reply = JSON.stringify({ ok: false, code: 'cloud_quota_exceeded', msg: 'session-hours used up', detail: { limit: 'session_hours' } })
   await $.tool.call({ tool: 'Bash', command: 'olef ui dump' })
-  expect(toasts[toasts.length - 1]).toBe('Olef Cloud: a usage limit was reached; `olef cloud usage` shows your limits and when they reset')
+  expect(toasts[toasts.length - 1]).toBe('Olef Cloud: a usage limit was reached; `ocloud plan usage` shows your limits and when they reset')
 })
 
 test('cloud mode off for this project leaves the status line alone', async ($, on) => {

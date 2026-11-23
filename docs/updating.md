@@ -55,7 +55,7 @@ can be many releases old.
 Olef Cloud serves CLIs from a minimum version up. An older one is refused
 with `cloud_client_too_old` on its first cloud command, sign-in included; the
 error names your version, the minimum, and the update command for your
-install (`detail.update_command`). `olef cloud doctor` has a `client` check
+install (`detail.update_command`). `ocloud doctor` has a `client` check
 that compares the two versions. Update, then run the command again.
 
 **Coming from ShadowDroid (v2) with Homebrew:** run

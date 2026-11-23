@@ -55,8 +55,10 @@ $ olef app apply
   `after_reinstall`, or a list of the moments a hot change waits for, such as
   `["next_call"]` (the method runs again the next time it's called) or
   `["on_first_use"]`.
-- `state_kept` is false only for a reinstall; `state_reset` names the
-  composables whose remembered state was rebuilt.
+- `state_kept` is false for a reinstall, and for an in-place change that
+  rebuilt a composable holding remembered state; `state_reset` names those
+  composables. Editing a lambda inside a composable rebuilds that composable,
+  so what it remembers resets too.
 - `on_screen: false` means the changed composables aren't showing; navigate
   to them to see the change.
 - `notes` explains anything else worth knowing, such as a value computed
