@@ -2,31 +2,34 @@
 
 [← README](../README.md)
 
-Olef has one version number. The CLI, the service it installs on each
-device, the runtime agent it loads into apps, the agent skills and the Claude
-Code and Codex plugins all ship together, from the
-[releases](https://github.com/olef-dev/olef/releases) of
-`olef-dev/olef`. You update the CLI; everything else follows it.
+`olef` and `ocloud` are versioned and released independently:
+
+- **`olef`** (the local device CLI, on-device service APKs, runtime agent,
+  skills, and Claude Code / Codex plugins) ships together from the
+  [releases](https://github.com/olef-dev/olef/releases) of `olef-dev/olef`.
+- **`ocloud`** (Olef Cloud CLI) ships on its own cadence from the
+  [releases](https://github.com/olef-dev/ocloud/releases) of `olef-dev/ocloud`.
 
 ## Update the CLI
 
 ```bash
 olef update
+ocloud update
 ```
 
-`update` checks the latest release and prints the command that updates your
-install. It never runs that command and never changes anything itself, so it
-is safe for an agent to call. With `--json` it returns the same as a result
-object: `current_version`, `latest_version`, `up_to_date`, `install_method`,
-`install_path`, `release_url`, and `update.command` with
+`update` checks the latest release for that binary and prints the command that
+updates your install. It never runs that command and never changes anything
+itself, so it is safe for an agent to call. With `--json` it returns the same as
+a result object: `current_version`, `latest_version`, `up_to_date`,
+`install_method`, `install_path`, `release_url`, and `update.command` with
 `requires_confirmation: true`.
 
-The command depends on how Olef was installed:
+The command depends on how the CLI was installed:
 
 | Installed with | `install_method` | Update command |
 | --- | --- | --- |
-| Homebrew | `homebrew` | `brew update && brew upgrade olef` |
-| Scoop | `scoop` | `scoop update olef` |
+| Homebrew | `homebrew` | `brew update && brew upgrade olef` (or `ocloud`) |
+| Scoop | `scoop` | `scoop update olef` (or `ocloud`) |
 | The shell or PowerShell installer | `direct_installer` | the installer one-liner again (below) |
 | `cargo install` (1.x source builds) | `cargo` | `cargo uninstall olef`, then the installer |
 | Something else | `unknown` | all three options |
@@ -34,11 +37,19 @@ The command depends on how Olef was installed:
 The installer one-liners always install the latest release:
 
 ```bash
+# olef
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/olef-dev/olef/releases/latest/download/olef-installer.sh | sh
+
+# ocloud
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/olef-dev/ocloud/releases/latest/download/ocloud-installer.sh | sh
 ```
 
 ```powershell
+# olef
 powershell -ExecutionPolicy Bypass -c "irm https://github.com/olef-dev/olef/releases/latest/download/olef-installer.ps1 | iex"
+
+# ocloud
+powershell -ExecutionPolicy Bypass -c "irm https://github.com/olef-dev/ocloud/releases/latest/download/ocloud-installer.ps1 | iex"
 ```
 
 Pass `--version vX.Y.Z` (shell) or `-Version vX.Y.Z` (PowerShell) to the
@@ -222,9 +233,12 @@ version.
   point `OLEF_SERVER_APK` (`OLEF_APK` before 2.0.6) at the
   server's test APK and `OLEF_RUNTIME_DIR` at a directory of per-ABI
   runtime libraries.
-- **A mirror:** `OLEF_UPDATE_LATEST_URL` changes where `update` and the
-  daily check look for the latest release (a URL returning GitHub's release
-  JSON).
+- **A mirror:** `OLEF_UPDATE_LATEST_URL` (for `olef`) and
+  `OCLOUD_UPDATE_LATEST_URL` (for `ocloud`, falling back to
+  `OLEF_UPDATE_LATEST_URL`) change where `update` and the daily check look for
+  the latest release (a URL returning GitHub's release JSON). `olef` caches in
+  `~/.olef/update-check.json` and `ocloud` caches in
+  `~/.olef/ocloud-update-check.json`.
 - **No update checks:** `OLEF_NO_UPDATE_CHECK=1` (see
   [The update notice](#the-update-notice)).
 

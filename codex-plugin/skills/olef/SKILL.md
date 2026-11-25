@@ -94,15 +94,16 @@ injection), `--guide verification` (coding-task checks, concurrent agents),
 `--guide test` (test scripts, session settings, `test run`), `--guide feedback`
 (report an `olef` bug: `fault: "olef"`). Cloud workflows live in `ocloud`.
 
-Prefer typed verbs (`app install --grant-all`, `perm grant`, `appops set`,
-`files pull --run-as`) over `device shell`. `debug auto <pkg>` starts a
-debugging workflow; expression evaluation can have side effects.
+Prefer typed verbs (`app install|inspect|applinks|open-intent`, `perm`,
+`appops`, `files --run-as`, `storage`, `work`, `perf`, `web`,
+`device notifications`, `ui diff-image`, `fault inject`) over `device shell`.
+`debug auto <pkg>` starts debugging; expression eval can have side effects.
 `--redact` masks structured output (`--redact-pixels` for screenshots).
 
 ## Maintenance
 
-`skill --sync` updates pristine skills and preserves customizations. Opt-in
-`usage enable` + `usage report` records local command metadata.
+`update --apply` updates `olef` and syncs skills; `skill --sync` preserves
+customizations. Opt-in `usage enable` + `usage report` tracks local commands.
 
 ## Command reference
 
@@ -124,5 +125,5 @@ Core groups below. For an unfamiliar command run `olef <group> <sub> --help`; `c
 - **`net`** — Network MITM proxy: enable, inspect, intercept, and modify HTTP(S) traffic
 - **`ui`** — Live UI automation: dump, find, tap, type, and wait for screen state
 
-Other commands (`olef <command> --help` for details): session, verify, evidence, test, record, licenses, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
+Other commands (`olef <command> --help` for details): session, verify, evidence, test, record, licenses, storage, work, perf, web, update, init, commands, usage, feedback, skill, mcp, pane, emulator, debug, runtime, appops, profile, files, fault, layout.
 

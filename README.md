@@ -78,8 +78,8 @@ HTML report with screenshots. See [recording tests](docs/recording.md) and
 ## Olef Cloud (invite-only alpha)
 
 No Android SDK on your machine? Olef Cloud builds your project and runs
-it on a cloud emulator; every `olef` command and the device viewer work
-the same way:
+it on a cloud emulator; install `ocloud` (`brew install olef-dev/tap/ocloud`,
+`scoop install ocloud`, or from [olef-dev/ocloud](https://github.com/olef-dev/ocloud/releases/latest)):
 
 ```bash
 ocloud login                    # approve this machine at app.olef.dev
