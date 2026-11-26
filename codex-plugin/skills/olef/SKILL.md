@@ -10,8 +10,7 @@ builds; Olef verifies on devices.
 
 ## Core loop
 
-These commands cover most work. Don't browse the catalog first; for one
-unfamiliar verb run `olef <verb> --help` (or
+For an unfamiliar verb run `olef <verb> --help` (or
 `olef commands --describe '<verb>' --json`).
 
 ```bash
@@ -40,13 +39,12 @@ an enabled clickable target or ancestor that a finger could reach (a target
 under the keyboard or a dialog fails `element_occluded`). `ui tap` is an accessibility click and
 works on TV too; use `ui focus` and `ui key dpad_*` only to test D-pad focus.
 
-Confirming an action: with a known destination add one `--expect-*` flag; on
-success it returns a screen summary (`--full` for elements). Otherwise act, then
-`ui wait`/`ui find`. `--observe` returns the whole post-action screen.
-`--if-screen <screen_hash>` guards an action that uses element ids from an
-earlier read; selectors by `--rid`/`--text` don't need it. Re-read cheaply
-with `ui dump --since <screen_hash>`. Never repeat delivered input
-(`retryable:false`) without observing first.
+Confirming: add `--expect-*` for a known destination (returns a summary;
+`--full` for elements), else act then `ui wait`/`ui find` (`--observe` returns
+the full screen). `--if-screen <screen_hash>` guards actions using element ids
+from an earlier read; `--rid`/`--text` don't need it. Re-read cheaply with
+`ui dump --since <screen_hash>`. Never repeat delivered input (`retryable:false`)
+without observing first.
 
 ## Devices and setup
 
@@ -62,14 +60,16 @@ A contract with `confirm_with_person`: ask first.
 
 ## Output contract
 
-Stdout is data; the exit code is authoritative. Actions return one object with
-`ok`, `cmd` and `next_actions`; raw reads (`ui dump`) return the payload. A
-failure has `ok:false`, `code`, `msg`, `retryable`, `detail`, `hints` (what
-to change, in prose) and `next_actions`: branch on `code`, read advice from
-`hints`, never parse `msg`. `watch`, `log` and
-`net log` stream JSONL; skip `watch`'s idle `heartbeat` lines. Operational logs go to stderr (`--quiet` silences).
-In batches keep every exit status (`pipefail`); serialize device mutations;
-reserve multi-step shared work with a driver session (`--guide verification`).
+Stdout is data; exit code is authoritative. Actions return `ok`, `cmd`, and
+`next_actions`; raw reads (`ui dump`) return the payload. Failures add
+`ok:false`, `code`, `msg`, `retryable`, `detail`, `hints` (prose advice) and
+`next_actions`: branch on `code`, read `hints`, never parse `msg`. Use
+`next_actions` as hints of what is possible next—for recovery or 2–3 brief user
+ideas at turn boundaries/blockers (never mid-loop; ask before billed, sign-in,
+or destructive actions). `watch`, `log` and `net log` stream JSONL (skip
+`heartbeat`). Logs go to stderr (`--quiet` silences). Keep batch exits
+(`pipefail`); serialize mutations; reserve shared work with a session
+(`--guide verification`).
 
 ## Network
 

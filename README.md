@@ -87,9 +87,9 @@ ocloud link                     # upload this project to your cloud workspace
 ocloud run -- olef app apply    # build and run it on the cloud emulator
 ```
 
-The Codex plugin can also use the hosted MCP server at `mcp.shadowdroid.dev`
+The Codex plugin can also use the hosted MCP server at `mcp.olef.dev`
 with no CLI installed. Cloud is an invite-only alpha in one region: sign in
-at [app.shadowdroid.dev](https://app.shadowdroid.dev) to join the list, or
+at [app.olef.dev](https://app.olef.dev) to join the list, or
 enter your invite code there. See the
 [terms](https://olef.dev/terms) and
 [privacy policy](https://olef.dev/privacy#cloud).
@@ -127,7 +127,7 @@ ocloud host service install                          # keep the host agent runni
 # from any machine signed in to the same account:
 ocloud devices reserve lab:desk/firetv               # attached as 127.0.0.1:<port>
 olef -d lab:desk/firetv app apply
-ocloud devices view lab:desk/firetv                  # a view.shadowdroid.dev link
+ocloud devices view lab:desk/firetv                  # a view.olef.dev link
 ocloud devices release lab:desk/firetv               # the host resets the device
 ```
 

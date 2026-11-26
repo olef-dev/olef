@@ -4,6 +4,11 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.18.1
+
+- **Deterministic `next_actions` in `olef mcp` and plugin skills**: `olef mcp` now returns structured MCP-tool-vocabulary `next_actions` on `build`, `annotations`, `recording`, `launch`, and `detach` responses, and includes follow-up guidance in server `initialize` instructions. The Claude Code and Codex `olef` plugin skills instruct agents to treat `next_actions` as contextual hints and surface relevant user-facing next steps concisely.
+- **Olef Cloud plugins in the public marketplace**: publishes `claude-ocloud-plugin/` and `codex-ocloud-plugin/` in `olef-dev/olef` alongside `claude-plugin/` and `codex-plugin/` so marketplace installations of the `ocloud` plugin resolve directly from the public repository, and updates the public README cloud links to `olef.dev`.
+
 ## v3.18.0
 
 - **App storage (`olef storage`)**: inspect debuggable app SQLite/Room databases, SharedPreferences, and Jetpack DataStore (`.preferences_pb` and raw protobuf). Read-only SQLite snapshots verify WAL consistency, enforce a read-only SQLite authorizer, support positional `--param` bindings, pagination, and `--redact` column controls; `--live` queries and transactional `storage db exec --live` run in-process via the runtime agent (including Android `LOCALIZED` collation). SharedPreferences reads and `--restart` / live edits respect `.xml.bak` recovery and refuse `EncryptedSharedPreferences` without side effects.

@@ -1,0 +1,43 @@
+{
+  "name": "ocloud",
+  "version": "3.18.0",
+  "description": "Create and orchestrate Olef Cloud agents, workspaces, scheduled tasks, event workflows, conversational threads, and your Olef inbox directly from Codex.",
+  "author": {
+    "name": "Andrii",
+    "url": "https://github.com/olef-dev"
+  },
+  "homepage": "https://olef.dev",
+  "repository": "https://github.com/olef-dev/olef",
+  "license": "Apache-2.0",
+  "keywords": [
+    "olef",
+    "ocloud",
+    "agents",
+    "cloud",
+    "workflows",
+    "schedules",
+    "automation",
+    "inbox"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Olef Cloud",
+    "shortDescription": "Create and orchestrate Olef Cloud agents, workflows, and threads",
+    "longDescription": "Teaches Codex the ocloud CLI so you can create cloud agents with smart workspace and runtime defaults, chat with them in multi-turn threads, schedule one-shot or recurring tasks, wire prompt-driven event subscriptions, install native skills, check out agents locally in --edit or --live mode, and watch your Olef inbox.",
+    "developerName": "Andrii",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://olef.dev",
+    "defaultPrompt": [
+      "Create a cloud agent for me",
+      "In 1 minute, send me Hello world via my cloud agent",
+      "Ask my cloud agent what the capital of France is"
+    ],
+    "brandColor": "#074496",
+    "logo": "./assets/icon.png",
+    "composerIcon": "./assets/icon.png"
+  }
+}

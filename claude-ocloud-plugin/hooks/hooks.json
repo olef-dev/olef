@@ -1,0 +1,18 @@
+{
+  "description": "SessionStart hook that checks whether the ocloud CLI is installed and signed in to Olef Cloud. Never installs or signs in automatically: only tells Claude what command to offer the user if setup is missing.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-ocloud\" claude",
+            "timeout": 10,
+            "statusMessage": "Checking ocloud CLI and Olef Cloud sign-in"
+          }
+        ]
+      }
+    ]
+  }
+}
