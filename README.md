@@ -19,11 +19,6 @@ step built in.
 **Releases:** [latest](https://github.com/olef-dev/olef/releases/latest) ·
 **Report a bug:** [new issue](https://github.com/olef-dev/olef/issues/new/choose)
 
-This repository is Olef's public home for releases, agent plugins, documentation,
-and the issue tracker. Development happens in a private repository. Local use is
-free for everyone, including commercial work, with no account required; see
-[License](#license).
-
 ## What it does
 
 Once installed, your coding agent runs `olef` behind the scenes while you work
