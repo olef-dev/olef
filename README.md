@@ -29,16 +29,27 @@ free for everyone, including commercial work, with no account required; see
 Once installed, your coding agent runs `olef` behind the scenes while you work
 in plain language.
 
+- **Built for coding agents (low token cost, fast screen reads):** Warm
+  `olef ui dump` reads the screen as compact JSON in ~65 ms, every response
+  includes verified postconditions and suggested `next_actions`, and
+  `olef watch` merges screen diffs, crashes, ANRs, toasts, logpoints, and HTTP
+  traffic into one unified JSONL event stream. In a 21-task Android benchmark
+  with Codex, Olef cut median task time by **48%** (36 s vs. 69 s) and token
+  usage by **34%** (4.0M vs. 6.1M) compared to `adb` and the Android CLI
+  ([comparison](https://olef.dev/docs/engineers/compare)).
+- **Isolated sessions, configs, and rollbacks:** Run multiple concurrent agent
+  sessions safely with per-device reservations, shared session settings
+  (app under test, waits, timeouts, cached device facts), foreground and crash
+  guards, and full session journals. Starting state such as permissions,
+  automation profiles, and injected faults is automatically rolled back when a
+  session closes ([sessions](docs/sessions.md)).
 - **Fast Apply Changes:** Applies edits in place (~1.5 s hot class redefinition
   and Compose recomposition when possible, falling back cleanly to activity
   restart or reinstall) and reports crashes, logged errors, failed requests, and
   what changed on screen.
-- **Live Device Viewer (Claude Code and Codex):** Streams the device next to
-  your conversation. Click or drag to annotate UI elements mapped back to
-  Compose composables and source lines, or record your steps into reusable tests.
-- **Structured UI and Compose inspection:** Reads the live view hierarchy and
-  Compose semantics tree in milliseconds, acts by selector, waits for the UI to
-  settle, and verifies postconditions instead of guessing from screenshots.
+- **Structured UI and Compose inspection:** Acts by stable selector rather than
+  fragile coordinates, maps Compose nodes and recompositions back to source
+  `file:line`, and waits for the UI to settle automatically.
 - **Deep debugging without Android Studio:** Explains crashes and unexpected
   states (`olef why`), attaches JDWP and LLDB debuggers, and inspects
   Room/SQLite databases, WorkManager jobs, WebViews (CDP), frame jank, and heap
