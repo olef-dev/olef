@@ -5,30 +5,66 @@
   </picture>
 </p>
 
-# Olef
+# Olef CLI for Android
 
-**Give your coding agent eyes, hands and a debugger for Android.**
+**Give your coding agent eyes, hands, and a debugger for Android.**
 
-Olef is a CLI that lets Claude Code, Codex, Cursor, Gemini and any
-shell-capable agent drive, inspect and debug real Android apps, emulators and
-devices. Every answer is compact JSON with the next step built in.
+Olef CLI for Android (`olef`) connects Claude Code, Codex, Cursor, Gemini CLI,
+Antigravity, and any shell-capable coding agent to real Android apps, emulators,
+and physical devices. Every call returns compact, structured JSON with the next
+step built in.
 
-**Website:** [olef.dev](https://olef.dev) ·
+**Website:** [olef.dev](https://olef.dev/engineers) ·
+**Docs:** [olef.dev/docs](https://olef.dev/docs) ·
 **Releases:** [latest](https://github.com/olef-dev/olef/releases/latest) ·
 **Report a bug:** [new issue](https://github.com/olef-dev/olef/issues/new/choose)
 
-This repository is Olef's public home: releases, documentation, the
-changelog, and the issue tracker. Development happens in a private repository.
+This repository is Olef's public home for releases, agent plugins, documentation,
+and the issue tracker. Development happens in a private repository. Local use is
+free for everyone, including commercial work, with no account required; see
+[License](#license).
 
-Free for everyone, including commercial use; see [License](#license).
+## What it does
+
+Once installed, your coding agent runs `olef` behind the scenes while you work
+in plain language.
+
+- **Fast Apply Changes:** Applies edits in place (~1.5 s hot class redefinition
+  and Compose recomposition when possible, falling back cleanly to activity
+  restart or reinstall) and reports crashes, logged errors, failed requests, and
+  what changed on screen.
+- **Live Device Viewer (Claude Code and Codex):** Streams the device next to
+  your conversation. Click or drag to annotate UI elements mapped back to
+  Compose composables and source lines, or record your steps into reusable tests.
+- **Structured UI and Compose inspection:** Reads the live view hierarchy and
+  Compose semantics tree in milliseconds, acts by selector, waits for the UI to
+  settle, and verifies postconditions instead of guessing from screenshots.
+- **Deep debugging without Android Studio:** Explains crashes and unexpected
+  states (`olef why`), attaches JDWP and LLDB debuggers, and inspects
+  Room/SQLite databases, WorkManager jobs, WebViews (CDP), frame jank, and heap
+  leak chains.
+- **Built-in network capture:** Intercepts HTTP(S) traffic, surfaces failed
+  requests, and injects faults without configuring an external proxy.
+- **Deterministic tests from recordings:** Turns a recorded flow into a
+  standalone Bash script (`olef record save` / `olef test run`) that replays in
+  CI without AI and writes JUnit XML and HTML screenshot reports.
 
 ## Install
 
-Homebrew (macOS, Linux):
+Requires Android Platform Tools (`adb`) on your `PATH` for local devices and
+emulators. If you don't want an Android SDK or emulator on your machine, see
+[Olef Cloud](#olef-cloud-for-android-developers).
+
+### 1. Install the CLI
+
+macOS and Linux (Homebrew):
 
 ```bash
 brew install olef-dev/tap/olef
 ```
+
+<details>
+<summary>Other platforms (shell installer, Windows Scoop, PowerShell)</summary>
 
 Shell installer (macOS, Linux):
 
@@ -36,195 +72,139 @@ Shell installer (macOS, Linux):
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/olef-dev/olef/releases/latest/download/olef-installer.sh | sh
 ```
 
-Windows (Scoop, or the PowerShell installer):
+Windows (Scoop):
 
 ```powershell
 scoop bucket add olef https://github.com/olef-dev/scoop-bucket
 scoop install olef
 ```
 
+Windows (PowerShell):
+
 ```powershell
 powershell -ExecutionPolicy Bypass -c "irm https://github.com/olef-dev/olef/releases/latest/download/olef-installer.ps1 | iex"
 ```
 
-You also need Android Platform Tools (`adb`) on your PATH. Binaries for every
-platform are attached to each [release](https://github.com/olef-dev/olef/releases).
+Prebuilt binaries for every platform are also attached to each
+[release](https://github.com/olef-dev/olef/releases).
 
-## Quickstart
+</details>
 
-Start an emulator or plug in a device with USB debugging, then:
+### 2. Connect your coding agent
 
-```bash
-olef devices          # list devices and emulators
-olef connect          # install the device service and verify it
-olef ui dump          # read the screen as JSON
-olef ui tap --text "Sign in" --expect-text "Welcome"
-olef why              # when something surprises you
-olef init             # add the agent plugins and skills
-```
+Run `olef init` to install or update the plugins for Claude Code and Codex (it
+asks first) and add the skill for Cursor, Gemini CLI, and Antigravity.
 
-If anything is off, `olef doctor` diagnoses the setup and
-`doctor --fix` repairs it.
+<details>
+<summary>Or install the Claude Code / Codex plugin directly</summary>
 
-## Tests from recordings
-
-Record a flow once, in the device viewer or by letting an agent drive the
-app, and `olef record save` writes it as a test: a Bash script of one
-`olef` command per step, each naming its element and checking its own
-result. `olef test run` replays it without AI and writes JUnit and an
-HTML report with screenshots. See [recording tests](docs/recording.md) and
-[test runs](docs/test-runs.md).
-
-## Olef Cloud (invite-only alpha)
-
-No Android SDK on your machine? Olef Cloud builds your project and runs
-it on a cloud emulator; install `ocloud` (`brew install olef-dev/tap/ocloud`,
-`scoop install ocloud`, or from [olef-dev/ocloud](https://github.com/olef-dev/ocloud/releases/latest)):
-
-```bash
-ocloud login                    # approve this machine at app.olef.dev
-ocloud link                     # upload this project to your cloud workspace
-ocloud run -- olef app apply    # build and run it on the cloud emulator
-```
-
-The Codex plugin can also use the hosted MCP server at `mcp.olef.dev`
-with no CLI installed. Cloud is an invite-only alpha in one region: sign in
-at [app.olef.dev](https://app.olef.dev) to join the list, or
-enter your invite code there. See the
-[terms](https://olef.dev/terms) and
-[privacy policy](https://olef.dev/privacy#cloud).
-
-## Real phones from Google Cloud (preview)
-
-Drive real phones from Google Cloud's Developer Device Platform like a USB
-device. Sessions are billed to your own Google Cloud project (`ddp.project`
-in `.olef/config.json`). Pick one in the device viewer, or let your
-agent ask for one there: the first reserve of the day shows its price and asks
-you, and your yes covers that day up to $10 (`ddp.budget_usd_per_day` sets your
-own limit):
-
-```bash
-ocloud devices catalog --physical --available   # specs like ddp:tokay-36
-ocloud devices reserve ddp:tokay-36             # attached as 127.0.0.1:<port>
-olef -d ddp:tokay-36 app apply                  # every command works on it
-ocloud devices release ddp:tokay-36             # or use `ocloud devices run ddp:tokay-36 -- ...`
-```
-
-`net` capture works through a relay in the Olef server. DDP is a
-Google Cloud Preview service; see [configuration](docs/configuration.md).
-
-## Your own devices (preview)
-
-Lease devices on your own machine (a phone, a Fire TV stick, any adb device)
-from anywhere through Olef Cloud, for Cloud accounts with remote
-devices enabled:
-
-```bash
-ocloud host register --name desk --reset lease_only  # this machine becomes a host
-ocloud host add 192.168.1.20:5555 --name firetv      # the device asks once to trust the host's key
-ocloud host service install                          # keep the host agent running (prints one sudo command)
-
-# from any machine signed in to the same account:
-ocloud devices reserve lab:desk/firetv               # attached as 127.0.0.1:<port>
-olef -d lab:desk/firetv app apply
-ocloud devices view lab:desk/firetv                  # a view.olef.dev link
-ocloud devices release lab:desk/firetv               # the host resets the device
-```
-
-The host uses its own adb server and key and offers only the devices you
-enrol. After each lease it undoes what the lease did and checks the device;
-`--reset lease_only` is for devices you also use yourself.
-
-## Updating
-
-```bash
-olef update
-```
-
-prints the command that updates your install and changes nothing itself. The
-device service, runtime agent and agent skills follow the CLI's version. See
-[updating](docs/updating.md).
-
-## Claude Code and Codex
-
-The Claude Code plugin adds a live device viewer next to the conversation,
-with annotations and tap-to-test recording, plus Apply Changes builds. If the
-CLI isn't installed yet, the plugin notices when a session starts and Claude
-offers the install command for your OS:
+In Claude Code:
 
 ```
 /plugin marketplace add olef-dev/olef
 /plugin install olef@olef
 ```
 
-The Codex plugin teaches Codex the CLI:
+In Codex:
 
 ```bash
 codex plugin marketplace add olef-dev/olef
 codex plugin add olef@olef
 ```
 
-Or let the CLI do both: `olef init` installs or updates the plugin for
-each of the two agents it finds (it asks first; `--plugins` skips the
-question) and the skill for Cursor, Gemini and Antigravity.
+</details>
 
-Details: [Claude Code plugin](claude-plugin/README.md),
-[Codex plugin](codex-plugin/README.md).
+See the [Claude Code plugin](claude-plugin/README.md) and
+[Codex plugin](codex-plugin/README.md) guides for viewer options, annotations,
+and permissions.
+
+### 3. Ask your agent
+
+Start an emulator or connect a device with USB debugging, then ask your agent
+about your app rather than typing `olef` commands by hand:
+
+- *"Build the app, run it on the Pixel 9 emulator, and check why sign-in fails."*
+- *"Show me the device so I can try the onboarding flow and annotate what looks off."*
+- *"Capture network traffic while checking out and tell me which request failed."*
+- *"Turn the flow I just recorded into a deterministic test and run it."*
+
+If anything looks wrong in your local environment, `olef doctor` checks the
+setup (`olef doctor --fix` repairs common issues). Run `olef update` to check
+for newer versions; the on-device service, runtime agent, and skills follow the
+CLI automatically.
+
+## Olef Cloud for Android developers
+
+Local `olef` works offline against your own emulators and USB devices with no
+account. When you want cloud build and device infrastructure, **Olef Cloud**
+adds optional cloud capabilities for Android work:
+
+- **Build and run Android apps in the cloud:** Offload Gradle builds and Android
+  emulators to persistent cloud workspaces with warm caches, so you and your
+  agents can build, apply changes, and inspect screens with no Android Studio,
+  SDK, or emulator installed locally.
+- **Real physical phones and shared device labs:** Lease physical phones on
+  demand via Google Cloud's Developer Device Platform, or share your own desk
+  phones and TV devices across your team with automatic state reset between
+  sessions.
+- **Cloud agents and CI workflows:** Run named Claude Code or Codex agents in
+  cloud workspaces, keep working with them from any device, run deterministic
+  cloud tests, and share private test builds.
+
+Install the companion `ocloud` CLI (`brew install olef-dev/tap/ocloud` or from
+[olef-dev/ocloud](https://github.com/olef-dev/ocloud/releases/latest)) and add
+the `ocloud@olef` plugin in Claude Code or Codex. Olef Cloud is in invite-only
+alpha: sign in at [app.olef.dev](https://app.olef.dev) to join the waitlist or
+redeem an invite, or read more at [olef.dev](https://olef.dev). See the
+[terms](https://olef.dev/terms) and
+[privacy policy](https://olef.dev/privacy#cloud).
 
 ## Documentation
 
-- [The agent loop](docs/agent-loop.md): how agents read, act and verify
-- [Apply Changes](docs/apply.md): `olef app apply`, from an edit to the
-  device in place, and how to read its result
-- [Output contract](docs/output-contract.md): the JSON every command returns
-- [Debugging](docs/debugging.md): logs, `why`, crashes and the debugger
+- [The agent loop](docs/agent-loop.md): how agents read, act, and verify
+- [Apply Changes](docs/apply.md): how `olef app apply` updates running apps in place
+- [Debugging](docs/debugging.md): logs, `olef why`, crashes, and JDWP/LLDB
 - [Recording tests](docs/recording.md) and [test runs](docs/test-runs.md):
-  record a flow, replay it as a Bash test, read the report
-- [Network](docs/network.md): the built-in proxy, interception and rules
-- [Updating](docs/updating.md): `olef update` and what follows the CLI
+  turn recorded flows into deterministic CI scripts and HTML/JUnit reports
+- [Network](docs/network.md): built-in proxy, capture, and fault injection
+- [Output contract](docs/output-contract.md): the structured JSON schema
+- [Updating](docs/updating.md): `olef update` and versioned components
 - [Device state](docs/device-state.md), [sessions](docs/sessions.md),
   [configuration](docs/configuration.md),
   [security and redaction](docs/security-and-redaction.md),
   [verification](docs/verification.md), [evidence](docs/evidence.md)
 
-`olef commands --guide` lists every command from the CLI itself.
+Browse the full documentation at [olef.dev/docs](https://olef.dev/docs), or run
+`olef commands --guide` to print command guides from the CLI.
 
 ## Reporting issues
 
-If you use Olef through an agent, let it report for you: errors that are
-Olef's fault suggest `olef feedback draft`, and the agent shows
-you the report before anything is sent. See [reporting problems](docs/feedback.md).
+When using Olef through an agent, errors that look like Olef bugs suggest
+`olef feedback draft`, and your agent lets you review the report before anything
+is sent ([details](docs/feedback.md)).
 
-To report by hand, [open an issue](https://github.com/olef-dev/olef/issues/new/choose)
-and include the output of:
-
-```bash
-olef --version
-olef doctor --json
-```
-
-Questions and ideas are welcome in
-[Discussions](https://github.com/olef-dev/olef/discussions).
-Please report security problems privately; see [SECURITY.md](SECURITY.md).
+To report manually, [open an issue](https://github.com/olef-dev/olef/issues/new/choose)
+and attach the output of `olef --version` and `olef doctor --json`. Questions
+and ideas are welcome in
+[Discussions](https://github.com/olef-dev/olef/discussions). Please report
+security problems privately; see [SECURITY.md](SECURITY.md).
 
 ## License
 
-**Free for everyone.** Olef is free for individuals, teams, and
-organizations of any size, for any purpose, including commercial work. No
-sign-up, no license key, no per-user fees. The full terms are in the
-[Olef License](LICENSE.md).
+**Free for everyone.** Olef is free for individuals, teams, and organizations of
+any size, for any purpose, including commercial work. No sign-up, no license
+key, no per-user fees. The full terms are in the [Olef License](LICENSE.md).
 
 The Claude Code and Codex plugins in this repository are licensed under
 Apache-2.0 (see their `LICENSE` files). ShadowDroid 1.3.0 and earlier were
 released under Apache-2.0, and their source remains available at the
 [`v1.3.0` tag](https://github.com/olef-dev/olef/tree/v1.3.0).
 
-Olef includes open-source components under their own licenses. Their
-notices ship as `THIRD-PARTY-NOTICES.txt` in every release archive and on each
-[release](https://github.com/olef-dev/olef/releases/latest), and
-`olef licenses` prints them.
+Olef includes open-source components under their own licenses. Their notices
+ship as `THIRD-PARTY-NOTICES.txt` in every release archive and on each
+[release](https://github.com/olef-dev/olef/releases/latest), and `olef licenses`
+prints them.
 
 ## Contact
 
 [contact@olef.dev](mailto:contact@olef.dev)
-
