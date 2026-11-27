@@ -186,12 +186,20 @@ else: the tools, the viewer and the skill.
 
 ## Skills
 
-The plugin ships two skills:
+The plugin ships these skills:
 
 - **`olef`** (`olef:olef`): the CLI reference, the same
   skill `olef skill claude-code` writes, generated from the CLI.
 - **`android-device`** (`olef:android-device`): the device, the viewer,
   build and screenshots.
+- **`ocloud`** (`olef:ocloud`): Olef Cloud through the `ocloud` CLI: create
+  cloud agents, chat with them in threads, schedule tasks, subscribe agents
+  to events, install skills on them, check them out locally, and watch your
+  Olef inbox. It needs `ocloud` (`brew install olef-dev/tap/ocloud`) and an
+  Olef Cloud sign-in (`ocloud login`); the SessionStart hook tells Claude
+  when `ocloud` is installed but not signed in.
+- **`olef-qa-playwright`** (`olef:olef-qa-playwright`): test journeys that
+  combine Olef Android UI automation with Playwright web flows.
 
 With the plugin installed for your user, `olef init`, `skill --sync`
 and `connect` stop installing and refreshing the personal skill in

@@ -1,5 +1,5 @@
 {
-  "description": "Status line, toasts and /device for the attached Android device and, in a project linked to Olef Cloud, its cloud session (starting, ready, idle-stop countdown); pending viewer annotations ride along with the next prompt and the viewer's Send to Claude submits them (register.ts). The PreToolUse hook lets device actions run without a prompt per tap only when you turn on the plugin's \"Skip prompts for device actions\" option (off by default): per-device consent in the viewer then covers them, as with Claude Desktop's iOS Simulator; build, open_url and the olef CLI tool keep following the permission mode, and so does plan mode. The SessionStart hook (check-cli) tells Claude how to install the olef CLI or adb on this OS when they are missing or too old, offers Olef Cloud when there is no local Android toolchain (and asks for no adb in a project linked to it), and mentions a newer CLI release known from the CLI's daily update cache; it never installs, signs in or uploads anything itself.",
+  "description": "Status line, toasts and /device for the attached Android device and, in a project linked to Olef Cloud, its cloud session (starting, ready, idle-stop countdown); pending viewer annotations ride along with the next prompt and the viewer's Send to Claude submits them (register.ts). The PreToolUse hook lets device actions run without a prompt per tap only when you turn on the plugin's \"Skip prompts for device actions\" option (off by default): per-device consent in the viewer then covers them, as with Claude Desktop's iOS Simulator; build, open_url and the olef CLI tool keep following the permission mode, and so does plan mode. The SessionStart hook (check-cli) tells Claude how to install the olef CLI or adb on this OS when they are missing or too old, offers Olef Cloud when there is no local Android toolchain (and asks for no adb in a project linked to it), tells Claude when the ocloud CLI is installed but not signed in (for the ocloud skill), and mentions a newer CLI release known from the CLI's daily update cache; it never installs, signs in or uploads anything itself.",
   "modules": [
     "./register.ts"
   ],
@@ -24,7 +24,7 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-cli\"",
             "timeout": 20,
-            "statusMessage": "Checking Olef CLI and adb setup"
+            "statusMessage": "Checking Olef CLI, adb and Olef Cloud setup"
           }
         ]
       }

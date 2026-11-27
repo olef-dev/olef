@@ -3,8 +3,10 @@
 # the agent how to install it on this OS and show the user a one-line note;
 # when the CLI's update cache knows a newer release, say so the same way.
 # With no local Android toolchain, Olef Cloud is offered next to the
-# local install, and a project linked to it needs no adb at all. Silent when
-# everything is in place and current. Never installs, signs in or uploads
+# local install, and a project linked to it needs no adb at all. When the
+# ocloud CLI is installed but not signed in, the agent hears so (for the
+# ocloud skill), without a notice. Silent when everything is in place and
+# current. Never installs, signs in or uploads
 # anything itself: the agent offers the command and runs it only with the
 # user's approval.
 # Usage: check-cli [claude|codex] (the plugin it runs for; default claude).
@@ -196,38 +198,63 @@ if ! command -v adb >/dev/null 2>&1 && ! sd_find_platform_tools; then
   toolchain=missing
 fi
 
-# Olef Cloud matters only without a local toolchain. When `ocloud` is
-# installed, it answers for the project in this folder: linked, signed_in
-# (not linked), available (not signed in) or unsupported. Without `ocloud`
-# (or without `olef`), it stays unknown so the cloud option can still be offered.
+# `ocloud status`, asked once when `ocloud` is installed: linked, signed_in
+# (not linked), available (not signed in) or unsupported (no answer in time).
+have_ocloud=""
+ocloud_state=unknown
+if command -v ocloud >/dev/null 2>&1; then
+  have_ocloud=1
+  ocloud_state=unsupported
+  cloud_out=""
+  cloud_tmp="$(mktemp 2>/dev/null)"
+  if [ -n "$cloud_tmp" ]; then
+    ocloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
+    cloud_pid=$!
+    # A deadline, not a count of sleeps: each `sleep` is a process, slow to
+    # start on a busy machine.
+    deadline=$((SECONDS + 4))
+    while kill -0 "$cloud_pid" 2>/dev/null && [ "$SECONDS" -lt "$deadline" ]; do
+      sleep 0.1
+    done
+    kill "$cloud_pid" 2>/dev/null
+    wait "$cloud_pid" 2>/dev/null
+    cloud_out="$(tr -d ' \t\r\n' <"$cloud_tmp")"
+    rm -f "$cloud_tmp"
+  fi
+  case "$cloud_out" in
+    *'"linked":true'*) ocloud_state=linked ;;
+    *'"signed_in":true'* | *'"account":{'*) ocloud_state=signed_in ;;
+    *'"cmd":"cloud_status"'* | *'"account":'* | *'"signed_in":'* | *'"code":"cloud_'*) ocloud_state=available ;;
+  esac
+fi
+
+# Olef Cloud as the device option matters only without a local toolchain.
+# Without `ocloud` (or without `olef`), it stays unknown so the cloud option
+# can still be offered.
 cloud=unknown
 if [ "$toolchain" = missing ] && [ "$cli" = ok ]; then
-  if command -v ocloud >/dev/null 2>&1; then
-    cloud=unsupported
-    cloud_out=""
-    cloud_tmp="$(mktemp 2>/dev/null)"
-    if [ -n "$cloud_tmp" ]; then
-      ocloud status --json >"$cloud_tmp" 2>/dev/null </dev/null &
-      cloud_pid=$!
-      # A deadline, not a count of sleeps: each `sleep` is a process, slow to
-      # start on a busy machine.
-      deadline=$((SECONDS + 4))
-      while kill -0 "$cloud_pid" 2>/dev/null && [ "$SECONDS" -lt "$deadline" ]; do
-        sleep 0.1
-      done
-      kill "$cloud_pid" 2>/dev/null
-      wait "$cloud_pid" 2>/dev/null
-      cloud_out="$(tr -d ' \t\r\n' <"$cloud_tmp")"
-      rm -f "$cloud_tmp"
-    fi
-    case "$cloud_out" in
-      *'"linked":true'*) cloud=linked ;;
-      *'"signed_in":true'* | *'"account":{'*) cloud=signed_in ;;
-      *'"cmd":"cloud_status"'* | *'"account":'* | *'"signed_in":'* | *'"code":"cloud_'*) cloud=available ;;
-    esac
+  if [ -n "$have_ocloud" ]; then
+    cloud="$ocloud_state"
   else
     cloud=unsupported
   fi
+fi
+
+# A missing adb is worth a notice to the user in an Android project, or for
+# someone who uses only olef. With ocloud installed and a folder that is not
+# an Android project (cloud agents, schedules, inbox), the agent hears about
+# adb, but the user sees no notice.
+android_project=""
+project_dir="${CLAUDE_PROJECT_DIR:-$PWD}"
+for marker in gradlew settings.gradle settings.gradle.kts build.gradle build.gradle.kts AndroidManifest.xml app/src/main/AndroidManifest.xml; do
+  if [ -e "$project_dir/$marker" ]; then
+    android_project=1
+    break
+  fi
+done
+adb_notice=1
+if [ -n "$have_ocloud" ] && [ -z "$android_project" ]; then
+  adb_notice=""
 fi
 # A plugin whose MCP config names the remote Olef Cloud server works
 # without the CLI too, in a cloud-hosted workspace.
@@ -248,32 +275,41 @@ elif [ "$toolchain" = missing ]; then
   context+="adb (Android SDK platform-tools) was not found. Olef needs it to reach devices; Android Studio installs it, or install it with:"
   if [ "$os" = macos ]; then
     context+=" brew install --cask android-platform-tools."
-    if [ -z "$notice" ]; then
+    if [ -z "$notice" ] && [ -n "$adb_notice" ]; then
       notice="Olef: adb was not found. Install Android platform-tools: brew install --cask android-platform-tools"
     fi
   elif [ "$os" = windows ]; then
     context+=" scoop install adb."
-    if [ -z "$notice" ]; then
+    if [ -z "$notice" ] && [ -n "$adb_notice" ]; then
       notice="Olef: adb was not found. Install Android platform-tools: scoop install adb"
     fi
   else
     context+=" the distribution's package (for example: sudo apt install adb)."
-    if [ -z "$notice" ]; then
+    if [ -z "$notice" ] && [ -n "$adb_notice" ]; then
       notice="Olef: adb was not found. Install Android platform-tools with the distribution's package (for example: sudo apt install adb)"
     fi
   fi
   # The install notices get the cloud option; the update notice stands alone.
   if [ "$cloud" = signed_in ]; then
     context+=" The user is signed in to Olef Cloud, but this folder isn't linked. Before installing anything, ask whether to set up Android locally or build and run in the cloud: 'ocloud link' in the project's root uploads it once the user approves."
-    if [ -z "$update" ]; then
+    if [ -z "$update" ] && [ -n "$notice" ]; then
       notice+=" Or no setup: build and run in the cloud (invite-only alpha), ocloud link"
     fi
   elif [ "$cloud" != unsupported ]; then
     context+=" Or no setup: Olef Cloud builds and runs the app on a cloud emulator, with nothing else to install (an invite-only alpha). Before installing anything, ask the user which they want: set up Android locally, or Olef Cloud ('ocloud login' signs them in through the browser, then 'ocloud link' in the project's root uploads it once they approve). Never sign the user up, sign in or upload code without their yes."
-    if [ -z "$update" ]; then
+    if [ -z "$update" ] && [ -n "$notice" ]; then
       notice+=" Or no setup: build and run in the cloud (invite-only alpha), ocloud login"
     fi
   fi
+fi
+# For the ocloud skill (cloud agents, schedules, inbox, workspaces): installed
+# but signed out. Context only; the cloud device offer above already covers it
+# when it was made.
+if [ "$ocloud_state" = available ] && [ "$cloud" != available ]; then
+  if [ -n "$context" ]; then
+    context+=" "
+  fi
+  context+="The ocloud CLI is installed, but the user is not signed in to Olef Cloud. Before running ocloud commands (cloud agents, schedules, inbox, workspaces), ask whether to run 'ocloud login'; never sign in without their yes."
 fi
 if [ "$cli" != ok ] && [ -n "$remote_mcp" ]; then
   context+=" This plugin also has the Olef Cloud MCP tools (mcp.olef.dev), which work without the CLI: the project then lives in a cloud-hosted workspace (create_workspace, write_files, build_and_run, screenshot, open_viewer, export_project), and the first call asks the user to sign in. Offer that or installing the CLI, which keeps the project in this folder, and let the user choose."

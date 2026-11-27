@@ -27,8 +27,11 @@ it brings the plugin to the CLI's version.
 ## What's inside
 
 - **Skills:** `olef` (the CLI reference, the same skill
-  `olef skill codex --install` writes, generated from the CLI) and
-  `android-device` (shows the device live in Codex's in-app browser). Don't
+  `olef skill codex --install` writes, generated from the CLI),
+  `android-device` (shows the device live in Codex's in-app browser) and
+  `ocloud` (Olef Cloud agents, threads, schedules, event workflows and your
+  Olef inbox through the `ocloud` CLI; install it with
+  `brew install olef-dev/tap/ocloud` and sign in with `ocloud login`). Don't
   edit `skills/olef/SKILL.md` here; change `cli/src/cmd/skill_body.md`
   and run `OLEF_BLESS=1 cargo test plugins_ship_the_generated_skill`
   in `cli/`.
@@ -38,7 +41,8 @@ it brings the plugin to the CLI's version.
   `olef config init --user --show-device window` (back with `viewer`),
   or tell Codex "use the emulator window from now on".
 - **SessionStart hook** (`hooks/check-cli`, shared with the Claude plugin):
-  tells Codex how to install the CLI or adb when they're missing. Codex asks
+  tells Codex how to install the CLI or adb when they're missing, and when
+  `ocloud` is installed but not signed in. Codex asks
   you to trust it once (Settings → Hooks).
 
 With the plugin installed, `olef init`, `skill --sync` and `connect`

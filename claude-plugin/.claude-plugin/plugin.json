@@ -1,8 +1,8 @@
 {
   "name": "olef",
   "displayName": "Olef",
-  "version": "3.18.2",
-  "description": "Run, test and debug Android apps from Claude Code: works through the Olef CLI, and opens a live, interactive emulator/device viewer in the Claude Desktop browser pane when you want to see the app, with Apply Changes builds, annotations you leave on the device, recorded steps for tests, and a status line with the device and what each build did.",
+  "version": "3.18.3",
+  "description": "Run, test and debug Android apps from Claude Code: works through the Olef CLI, and opens a live, interactive emulator/device viewer in the Claude Desktop browser pane when you want to see the app, with Apply Changes builds, annotations you leave on the device, recorded steps for tests, and a status line with the device and what each build did. Also creates and orchestrates Olef Cloud agents, workspaces, scheduled tasks, event workflows, conversational threads and your Olef inbox through the ocloud CLI.",
   "author": {
     "name": "Olef",
     "email": "contact@olef.dev",
@@ -23,7 +23,10 @@
     "testing",
     "adb",
     "device",
-    "simulator"
+    "simulator",
+    "cloud",
+    "agents",
+    "ocloud"
   ],
   "userConfig": {
     "viewer": {

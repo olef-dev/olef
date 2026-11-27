@@ -4,6 +4,13 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.18.3
+
+The `olef` plugin now includes Olef Cloud: one plugin for devices and cloud agents.
+
+- **`ocloud` skill in the `olef` plugin** for Claude Code and Codex: create cloud agents, chat with them, schedule tasks, subscribe to events and watch your Olef inbox. The separate `ocloud@olef` plugin is gone; uninstall it if you added it.
+- **Quieter session start**: the plugin tells your agent when `ocloud` is installed but not signed in, and skips the adb notice outside Android projects when you use Olef Cloud.
+
 ## v3.18.2
 
 - **Paused hosts are reported clearly**: a workspace on a paused host now fails with the `host_paused` error code.

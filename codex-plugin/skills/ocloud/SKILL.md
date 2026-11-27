@@ -18,8 +18,13 @@ threads, schedules, event subscriptions, and your Olef inbox. Every `ocloud`
 command returns structured JSON so you can inspect IDs, addresses, and
 `next_actions`.
 
-Before running cloud commands, make sure the user is signed in (`ocloud whoami`).
-If not signed in, ask the user before running `ocloud login`.
+Before running cloud commands, make sure `ocloud` is installed and the user is
+signed in (`ocloud whoami`). If `ocloud` is not found, offer to install it and
+run the command only with the user's yes: `brew install olef-dev/tap/ocloud`
+(macOS/Linux with Homebrew), `scoop install ocloud` (Windows, after
+`scoop bucket add olef https://github.com/olef-dev/scoop-bucket`), or the
+installer from https://github.com/olef-dev/ocloud/releases/latest. If not
+signed in, ask the user before running `ocloud login`.
 
 ## Using `next_actions`
 
@@ -42,13 +47,13 @@ choose sensible defaults (while always honoring any explicit overrides):
 1. **Name**: Pick a concise, meaningful personal slug `me/<slug>` matching the
    user's goal or current project folder (e.g., `me/assistant`, `me/inbox-bot`,
    `me/android-helper`), or `<team>/<slug>` when creating a team agent.
-2. **Runtime**: Default to `--runtime claude-code` in Claude Code sessions
-   (unless the user explicitly asks for `--runtime codex`).
+2. **Runtime**: Default to `--runtime codex` in Codex sessions (unless the user
+   explicitly asks for `--runtime claude-code`).
 3. **Workspace**:
    - First run `ocloud status` in the current working directory.
    - If `linked: true`, attach the new agent to that existing workspace:
      ```bash
-     ocloud agent create me/<slug> --runtime claude-code --workspace <workspace_id>
+     ocloud agent create me/<slug> --runtime codex --workspace <workspace_id>
      ```
    - Otherwise, Olef Cloud eagerly creates a dedicated hosted workspace for the
      agent — **no GitHub repository is required**. Pick `--template` from the
@@ -67,13 +72,12 @@ choose sensible defaults (while always honoring any explicit overrides):
 
 Example (general cloud agent):
 ```bash
-ocloud agent create me/cloud-assistant --runtime claude-code --template general
+ocloud agent create me/cloud-assistant --runtime codex --template general
 ```
 
 After creating the agent, tell the user:
-- Its name/inbox address (e.g. `andrii/cloud-assistant`), runtime
-  (`claude-code`), and attached workspace (hosted `general` or their linked
-  workspace).
+- Its name/inbox address (e.g. `andrii/cloud-assistant`), runtime (`codex`),
+  and attached workspace (hosted `general` or their linked workspace).
 - That it is live in Olef Cloud and can be customized further:
   - Chat directly: `ocloud thread new <address> "<prompt>" --wait`
   - Add reusable skills: `ocloud agent skill put <address> <skill-name> --from <path>`
@@ -85,8 +89,8 @@ After creating the agent, tell the user:
 
 ## 2. Chatting with a Cloud Agent (Conversational Threads)
 
-Agents work like a remote Claude Code/Codex conversation — no `--repo-id` is
-needed for workspace agents:
+Agents work like a remote Codex/Claude conversation — no `--repo-id` is needed
+for workspace agents:
 
 - **Start a new thread and wait for the reply**:
   ```bash
@@ -113,8 +117,8 @@ Olef workflows are **prompt-driven** (there is no `--skill` flag):
 - **Simple or one-off tasks**: put the behavior directly in `--text` (schedules)
   or `--prompt` (event subscriptions).
 - **Reusable or multi-step behaviors**: install a native skill in the agent's
-  portable home (`.claude/skills/<name>/SKILL.md` or
-  `.codex/skills/<name>/SKILL.md`) via `ocloud agent skill put` (or
+  portable home (`.codex/skills/<name>/SKILL.md` or
+  `.claude/skills/<name>/SKILL.md`) via `ocloud agent skill put` (or
   `checkout --edit` → `redeploy --yes`), then reference it naturally in the
   prompt (e.g. `"Use the daily-briefing skill and send the summary to my inbox."`).
 

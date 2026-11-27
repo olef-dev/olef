@@ -158,8 +158,9 @@ adds optional cloud capabilities for Android work:
   cloud tests, and share private test builds.
 
 Install the companion `ocloud` CLI (`brew install olef-dev/tap/ocloud` or from
-[olef-dev/ocloud](https://github.com/olef-dev/ocloud/releases/latest)) and add
-the `ocloud@olef` plugin in Claude Code or Codex. Olef Cloud is in invite-only
+[olef-dev/ocloud](https://github.com/olef-dev/ocloud/releases/latest)); the
+`olef@olef` plugin for Claude Code and Codex includes the `ocloud` skill that
+drives it. Olef Cloud is in invite-only
 alpha: sign in at [app.olef.dev](https://app.olef.dev) to join the waitlist or
 redeem an invite, or read more at [olef.dev](https://olef.dev). See the
 [terms](https://olef.dev/terms) and

@@ -1,7 +1,7 @@
 {
   "name": "olef",
-  "version": "3.18.2",
-  "description": "Run, test and debug Android apps from Codex: through the Olef CLI on your own emulators and devices, or on an Olef Cloud emulator with nothing installed locally. Deploy and apply changes, drive the UI, read crashes and logs, inspect network traffic.",
+  "version": "3.18.3",
+  "description": "Run, test and debug Android apps from Codex: through the Olef CLI on your own emulators and devices, or on an Olef Cloud emulator with nothing installed locally. Deploy and apply changes, drive the UI, read crashes and logs, inspect network traffic. Also creates and orchestrates Olef Cloud agents, schedules, event workflows, threads and your Olef inbox through the ocloud CLI.",
   "author": {
     "name": "Andrii",
     "url": "https://github.com/olef-dev"
@@ -17,14 +17,16 @@
     "adb",
     "device",
     "ui-automation",
-    "cloud"
+    "cloud",
+    "agents",
+    "ocloud"
   ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Olef",
     "shortDescription": "Run, test and debug Android apps on emulators and devices",
-    "longDescription": "Teaches Codex the olef CLI and opens a live, interactive emulator/device viewer in the Codex in-app browser when you want to see or use the device: build and apply each edit to the device in place, drive and wait on the UI by selector, explain failures from crashes, logs and network traffic, intercept and modify HTTP(S), inject faults, and debug without Android Studio. Locally it needs the olef CLI on PATH (brew install olef-dev/tap/olef, or scoop install olef on Windows) and adb. Without them, the Olef Cloud server (mcp.olef.dev, sign-in with your Olef account; invite-only alpha) keeps the project in a cloud workspace, builds it there and runs it on a cloud emulator.",
+    "longDescription": "Teaches Codex the olef CLI and opens a live, interactive emulator/device viewer in the Codex in-app browser when you want to see or use the device: build and apply each edit to the device in place, drive and wait on the UI by selector, explain failures from crashes, logs and network traffic, intercept and modify HTTP(S), inject faults, and debug without Android Studio. Locally it needs the olef CLI on PATH (brew install olef-dev/tap/olef, or scoop install olef on Windows) and adb. Without them, the Olef Cloud server (mcp.olef.dev, sign-in with your Olef account; invite-only alpha) keeps the project in a cloud workspace, builds it there and runs it on a cloud emulator. With the ocloud CLI it also creates cloud agents with smart workspace and runtime defaults, chats with them in multi-turn threads, schedules one-shot or recurring tasks, wires prompt-driven event subscriptions, and watches your Olef inbox.",
     "developerName": "Andrii",
     "category": "Developer Tools",
     "capabilities": [
@@ -35,7 +37,8 @@
     "defaultPrompt": [
       "Run the app on an emulator and tap through onboarding",
       "Why did the app just crash? Check the device",
-      "Build me a notes app and show it running"
+      "Build me a notes app and show it running",
+      "Create a cloud agent for me"
     ],
     "brandColor": "#074496",
     "logo": "./assets/icon.png",
