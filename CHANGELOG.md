@@ -4,6 +4,10 @@ Release notes for Olef. Every release, with its binaries, is on the
 [Releases page](https://github.com/olef-dev/olef/releases).
 
 
+## v3.18.2
+
+- **Paused hosts are reported clearly**: a workspace on a paused host now fails with the `host_paused` error code.
+
 ## v3.18.1
 
 - **Deterministic `next_actions` in `olef mcp` and plugin skills**: `olef mcp` now returns structured MCP-tool-vocabulary `next_actions` on `build`, `annotations`, `recording`, `launch`, and `detach` responses, and includes follow-up guidance in server `initialize` instructions. The Claude Code and Codex `olef` plugin skills instruct agents to treat `next_actions` as contextual hints and surface relevant user-facing next steps concisely.

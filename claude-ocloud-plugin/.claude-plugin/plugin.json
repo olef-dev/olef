@@ -1,7 +1,7 @@
 {
   "name": "ocloud",
   "displayName": "Olef Cloud",
-  "version": "3.18.0",
+  "version": "3.18.1",
   "description": "Create and orchestrate Olef Cloud agents, workspaces, scheduled tasks, event workflows, conversational threads, and your Olef inbox directly from Claude Code.",
   "author": {
     "name": "Olef",
