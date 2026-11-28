@@ -21,39 +21,53 @@ step built in.
 
 ## What it does
 
-Once installed, your coding agent runs `olef` behind the scenes while you work
-in plain language.
+Once it's installed, your coding agent uses `olef` behind the scenes while you
+talk to it in plain language.
 
-- **Built for coding agents (low token cost, fast screen reads):** Warm
-  `olef ui dump` reads the screen as compact JSON in ~65 ms, every response
-  includes verified postconditions and suggested `next_actions`, and
-  `olef watch` merges screen diffs, crashes, ANRs, toasts, logpoints, and HTTP
-  traffic into one unified JSONL event stream. In a 21-task Android benchmark
-  with Codex, Olef cut median task time by **48%** (36 s vs. 69 s) and token
-  usage by **34%** (4.0M vs. 6.1M) compared to `adb` and the Android CLI
+- **Output for agents.** Commands return short JSON: the screen as a list of
+  elements, whether a step did what it should, and suggested next commands.
+  `olef watch` streams screen changes, crashes, logs and network calls as they
+  happen. In our benchmark with Codex, tasks took about half the time and a
+  third fewer tokens than with `adb` and the Android CLI
   ([comparison](https://olef.dev/docs/engineers/compare)).
-- **Isolated sessions, configs, and rollbacks:** Run multiple concurrent agent
-  sessions safely with per-device reservations, shared session settings
-  (app under test, waits, timeouts, cached device facts), foreground and crash
-  guards, and full session journals. Starting state such as permissions,
-  automation profiles, and injected faults is automatically rolled back when a
-  session closes ([sessions](docs/sessions.md)).
-- **Fast Apply Changes:** Applies edits in place (~1.5 s hot class redefinition
-  and Compose recomposition when possible, falling back cleanly to activity
-  restart or reinstall) and reports crashes, logged errors, failed requests, and
-  what changed on screen.
-- **Structured UI and Compose inspection:** Acts by stable selector rather than
-  fragile coordinates, maps Compose nodes and recompositions back to source
-  `file:line`, and waits for the UI to settle automatically.
-- **Deep debugging without Android Studio:** Explains crashes and unexpected
-  states (`olef why`), attaches JDWP and LLDB debuggers, and inspects
-  Room/SQLite databases, WorkManager jobs, WebViews (CDP), frame jank, and heap
-  leak chains.
-- **Built-in network capture:** Intercepts HTTP(S) traffic, surfaces failed
-  requests, and injects faults without configuring an external proxy.
-- **Deterministic tests from recordings:** Turns a recorded flow into a
-  standalone Bash script (`olef record save` / `olef test run`) that replays in
-  CI without AI and writes JUnit XML and HTML screenshot reports.
+- **Applying code changes.** `olef app apply` builds the app and swaps the
+  changed code into the running process, keeping the screen and its state, also
+  when composables and functions are added, removed or moved, or a string or
+  colour changes. When that isn't possible it restarts the activity or
+  reinstalls, and says why. It reports crashes, errors and what changed on
+  screen. `olef app preview` shows a `@Preview` on the device.
+- **Live device view.** In Claude Desktop and Codex, the device can be shown
+  next to the chat. You can use it directly, mark problems on the screen for
+  the agent, or record a flow for it to turn into a test.
+- **UI automation.** Taps and reads use text, labels or test tags rather than
+  coordinates, also inside WebViews. Elements can be traced back to the source
+  line that drew them, and commands wait for the screen to settle.
+- **Debugging.** `olef why` summarises the last crash or error. There's a
+  debugger for Kotlin, Java and native code, and a view of running coroutines.
+  App databases and settings can be read and changed while the app runs, and
+  WorkManager jobs can be run on demand.
+- **Performance.** Measures startup time (cold, warm or hot), slow and dropped
+  frames, and screens or ViewModels kept in memory after they close, with the
+  references holding them. Frame checks can fail when they go over a set limit.
+- **Network.** A built-in proxy shows the app's requests and flags failed ones.
+  It can replay saved responses with no backend running, or change responses as
+  they arrive, including WebSocket messages.
+- **Fault injection.** Kills the app in the background, cuts or slows the
+  network, fills storage, puts the device into Doze or moves the clock, and
+  undoes each change afterwards.
+- **Device control.** Starts and stops emulators, grants and revokes
+  permissions, copies files to and from the app's private folders, saves and
+  restores app state, and records the screen.
+- **Sessions.** Several agents can run at once, each on its own reserved
+  device. A session keeps the app and wait settings, records what happened, and
+  restores permissions, settings and faults when it ends
+  ([sessions](docs/sessions.md)).
+- **Tests.** A recorded flow becomes a Bash script that runs in CI without AI
+  and writes JUnit and HTML reports. Repeated runs mark flaky tests, a failed
+  test gets a suggested fix, and screenshots can be compared.
+- **Verification.** An agent can check a change against a list of requirements
+  and keep the screen, network calls and screen recording for each check, lined
+  up in time.
 
 ## Install
 
